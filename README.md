@@ -4,89 +4,75 @@ SAPPORO-service is a Web front-end for managing users and batch jobs.
 
 [Japanese Document](https://hackmd.io/s/r1_mSHn8V)
 
-## Environment
-
-The development and verification environments are as follows.
-
-```shell
-$ docker --version
-Docker version 18.09.1, build 4c52b90
-$ docker-compose --version
-docker-compose version 1.23.1, build b02f1306
-```
-
-We are checking with Ubuntu 16.04 and macOS Mojave.
-
-```shell
-$ cat /etc/os-release
-NAME="Ubuntu"
-VERSION="16.04.5 LTS (Xenial Xerus)"
-ID=ubuntu
-ID_LIKE=debian
-PRETTY_NAME="Ubuntu 16.04.5 LTS"
-VERSION_ID="16.04"
-HOME_URL="http://www.ubuntu.com/"
-SUPPORT_URL="http://help.ubuntu.com/"
-BUG_REPORT_URL="http://bugs.launchpad.net/ubuntu/"
-VERSION_CODENAME=xenial
-UBUNTU_CODENAME=xenial
-
-$ sw_vers
-ProductName:    Mac OS X
-ProductVersion: 10.14.3
-BuildVersion:   18D109
-```
-
-Python libraries being used are described in [requirements.txt](https://github.com/suecharo/SAPPORO/blob/master/SAPPORO-service/requirements.txt).
-
-## Easy Deployment
+## Usage
 
 Use a script that wraps docker-compose.
 
 ```shell
-$ git clone https://github.com/suecharo/SAPPORO.git
-$ cd SAPPORO/SAPPORO-web/script
-$ ./web-up --help
-Usage: web-up [Option]...
-Script to up SAPPORO-web.
+./sapporo-web up
+Start SAPPORO-web up...
 
-Option:
-  -h, --help                  Print usage.
-  -l, --log-level INFO|DEBUG  Set log level. (default INFO)
-  -p, --port PORT             Set the host TCP/IP port. (default 1121)
-  -t, --timezone TIME_ZONE     Set the timezone. (default Asia/Tokyo)
-  --log-dir ABS_PATH          Set log dir. (default SAPPORO-web/log)
-  --user-signup TRUE|FALSE    Enable user signup. (default True)
+  Debug              : False
+  Port               : 1121
+  Log Level          : INFO
+  Timezone           : Asia/Tokyo
+  Language Code      : en
+  Enable User Signup : True
 
-$ ./web-up
-# Access `localhost:1121/` using the browser.
+Creating sapporo-web-database ... done
+Creating sapporo-web-app      ... done
+Creating sapporo-web-web      ... done
+Waiting for SAPPORO-web to start...
+
+Please accsess in your brouwser:
+
+    http://localhost:1121/
+
+Finish SAPPORO-web up...
 ```
 
 ![SAPPORO - Home](https://i.imgur.com/ebHAY8o.jpg)
 
-## Usage
+### Manage script
+
+```shell
+$ ./sapporo-web --help
+sapporo-web is a set of management commands for SAPPORO-web.
+
+Usage:
+  sapporo-web up [-p <PORT>] [-l DEBUG|INFO] [-t <TIME_ZONE>] [--language-code <CODE>] [-d --debug] [--enable-user-signup] [-h]
+  sapporo-web create-super-user
+  sapporo-web down
+  sapporo-web clean
+  sapporo-web dev (up|create-super-user|down|clean|freeze|build|test) [-h]
+
+Option:
+  -h, --help                  Print usage.
+  -v, --version               Print version.
+```
 
 ### Manage User
 
 There are two types of user: the general user and the administrator user. The difference is whether it can access the administration page.
 
----
-
 The administrator user creates it as follows.
 
 ```shell
-$ ./create_super_user
+$ ./sapporo-web create-super-user
+Start SAPPORO-web create suepr user...
+Username: suecharo
+Email address:
+Password:
+Password (again):
+Superuser created successfully.
+Finish SAPPORO-web create suepr user...
 ```
-
----
 
 The general users create using Sign Up.
 
 ![SAPPORO - Signup](https://i.imgur.com/fsAoJc9.jpg)
 
-If you want to disable Sign Up, start SAPPORO-web like `./web-up --user-signup FALSE`.
-
----
+If you want to disable Sign Up, start SAPPORO-web like `./sapporo-web up --disable-user-signup`.
 
 To manage users, after logging in as an admin user, select [Admin] - [Managing users] in the header.
 
@@ -98,9 +84,7 @@ After logging in as an administrator user, select [Admin] - [Managing services] 
 
 You can add SAPPORO-service by entering service information in the form.
 
----
-
-If you are using SAPPORO-service on the same machine, `Service Server Host` is `sapporo-service-web`.
+If you are using SAPPORO-service on the same machine, `Service Server Host` is `sapporo-service-web:8080`.
 
 ## Run Workflow
 
@@ -124,13 +108,9 @@ SAPPORO-service is using Django. The network configuration is as follows.
 Django <-> uwsgi <-(uWSGI protocol)-> Nginx <-(HTTP)-> Docker <-> User
 ```
 
----
+As an initial setting, Nginx provides `localhost:1121` as a Web endpoint. If you want to change the port, start SAPPORO-web like `./sapporo-web up --port ${PORT_NUM}`.
 
-As an initial setting, Nginx provides `localhost:1121` as a Web endpoint. If you want to change the port, start SAPPORO-web like `./web-up --port ${PORT_NUM}`.
-
----
-
-If you want to use SSL/TSL, edit `./config/nginx.conf`.
+If you want to use SSL/TSL, edit `./etc/nginx/nginx.conf`.
 
 ### Logging
 
@@ -138,52 +118,28 @@ The following items are output as logs.
 
 ```shell
 $ ls ./log
-django.log  nginx-access.log  nginx-error.log  nginx.pid  uwsgi.log  uwsgi.pid
+app  nginx
 ```
 
----
+To change the log level, start SAPPORO-web like `./sapporo-web up --log-level DEBUG`. When set as `DEBUG`, detailed logs and traceback of Python are displayed in `./log/app/flask.log`.
 
-Logs are normally outputted to `./log`. If you want to change the output location, start SAPPORO-web like `./web-up --log-dir $ {LOG_DIR}`.
-
----
-
-To change the log level, start SAPPORO-web like `./web-up --log-level DEBUG`. When set as `DEBUG`, detailed logs and traceback of Python are displayed in `./log/flask.log`.
-
----
-
-If you want log rotation of `./log/django.log`, edit `./SAPPORO-web/config/logging_config.py`.
+If you want log rotation of `./log/django.log`, edit `./src/config/logging_config.py`.
 
 ## Stop and Uninstall
 
 ```shell
 # Stop
-$ ./web-down
+$ ./sapporo-web down
 # Uninstall
-$ ./web-clean
+$ ./sapporo-web clean
 ```
 
-## Testing environment
+## Development
 
-### Execution Test
-
-The Test is done using pytest and coverage.
+### Build and Docker push
 
 ```shell
-$ cd test
-$ docker-compose -f docker-compose.dev.yml up -d --build
-$ docker-compose -f docker-compose.dev.yml exec app /bin/bash /opt/SAPPORO-web/test/run_test.sh
-```
-
-The result is output to `./test/coverage_html`.
-
-### Development environment
-
-You can develop using Django's local server. As a result, code changes are reflected immediately on the server. Files containing dev as the name in `./test` are used as the configuration files.
-
-```shell
-$ cd test
-$ docker-compose -f docker-compose.dev.yml up -d --build
-$ docker-compose -f docker-compose.dev.yml exec app /bin/bash /opt/SAPPORO-web/test/migrate.sh
-$ docker-compose -f docker-compose.dev.yml exec app python3 /opt/SAPPORO-web/SAPPORO-web/manage.py createsuperuser
-$ docker-compose -f docker-compose.dev.yml exec app /bin/bash /opt/SAPPORO-web/test/run_server.sh
+./sapporo-web dev freeze
+./sapporo-web dev build ${VERSION}
+docker push suecharo/sapporo-web:${VERSION}
 ```
