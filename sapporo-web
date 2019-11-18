@@ -1,10 +1,10 @@
 #!/bin/bash
+set -eu
+
 SCRIPT_DIR=$(cd $(dirname $0) && pwd)
 cd $SCRIPT_DIR
 DOCKER_COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml"
 DOCKER_COMPOSE_DEV_FILE="$SCRIPT_DIR/etc/docker-compose.dev.yml"
-UID=$(id -u)
-GID=$(id -g)
 DOCKER_GID=$(cat /etc/group | grep docker | cut -d ":" -f 3)
 PIP_PACKAGES="coverage Django django-allauth django-bootstrap4 django-debug-toolbar psycopg2-binary PyYAML requests uWSGI"
 
@@ -47,6 +47,9 @@ function check_docker_compose() {
     exit 1
   fi
 }
+
+check_docker
+check_docker_compose
 
 function show_web_up_usage() {
   cat <<EOS
@@ -149,8 +152,6 @@ function web_up() {
       ;;
     esac
   done
-  check_docker
-  check_docker_compose
 
   printf "Start SAPPORO-web up...\n\n"
   cat <<EOS
@@ -162,13 +163,14 @@ function web_up() {
   Enable User Signup : ${SAPPORO_WEB_USER_SIGNUP:-True}
 EOS
   printf "\n"
-  if [[ $(docker network ls | grep 'sapporo-network' | wc -l) == 0 ]]; then
+  if [[ $(docker network ls | grep 'sapporo-network' | wc -l | awk '{print $1}') == 0 ]]; then
     echo "Creating the Docker network: sapporo-network"
     docker network create sapporo-network
   fi
-  PWD=$SCRIPT_DIR \
-    UID=$UID \
-    GID=$GID \
+  env \
+    PWD=$SCRIPT_DIR \
+    UID=$(id -u) \
+    GID=$(id -g) \
     DOCKER_GID=$DOCKER_GID \
     SAPPORO_WEB_DEBUG=${SAPPORO_WEB_DEBUG:-False} \
     SAPPORO_WEB_PORT=${SAPPORO_WEB_PORT:-1121} \
@@ -189,16 +191,10 @@ EOS
 }
 
 function web_create_super_user() {
-  check_docker
-  check_docker_compose
   printf "Start SAPPORO-web create suepr user...\n"
-  PWD=$SCRIPT_DIR \
-    UID=$UID \
-    GID=$GID \
-    DOCKER_GID=$DOCKER_GID \
-    docker-compose \
+  docker-compose \
     exec \
-    -u $UID:$GID \
+    -u $(id -u):$(id -g) \
     app \
     python3 /opt/SAPPORO/SAPPORO-web/src/manage.py createsuperuser
   printf "Finish SAPPORO-web create suepr user...\n"
@@ -206,8 +202,6 @@ function web_create_super_user() {
 }
 
 function web_down() {
-  check_docker
-  check_docker_compose
   printf "Start SAPPORO-web down...\n"
   docker-compose down
   printf "Finish SAPPORO-web down...\n"
@@ -216,15 +210,7 @@ function web_down() {
 
 function web_clean() {
   printf "Start SAPPORO-web clean...\n"
-  rm -rf $SCRIPT_DIR/etc/nginx/cache/*
-  rm -rf $SCRIPT_DIR/etc/nginx/run/*
-  rm -rf $SCRIPT_DIR/etc/uwsgi/uwsgi.sock
-  rm -rf $SCRIPT_DIR/log/app/*
-  rm -rf $SCRIPT_DIR/log/nginx/*
-  rm -rf $SCRIPT_DIR/src/app/migrations/*
-  rm -rf $SCRIPT_DIR/src/config/secret_key.txt
-  rm -rf $SCRIPT_DIR/src/static/*
-  find $SCRIPT_DIR/src -type d | grep pycache | xargs rm -rf
+  git clean -fdx
   docker volume rm sapporo-web_postgres-data
   printf "Finish SAPPORO-web clean...\n"
   exit 0
@@ -347,8 +333,6 @@ function web_dev_up() {
       ;;
     esac
   done
-  check_docker
-  check_docker_compose
   cd $SCRIPT_DIR/etc
 
   printf "Start SAPPORO-web dev up...\n\n"
@@ -361,13 +345,14 @@ function web_dev_up() {
   Enable User Signup : ${SAPPORO_WEB_USER_SIGNUP:-True}
 EOS
   printf "\n"
-  if [[ $(docker network ls | grep 'sapporo-network' | wc -l) == 0 ]]; then
+  if [[ $(docker network ls | grep 'sapporo-network' | wc -l | awk '{print $1}') == 0 ]]; then
     echo "Creating the Docker network: sapporo-network"
     docker network create sapporo-network
   fi
-  PWD=$SCRIPT_DIR/etc \
-    UID=$UID \
-    GID=$GID \
+  env \
+    PWD=$SCRIPT_DIR \
+    UID=$(id -u) \
+    GID=$(id -g) \
     DOCKER_GID=$DOCKER_GID \
     SAPPORO_WEB_DEBUG=${SAPPORO_WEB_DEBUG:-True} \
     SAPPORO_WEB_PORT=${SAPPORO_WEB_PORT:-1121} \
@@ -384,13 +369,12 @@ EOS
 }
 
 function web_dev_create_super_user() {
-  check_docker
-  check_docker_compose
   cd $SCRIPT_DIR/etc
   printf "Start SAPPORO-web dev create suepr user...\n"
-  PWD=$SCRIPT_DIR/etc \
-    UID=$UID \
-    GID=$GID \
+  env \
+    PWD=$SCRIPT_DIR \
+    UID=$(id -u) \
+    GID=$(id -g) \
     DOCKER_GID=$DOCKER_GID \
     docker-compose \
     -f $DOCKER_COMPOSE_DEV_FILE \
@@ -403,8 +387,6 @@ function web_dev_create_super_user() {
 }
 
 function web_dev_down() {
-  check_docker
-  check_docker_compose
   cd $SCRIPT_DIR/etc
   printf "Start SAPPORO-web dev down...\n"
   docker-compose -f $DOCKER_COMPOSE_DEV_FILE down
@@ -414,23 +396,17 @@ function web_dev_down() {
 
 function web_dev_clean() {
   printf "Start SAPPORO-web dev clean...\n"
-  rm -rf $SCRIPT_DIR/log/app/*
-  rm -rf $SCRIPT_DIR/src/app/migrations/*
-  rm -rf $SCRIPT_DIR/src/config/secret_key.txt
-  rm -rf $SCRIPT_DIR/src/db.sqlite3
-  rm -rf $SCRIPT_DIR/src/static/*
-  find $SCRIPT_DIR/src -type d | grep pycache | xargs rm -rf
+  git clean -fdx
   printf "Finish SAPPORO-web dev clean...\n"
   exit 0
 }
 
 function web_dev_freeze() {
-  check_docker
   printf "Start SAPPORO-web dev freeze...\n"
   docker run -d --rm \
     --workdir /opt/SAPPORO/SAPPORO-web/etc \
     -v $SCRIPT_DIR/etc/requirements.txt:/opt/SAPPORO/SAPPORO-web/etc/requirements.txt \
-    -u $UID:$GID \
+    -u $(id -u):$(id -g) \
     --name sapporo-web-dev-freeze \
     python:slim \
     tail -f /dev/null
@@ -443,7 +419,7 @@ apt install -y build-essential curl iproute2 jq netcat tree &&
 pip install -U pip wheel setuptools
 pip install $PIP_PACKAGES"
   docker exec \
-    -u $UID:$GID \
+    -u $(id -u):$(id -g) \
     sapporo-web-dev-freeze \
     sh -c "
 pip freeze > requirements.txt"
@@ -462,20 +438,20 @@ function web_dev_test() {
     -v $SCRIPT_DIR/etc:/opt/SAPPORO/SAPPORO-web/etc \
     -v $SCRIPT_DIR/src:/opt/SAPPORO/SAPPORO-web/src \
     -v $SCRIPT_DIR/log/app:/opt/SAPPORO/SAPPORO-web/log/app \
-    -u $UID:$GID \
+    -u $(id -u):$(id -g) \
     --name sapporo-web-dev-test \
     $DOCKER_IMAGE \
     tail -f /dev/null
   docker exec \
-    -u $UID:$GID \
+    -u $(id -u):$(id -g) \
     sapporo-web-dev-test \
     coverage run /opt/SAPPORO/SAPPORO-web/src/manage.py test app
   docker exec \
-    -u $UID:$GID \
+    -u $(id -u):$(id -g) \
     sapporo-web-dev-test \
     coverage report
   docker exec \
-    -u $UID:$GID \
+    -u $(id -u):$(id -g) \
     sapporo-web-dev-test \
     coverage html
   docker kill sapporo-web-dev-test
