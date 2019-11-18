@@ -4,12 +4,12 @@ WORKDIR /opt/SAPPORO/SAPPORO-web
 
 RUN apt update && \
     apt install -y \
-        build-essential \
-        curl \
-        iproute2 \
-        jq \
-        netcat \
-        tree
+    build-essential \
+    curl \
+    iproute2 \
+    jq \
+    netcat \
+    tree
 
 COPY etc/requirements.txt /tmp
 
