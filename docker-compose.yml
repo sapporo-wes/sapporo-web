@@ -1,0 +1,17 @@
+version: "3"
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sapporo-web
+    volumes:
+      - ${PWD}:/app
+      - /app/node_modules
+    environment:
+      - SAPPORO_HOST=0.0.0.0
+      - SAPPORO_PORT=3000
+    ports:
+      - 3000:3000
+    restart: always
+    command: ["tail", "-f", "/dev/null"]
