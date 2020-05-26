@@ -1,0 +1,15 @@
+.background-gradient {
+  background: radial-gradient(
+      rgba(182, 251, 255, 0.6),
+      rgba(131, 164, 212, 0.6)
+    ),
+    url('~assets/bg_pattern.png');
+}
+
+.app-bar-height-margin {
+  margin-top: 52px;
+}
+
+.text-decoration-none {
+  text-decoration: none;
+}
