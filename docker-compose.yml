@@ -11,6 +11,8 @@ services:
     environment:
       - SAPPORO_HOST=0.0.0.0
       - SAPPORO_PORT=3000
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
     ports:
       - 3000:3000
     restart: always
