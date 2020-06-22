@@ -25,9 +25,11 @@
     },
     "types": [
       "@nuxt/types",
+      "@nuxtjs/axios",
+      "@types/crypto-js",
+      "@types/lz-string",
       "@types/node",
-      "@types/nuxtjs__auth",
-      "vuetify",
+      "vuetify"
     ]
   },
   "exclude": [
