@@ -18,29 +18,23 @@ export default {
   },
   loading: { color: '#fff' },
   css: ['~/assets/common.css'],
-  plugins: ['~/plugins/vuetifyColors.ts'],
+  plugins: [
+    '~/plugins/vuetifyColors.ts',
+    { src: '~/plugins/localStorage.ts', ssr: false }
+  ],
   buildModules: ['@nuxt/typescript-build', '@nuxtjs/vuetify'],
-  modules: ['@nuxtjs/axios', '@nuxtjs/auth'],
+  modules: ['@nuxtjs/axios', 'nuxt-webfontloader'],
   axios: {},
-  auth: {
-    redirect: {
-      login: '/',
-      logout: '/',
-      callback: '/callback',
-      home: '/'
-    },
-    strategies: {
-      github: {
-        client_id: process.env.GITHUB_CLIENT_ID,
-        client_secret: process.env.GITHUB_CLIENT_SECRET
-      }
+  webfontloader: {
+    google: {
+      families: ['Quicksand']
     }
   },
   vuetify: {
     theme: {
       themes: {
         light: {
-          primary: colors.indigo,
+          primary: colors.indigo.darken4,
           secondary: colors.teal,
           info: colors.grey.darken4
         }

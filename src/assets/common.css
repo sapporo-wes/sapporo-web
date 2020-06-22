@@ -1,15 +1,14 @@
-.background-gradient {
-  background: radial-gradient(
-      rgba(182, 251, 255, 0.6),
-      rgba(131, 164, 212, 0.6)
-    ),
-    url('~assets/bg_pattern.png');
-}
-
-.app-bar-height-margin {
-  margin-top: 52px;
+.background {
+  background: #e7ebf4;
 }
 
 .text-decoration-none {
   text-decoration: none;
+}
+
+.card-header {
+  color: #424242;
+  font-family: 'Quicksand', sans-serif;
+  font-size: 28px;
+  font-weight: 600;
 }
