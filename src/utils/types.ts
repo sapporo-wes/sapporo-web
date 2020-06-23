@@ -1,0 +1,28 @@
+export enum RunState {
+  'UNKNOWN',
+  'QUEUED',
+  'INITIALIZING',
+  'RUNNING',
+  'PAUSED',
+  'COMPLETE',
+  'EXECUTOR_ERROR',
+  'SYSTEM_ERROR',
+  'CANCELED',
+  'CANCELING'
+}
+
+type WorkflowTypeVersion = {
+  workflowTypeVersion: string[]
+}
+
+export type ServiceInfoResponse = {
+  authInstructionsUrl: string
+  contactInfoUrl: string
+  defaultWorkflowEngineParameters: string[]
+  supportedFilesystemProtocols: string[]
+  supportedWesVersions: string[]
+  systemStateCounts: { RunState: number }
+  tags: { string: string | boolean }
+  workflowEngineVersions: { string: string }
+  workflowTypeVersions: { string: WorkflowTypeVersion }
+}

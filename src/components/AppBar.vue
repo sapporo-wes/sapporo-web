@@ -42,18 +42,18 @@
 <script lang="ts">
 import Vue from 'vue'
 
-type menuItem = {
+type MenuItem = {
   title: string
   icon: string
   action: () => void
 }
 
-type dataObject = {
-  menuItems: menuItem[]
+type DataObj = {
+  menuItems: MenuItem[]
 }
 
 export default Vue.extend({
-  data(): dataObject {
+  data(): DataObj {
     return {
       menuItems: [
         {

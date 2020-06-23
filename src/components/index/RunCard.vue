@@ -40,8 +40,9 @@
 <script lang="ts">
 import Vue from 'vue'
 import { DataTableHeader } from 'vuetify/types'
+import { RunState } from '@/utils/types'
 
-type run = {
+type Run = {
   name: string
   service: string
   namePlusService: string
@@ -49,15 +50,15 @@ type run = {
   state: string
 }
 
-type dataObject = {
+type DataObj = {
   runTableItemPerNum: number
   runHeaders: DataTableHeader[]
-  runs: run[]
-  selectedRuns: run[]
+  runs: Run[]
+  selectedRuns: Run[]
 }
 
 export default Vue.extend({
-  data(): dataObject {
+  data(): DataObj {
     return {
       runTableItemPerNum: 10,
       runHeaders: [

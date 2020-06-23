@@ -29,6 +29,7 @@
       "@types/crypto-js",
       "@types/lz-string",
       "@types/node",
+      "@types/uuid",
       "vuetify"
     ]
   },
