@@ -4,7 +4,7 @@
       WES Services
     </div>
     <div v-if="!this.services.length" class="my-2">
-      <p class="info--text" style="font-size: 16px; padding-left: 60px;">
+      <p class="info--text" :style="{ fontSize: '16px', paddingLeft: '60px' }">
         <span
           :style="{
             color: this.$colors.red.darken4,
@@ -28,6 +28,11 @@
       v-if="this.services.length"
       v-model="selectedServices"
     >
+      <template v-slot:item.name="{ item }">
+        <nuxt-link class="text-decoration-none" :to="`/service/${item.uuid}`">
+          {{ item.name }}
+        </nuxt-link>
+      </template>
       <template v-slot:item.addedDate="{ item }">
         {{ item.addedDate | formatDate }}
       </template>

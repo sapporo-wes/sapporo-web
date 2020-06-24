@@ -83,7 +83,7 @@ export default Vue.extend({
 })
 </script>
 
-<style scoped="">
+<style scoped>
 .v-list-item__icon:first-child {
   margin-right: 16px;
 }

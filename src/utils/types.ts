@@ -11,8 +11,8 @@ export enum RunState {
   'CANCELING'
 }
 
-type WorkflowTypeVersion = {
-  workflowTypeVersion: string[]
+export type WorkflowTypeVersion = {
+  workflow_type_version: string[]
 }
 
 export type ServiceInfoResponse = {
