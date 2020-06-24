@@ -4,7 +4,7 @@
       Runs
     </div>
     <div v-if="!this.runs.length" class="my-2">
-      <p class="info--text" style="font-size: 16px; padding-left: 60px;">
+      <p class="info--text" :style="{ fontSize: '16px', paddingLeft: '60px' }">
         No executed runs exist.
       </p>
     </div>
