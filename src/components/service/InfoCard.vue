@@ -23,10 +23,10 @@
         {{ this.service.state }}
       </v-chip>
       <v-btn
-        outlined
         :color="this.$colors.grey.darken2"
-        small
         @click="reloadServiceState"
+        outlined
+        small
       >
         <v-icon>mdi-reload</v-icon>
       </v-btn>
@@ -34,35 +34,14 @@
     <div
       class="pl-12"
       :style="{
-        fontSize: '14px',
         color: this.$colors.grey.darken4,
+        fontSize: '14px',
         fontWeight: '300'
       }"
     >
       {{ this.service.endpoint }}
     </div>
-    <div class="d-flex px-12 pt-2 justify-space-between pb-6">
-      <div
-        :style="{ width: '47%' }"
-        class="d-flex flex-column"
-        v-if="this.workflowEngines.length"
-      >
-        <div :style="{ fontSize: '20px' }">
-          Workflow Engines
-        </div>
-        <v-data-table
-          :headers="workflowEngineHeaders"
-          :items="this.workflowEngines"
-          class="pl-2"
-          dense
-          disable-filtering
-          disable-pagination
-          disable-sort
-          hide-default-footer
-          item-key="name"
-        >
-        </v-data-table>
-      </div>
+    <div class="d-flex px-10 pt-2 justify-space-between pb-6">
       <div
         :style="{ width: '47%' }"
         class="d-flex flex-column"
@@ -83,6 +62,27 @@
           <template v-slot:item.versions="{ item }">
             {{ item.versions.join(', ') }}
           </template>
+        </v-data-table>
+      </div>
+      <div
+        :style="{ width: '47%' }"
+        class="d-flex flex-column"
+        v-if="this.workflowEngines.length"
+      >
+        <div :style="{ fontSize: '20px' }">
+          Workflow Engines
+        </div>
+        <v-data-table
+          :headers="workflowEngineHeaders"
+          :items="this.workflowEngines"
+          class="pl-2"
+          dense
+          disable-filtering
+          disable-pagination
+          disable-sort
+          hide-default-footer
+          item-key="name"
+        >
         </v-data-table>
       </div>
     </div>
@@ -148,19 +148,21 @@ export default Vue.extend({
     },
     workflowEngines(): WorkflowEngine[] {
       return Object.entries(this.service.workflowEngineVersions).map(
-        ([engineName, engineVersion]: [string, string]): WorkflowEngine => {
-          return { name: engineName, version: engineVersion }
-        }
+        ([engineName, engineVersion]: [string, string]): WorkflowEngine => ({
+          name: engineName,
+          version: engineVersion
+        })
       )
     },
     workflowLanguages(): WorkflowLanguage[] {
       return Object.entries(this.service.workflowTypeVersions).map(
-        ([name, versions]: [string, WorkflowTypeVersion]): WorkflowLanguage => {
-          return {
-            name: name,
-            versions: versions.workflow_type_version
-          }
-        }
+        ([name, versions]: [
+          string,
+          WorkflowTypeVersion
+        ]): WorkflowLanguage => ({
+          name: name,
+          versions: versions.workflow_type_version
+        })
       )
     }
   },

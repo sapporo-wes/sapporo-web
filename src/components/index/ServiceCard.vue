@@ -29,7 +29,7 @@
       v-model="selectedServices"
     >
       <template v-slot:item.name="{ item }">
-        <nuxt-link class="text-decoration-none" :to="`/service/${item.uuid}`">
+        <nuxt-link :to="`/service/${item.uuid}`" class="text-decoration-none">
           {{ item.name }}
         </nuxt-link>
       </template>
@@ -54,18 +54,23 @@
       <v-btn
         :color="this.$colors.red.darken4"
         :disabled="!this.selectedServices.length"
-        @click="deleteService"
+        @click="openDeleteDialog"
         outlined
       >
         <v-icon class="mr-2">mdi-trash-can-outline</v-icon>Delete
       </v-btn>
     </div>
-    <v-dialog overlay-opacity="0.8" v-model="registerShow" width="600">
+    <v-dialog overlay-opacity="0.8" v-model="registerDialogShow" width="600">
       <v-card>
         <div class="card-header pl-6 pt-4">
           Register Service
         </div>
-        <v-form class="px-12 py-2" lazy-validation ref="form" v-model="valid">
+        <v-form
+          class="px-12 py-2"
+          lazy-validation
+          ref="form"
+          v-model="registerValid"
+        >
           <v-text-field
             :rules="nameRules"
             label="Name"
@@ -81,7 +86,7 @@
           <div class="d-flex justify-end pb-2">
             <v-btn
               :color="this.$colors.indigo.darken4"
-              :disabled="!valid"
+              :disabled="!registerValid"
               @click="submitService"
               outlined
             >
@@ -89,6 +94,48 @@
             </v-btn>
           </div>
         </v-form>
+      </v-card>
+    </v-dialog>
+    <v-dialog overlay-opacity="0.8" v-model="deleteDialogShow" width="600">
+      <v-card>
+        <div class="card-header pl-6 pt-4">
+          Delete Service
+        </div>
+        <div class="px-12 py-2">
+          These services will be deleted.
+        </div>
+        <ul :style="{ paddingLeft: '96px', paddingRight: '96px' }">
+          <li v-for="(service, i) in this.selectedServices" :key="i">
+            {{ service.name }}
+          </li>
+        </ul>
+        <div class="px-12 py-2">
+          Workflows and runs associated with these services will also be
+          deleted.
+        </div>
+        <div
+          class="text-center"
+          :style="{ fontSize: '20px', color: this.$colors.red.darken4 }"
+        >
+          Are you sure to delete it?
+        </div>
+        <div class="d-flex justify-end px-12 py-4">
+          <v-btn
+            :color="this.$colors.red.darken4"
+            @click="deleteServices"
+            outlined
+          >
+            <v-icon class="mr-2">mdi-trash-can-outline</v-icon>Delete
+          </v-btn>
+          <v-btn
+            :color="this.$colors.grey.darken4"
+            @click="closeDeleteDialog"
+            outlined
+            class="ml-4"
+          >
+            Cancel
+          </v-btn>
+        </div>
       </v-card>
     </v-dialog>
     <v-snackbar
@@ -115,12 +162,13 @@ type DataObj = {
   serviceTableItemPerNum: number
   serviceHeaders: DataTableHeader[]
   selectedServices: Service[]
-  registerShow: boolean
-  valid: boolean
+  registerDialogShow: boolean
+  registerValid: boolean
   inputtedName: string
   nameRules: Rule[]
   inputtedEndpoint: string
   endpointRules: Rule[]
+  deleteDialogShow: boolean
   errorSnackbar: boolean
 }
 
@@ -153,12 +201,13 @@ export default Vue.extend({
         }
       ],
       selectedServices: [],
-      registerShow: false,
-      valid: false,
+      registerDialogShow: false,
+      registerValid: false,
       inputtedName: '',
       nameRules: [(v) => !!v || 'Name is required.'],
       inputtedEndpoint: '',
       endpointRules: [(v) => !!v || 'Endpoint is required.'],
+      deleteDialogShow: false,
       errorSnackbar: false
     }
   },
@@ -178,7 +227,7 @@ export default Vue.extend({
       else return this.$colors.grey.darken1
     },
     openRegisterDialog(): void {
-      this.registerShow = true
+      this.registerDialogShow = true
     },
     async submitService(): Promise<void> {
       const validationResult = (this.$refs.form as FormComponent).validate()
@@ -188,18 +237,28 @@ export default Vue.extend({
             name: this.inputtedName,
             endpoint: this.inputtedEndpoint
           })
+          .then((serviceId) => {
+            ;(this.$refs.form as FormComponent).reset()
+            this.$router.push(`/service/${serviceId}`)
+          })
           .catch((err) => {
             this.errorSnackbar = true
             console.error(err)
           })
-        ;(this.$refs.form as FormComponent).reset()
       }
     },
-    async deleteService(): Promise<void> {
+    openDeleteDialog(): void {
+      this.deleteDialogShow = true
+    },
+    closeDeleteDialog(): void {
+      this.deleteDialogShow = false
+    },
+    async deleteServices(): Promise<void> {
       await this.$store.dispatch(
-        'service/deleteService',
+        'service/deleteServices',
         this.selectedServices.map((service) => service.uuid)
       )
+      this.deleteDialogShow = false
       this.selectedServices = []
     },
     existName(name: string): boolean {
