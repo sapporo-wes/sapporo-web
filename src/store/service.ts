@@ -9,8 +9,7 @@ export type Service = ServiceInfoResponse & {
   state: string
   addedDate: Date
   uuid: string
-  workflows: string[]
-  runs: string[]
+  workflowIds: string[]
 }
 
 type SubmittedService = {
@@ -18,46 +17,44 @@ type SubmittedService = {
   endpoint: string
 }
 
-type StateObj = {
+type State = {
   services: Service[]
 }
 
-export const state = (): StateObj => ({
+export const state = (): State => ({
   services: []
 })
 
-export type State = ReturnType<typeof state>
-
 export const getters: GetterTree<State, RootState> = {
-  getServiceNames(state: StateObj): string[] {
+  getServiceNames(state: State): string[] {
     return state.services.map((service) => service.name)
   }
 }
 
 export const mutations: MutationTree<State> = {
-  setServices(state: StateObj, services: Service[]): void {
+  setServices(state: State, services: Service[]): void {
     state.services = services
   },
-  addService(state: StateObj, service: Service): void {
+  addService(state: State, service: Service): void {
     state.services.push(service)
   }
 }
 
-export const actions: ActionTree<StateObj, RootState> = {
+export const actions: ActionTree<State, RootState> = {
   async submitService(
-    { commit }: ActionContext<StateObj, any>,
+    { commit }: ActionContext<State, any>,
     service: SubmittedService
-  ): Promise<void> {
+  ): Promise<string> {
     this.$axios.setBaseURL(service.endpoint)
     const response = await this.$axios.$get('/service-info')
+    const serviceId: string = uuidv4()
     commit('addService', {
       name: service.name,
       endpoint: service.endpoint,
       state: 'Available',
       addedDate: new Date(),
-      uuid: uuidv4(),
-      workflows: [],
-      runs: [],
+      uuid: serviceId,
+      workflowIds: [],
       authInstructionsUrl: response.auth_instructions_url || '',
       contactInfoUrl: response.contact_info_url || '',
       defaultWorkflowEngineParameters:
@@ -70,9 +67,10 @@ export const actions: ActionTree<StateObj, RootState> = {
       workflowEngineVersions: response.workflow_engine_versions || [],
       workflowTypeVersions: response.workflow_type_versions || {}
     })
+    return serviceId
   },
-  async deleteService(
-    { commit, state }: ActionContext<StateObj, any>,
+  async deleteServices(
+    { commit, state }: ActionContext<State, any>,
     serviceIds: string[]
   ): Promise<void> {
     // TODO delete workflows and runs
