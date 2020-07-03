@@ -8,7 +8,10 @@
             :service-id="this.serviceId"
             class="mt-4 mx-auto"
           ></info-card>
-          <workflow-card class="mt-8 mx-auto"></workflow-card>
+          <workflow-card
+            :service-id="this.serviceId"
+            class="mt-8 mx-auto"
+          ></workflow-card>
           <run-card class="mt-8 mx-auto mb-4"></run-card>
         </template>
         <template v-else>Does not exist.</template>
