@@ -59,22 +59,25 @@ export default Vue.extend({
         {
           title: 'Import Data',
           icon: 'mdi-application-import',
-          action: () => {
-            alert('Import Data') // TODO
+          action: async () => {
+            alert('Import Date') // TODO
           }
         },
         {
           title: 'Export Data',
           icon: 'mdi-application-export',
-          action: () => {
+          action: async () => {
             alert('Export Data') // TODO
           }
         },
         {
           title: 'Delete Data',
           icon: 'mdi-trash-can',
-          action: () => {
-            alert('Delete Data') // TODO
+          action: async () => {
+            // TODO Dialog
+            await this.$store.dispatch('service/clearServices')
+            await this.$store.dispatch('workflow/clearWorkflows')
+            await this.$store.dispatch('run/clearRuns')
           }
         }
       ]

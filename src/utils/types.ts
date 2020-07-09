@@ -26,3 +26,9 @@ export type ServiceInfoResponse = {
   workflowEngineVersions: { string: string }
   workflowTypeVersions: { string: WorkflowTypeVersion }
 }
+
+export type AgodashiResponse = {
+  wf_params: string
+  wf_version: string
+  wf_type: string
+}

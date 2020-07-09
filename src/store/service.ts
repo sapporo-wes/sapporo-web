@@ -32,6 +32,9 @@ export const getters: GetterTree<State, RootState> = {
 }
 
 export const mutations: MutationTree<State> = {
+  clearServices(state: State): void {
+    state.services = []
+  },
   setServices(state: State, services: Service[]): void {
     state.services = services
   },
@@ -41,12 +44,18 @@ export const mutations: MutationTree<State> = {
 }
 
 export const actions: ActionTree<State, RootState> = {
+  async clearServices({ commit }: ActionContext<State, any>) {
+    commit('clearServices')
+  },
   async submitService(
     { commit }: ActionContext<State, any>,
     service: SubmittedService
   ): Promise<string> {
-    this.$axios.setBaseURL(service.endpoint)
-    const response = await this.$axios.$get('/service-info')
+    const res = await this.$axios
+      .$get(`${service.endpoint}/service-info`)
+      .catch(() => {
+        throw new Error('An error occurred on the entered service endpoint.')
+      })
     const serviceId: string = uuidv4()
     commit('addService', {
       name: service.name,
@@ -55,17 +64,16 @@ export const actions: ActionTree<State, RootState> = {
       addedDate: new Date(),
       uuid: serviceId,
       workflowIds: [],
-      authInstructionsUrl: response.auth_instructions_url || '',
-      contactInfoUrl: response.contact_info_url || '',
+      authInstructionsUrl: res.auth_instructions_url || '',
+      contactInfoUrl: res.contact_info_url || '',
       defaultWorkflowEngineParameters:
-        response.default_workflow_engine_parameters || [],
-      supportedFilesystemProtocols:
-        response.supported_filesystem_protocols || [],
-      supportedWesVersions: response.supported_wes_versions || [],
-      systemStateCounts: response.system_state_counts || {},
-      tags: response.tags || {},
-      workflowEngineVersions: response.workflow_engine_versions || [],
-      workflowTypeVersions: response.workflow_type_versions || {}
+        res.default_workflow_engine_parameters || [],
+      supportedFilesystemProtocols: res.supported_filesystem_protocols || [],
+      supportedWesVersions: res.supported_wes_versions || [],
+      systemStateCounts: res.system_state_counts || {},
+      tags: res.tags || {},
+      workflowEngineVersions: res.workflow_engine_versions || [],
+      workflowTypeVersions: res.workflow_type_versions || {}
     })
     return serviceId
   },
