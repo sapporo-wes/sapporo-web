@@ -19,6 +19,14 @@ export const state = (): State => ({
 
 export const getters: GetterTree<State, RootState> = {}
 
-export const mutations: MutationTree<State> = {}
+export const mutations: MutationTree<State> = {
+  clearRuns(state: State): void {
+    state.runs = []
+  }
+}
 
-export const actions: ActionTree<State, RootState> = {}
+export const actions: ActionTree<State, RootState> = {
+  async clearRuns({ commit }: ActionContext<State, any>) {
+    commit('clearRuns')
+  }
+}
