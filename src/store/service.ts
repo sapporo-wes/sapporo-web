@@ -1,21 +1,7 @@
 import { ActionContext, ActionTree, GetterTree, MutationTree } from 'vuex'
 import { RootState } from '@/store'
-import { ServiceInfoResponse } from '@/utils/types'
+import { Service } from '@/types'
 import { v4 as uuidv4 } from 'uuid'
-
-export type Service = ServiceInfoResponse & {
-  name: string
-  endpoint: string
-  state: string
-  addedDate: Date
-  uuid: string
-  workflowIds: string[]
-}
-
-type SubmittedService = {
-  name: string
-  endpoint: string
-}
 
 type State = {
   services: Service[]
@@ -26,8 +12,21 @@ export const state = (): State => ({
 })
 
 export const getters: GetterTree<State, RootState> = {
-  getServiceNames(state: State): string[] {
-    return state.services.map((service) => service.name)
+  serviceNames(state: State): string[] {
+    return state.services.map((service: Service) => service.name)
+  },
+  existName: (state: State) => (serviceName: string): boolean => {
+    return state.services
+      .map((service: Service) => service.name)
+      .includes(serviceName)
+  },
+  serviceIds(state: State): string[] {
+    return state.services.map((service: Service) => service.uuid)
+  },
+  serviceFilterId: (state: State) => (serviceId: string): Service => {
+    return state.services.filter(
+      (service: Service) => service.uuid === serviceId
+    )[0]
   }
 }
 
@@ -41,6 +40,11 @@ export const mutations: MutationTree<State> = {
   addService(state: State, service: Service): void {
     state.services.push(service)
   }
+}
+
+type SubmittedService = {
+  name: string
+  endpoint: string
 }
 
 export const actions: ActionTree<State, RootState> = {
@@ -73,18 +77,30 @@ export const actions: ActionTree<State, RootState> = {
       systemStateCounts: res.system_state_counts || {},
       tags: res.tags || {},
       workflowEngineVersions: res.workflow_engine_versions || [],
-      workflowTypeVersions: res.workflow_type_versions || {}
+      workflowTypeVersions: Object.entries(res.workflow_type_versions).reduce(
+        (acc, [key, item]: [string, any]) => ({
+          ...acc,
+          [key]: { workflowTypeVersion: item.workflow_type_version }
+        }),
+        {}
+      )
     })
     return serviceId
   },
   async deleteServices(
-    { commit, state }: ActionContext<State, any>,
+    { commit, state, dispatch }: ActionContext<State, any>,
     serviceIds: string[]
   ): Promise<void> {
-    // TODO delete workflows and runs
     commit(
       'setServices',
       state.services.filter((service) => !serviceIds.includes(service.uuid))
+    )
+    await dispatch(
+      'workflow/deleteWorkflows',
+      state.services
+        .filter((service) => serviceIds.includes(service.uuid))
+        .map((service) => service.workflowIds)
+        .flat()
     )
   }
 }

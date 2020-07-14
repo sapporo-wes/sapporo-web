@@ -1,29 +1,26 @@
 <template>
-  <v-card elevation="8" max-width="960" v-if="this.service">
+  <v-card elevation="8" max-width="960" v-if="service">
     <div class="d-flex align-center px-6 pt-4">
-      <div class="card-header">
-        {{ this.service.name }}
-      </div>
+      <div class="card-header" v-text="this.service.name" />
       <v-chip
         :class="[i === 0 ? 'ml-4' : 'ml-2']"
-        :color="wesVersionChipColor"
+        :color="$colors.indigo.lighten2"
         :key="i"
         label
         small
         text-color="white"
-        v-for="(wesVersion, i) in this.service.supportedWesVersions"
-        >WES {{ wesVersion }}</v-chip
-      >
+        v-for="(wesVersion, i) in service.supportedWesVersions"
+        v-text="`WES ${wesVersion}`"
+      />
       <v-spacer></v-spacer>
       <v-chip
-        :color="getServiceStateColor(this.service.state)"
+        :color="getServiceStateColor(service.state)"
         class="mr-4"
         text-color="white"
-      >
-        {{ this.service.state }}
-      </v-chip>
+        v-text="service.state"
+      />
       <v-btn
-        :color="this.$colors.grey.darken2"
+        :color="$colors.grey.darken2"
         @click="reloadServiceState"
         outlined
         small
@@ -34,23 +31,22 @@
     <div
       class="pl-12"
       :style="{
-        color: this.$colors.grey.darken4,
+        color: $colors.grey.darken4,
         fontSize: '14px',
         fontWeight: '300'
       }"
-    >
-      {{ this.service.endpoint }}
-    </div>
+      v-text="service.endpoint"
+    />
     <div class="d-flex px-10 pt-2 justify-space-between pb-6">
       <div
         :style="{ width: '47%' }"
         class="d-flex flex-column"
-        v-if="this.workflowLanguages.length"
+        v-if="workflowLanguages.length"
       >
-        <div :style="{ fontSize: '20px' }">Workflow Languages</div>
+        <div :style="{ fontSize: '20px' }" v-text="'Workflow Languages'" />
         <v-data-table
           :headers="workflowLanguageHeaders"
-          :items="this.workflowLanguages"
+          :items="workflowLanguages"
           class="pl-2"
           dense
           disable-filtering
@@ -67,14 +63,12 @@
       <div
         :style="{ width: '47%' }"
         class="d-flex flex-column"
-        v-if="this.workflowEngines.length"
+        v-if="workflowEngines.length"
       >
-        <div :style="{ fontSize: '20px' }">
-          Workflow Engines
-        </div>
+        <div :style="{ fontSize: '20px' }" v-text="'Workflow Engines'" />
         <v-data-table
           :headers="workflowEngineHeaders"
-          :items="this.workflowEngines"
+          :items="workflowEngines"
           class="pl-2"
           dense
           disable-filtering
@@ -90,13 +84,11 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
 import { DataTableHeader } from 'vuetify/types'
-import { Service } from '@/store/service'
-import { WorkflowTypeVersion } from '@/utils/types'
+import { WorkflowTypeVersion, Service } from '@/types'
+import Vue from 'vue'
 
 type DataObj = {
-  wesVersionChipColor: string
   workflowEngineHeaders: DataTableHeader[]
   workflowLanguageHeaders: DataTableHeader[]
 }
@@ -117,7 +109,6 @@ export default Vue.extend({
   },
   data(): DataObj {
     return {
-      wesVersionChipColor: this.$colors.indigo.lighten2,
       workflowEngineHeaders: [
         {
           text: 'Name',
@@ -142,9 +133,7 @@ export default Vue.extend({
   },
   computed: {
     service(): Service {
-      return this.$store.state.service.services.filter(
-        (service: Service) => service.uuid === this.serviceId
-      )[0]
+      return this.$store.getters['service/serviceFilterId'](this.serviceId)
     },
     workflowEngines(): WorkflowEngine[] {
       return Object.entries(this.service.workflowEngineVersions).map(
@@ -161,7 +150,7 @@ export default Vue.extend({
           WorkflowTypeVersion
         ]): WorkflowLanguage => ({
           name: name,
-          versions: versions.workflow_type_version
+          versions: versions.workflowTypeVersion
         })
       )
     }
@@ -171,7 +160,7 @@ export default Vue.extend({
       if (serviceState === 'Available') return this.$colors.green.darken1
       else if (serviceState === 'Disconnect') return this.$colors.red.darken1
       else if (serviceState === 'Unknown') return this.$colors.grey.darken1
-      else return this.$colors.grey.darken1
+      return this.$colors.grey.darken1
     },
     reloadServiceState(): void {
       alert('Reload state') // TODO

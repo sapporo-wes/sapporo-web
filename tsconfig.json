@@ -24,9 +24,11 @@
       ]
     },
     "types": [
+      "./src/types/codemirror",
       "@nuxt/types",
       "@nuxtjs/axios",
       "@types/crypto-js",
+      "@types/js-yaml",
       "@types/lz-string",
       "@types/node",
       "@types/uuid",
