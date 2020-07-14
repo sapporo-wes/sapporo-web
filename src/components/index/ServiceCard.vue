@@ -1,145 +1,70 @@
 <template>
   <v-card elevation="8" max-width="960">
-    <div class="card-header pl-6 pt-4">
-      WES Services
-    </div>
-    <div v-if="!this.services.length" class="my-2">
-      <p class="info--text" :style="{ fontSize: '16px', paddingLeft: '60px' }">
-        <span
-          :style="{
-            color: this.$colors.red.darken4,
-            textDecorationLine: 'underline'
-          }"
-          >NO WES services are registered.</span
-        >
-        Click
-        <span :style="{ color: this.$colors.indigo.darken4 }">RESISTER</span>
-        button.
-      </p>
+    <div class="card-header pl-6 pt-4" v-text="'WES Services'" />
+    <div v-if="!services.length" class="my-2">
+      <not-exist-message :content="`WES services`" />
     </div>
     <v-data-table
       :headers="serviceHeaders"
-      :items-per-page="serviceTableItemPerNum"
+      :items-per-page="Number(5)"
       :items="services"
       calculate-widths
       class="info--text mx-6 my-2"
       item-key="uuid"
       show-select
-      v-if="this.services.length"
+      v-else
       v-model="selectedServices"
     >
       <template v-slot:item.name="{ item }">
-        <nuxt-link :to="`/service/${item.uuid}`" class="text-decoration-none">
-          {{ item.name }}
-        </nuxt-link>
+        <nuxt-link
+          :to="`/service/${item.uuid}`"
+          class="text-decoration-none"
+          v-text="item.name"
+        />
       </template>
       <template v-slot:item.addedDate="{ item }">
         {{ item.addedDate | formatDate }}
       </template>
       <template v-slot:item.state="{ item }">
-        <v-chip :color="getServiceStateColor(item.state)" text-color="white">
-          {{ item.state }}
-        </v-chip>
+        <v-chip
+          :color="getServiceStateColor(item.state)"
+          text-color="white"
+          v-text="item.state"
+        />
       </template>
     </v-data-table>
     <div class="d-flex justify-end pb-6 pr-6">
       <v-btn
-        :color="this.$colors.indigo.darken4"
-        @click.stop="openRegisterDialog"
+        :color="$colors.indigo.darken4"
+        @click.stop="registerDialogShow = true"
         class="mr-4"
         outlined
       >
         <v-icon class="mr-2">mdi-sticker-plus-outline</v-icon>Register
       </v-btn>
       <v-btn
-        :color="this.$colors.red.darken4"
-        :disabled="!this.selectedServices.length"
-        @click="openDeleteDialog"
+        :color="$colors.red.darken4"
+        :disabled="!selectedServices.length"
+        @click.stop="deleteDialogShow = true"
         outlined
       >
         <v-icon class="mr-2">mdi-trash-can-outline</v-icon>Delete
       </v-btn>
     </div>
-    <v-dialog overlay-opacity="0.8" v-model="registerDialogShow" width="600">
-      <v-card>
-        <div class="card-header pl-6 pt-4">
-          Register Service
-        </div>
-        <v-form
-          class="px-12 py-2"
-          lazy-validation
-          ref="form"
-          v-model="registerValid"
-        >
-          <v-text-field
-            :rules="nameRules"
-            label="Name"
-            required
-            v-model="inputtedName"
-          ></v-text-field>
-          <v-text-field
-            :rules="endpointRules"
-            label="Endpoint"
-            required
-            v-model="inputtedEndpoint"
-          ></v-text-field>
-          <div class="d-flex justify-end pb-2">
-            <v-btn
-              :color="this.$colors.indigo.darken4"
-              :disabled="!registerValid"
-              @click="submitService"
-              outlined
-            >
-              <v-icon class="mr-1">mdi-arrow-up</v-icon>Submit
-            </v-btn>
-          </div>
-        </v-form>
-      </v-card>
-    </v-dialog>
-    <v-dialog overlay-opacity="0.8" v-model="deleteDialogShow" width="600">
-      <v-card>
-        <div class="card-header pl-6 pt-4">
-          Delete Service
-        </div>
-        <div class="px-12 py-2">
-          These services will be deleted.
-        </div>
-        <ul :style="{ paddingLeft: '96px', paddingRight: '96px' }">
-          <li v-for="(service, i) in this.selectedServices" :key="i">
-            {{ service.name }}
-          </li>
-        </ul>
-        <div class="px-12 py-2">
-          Workflows and runs associated with these services will also be
-          deleted.
-        </div>
-        <div
-          class="text-center"
-          :style="{ fontSize: '20px', color: this.$colors.red.darken4 }"
-        >
-          Are you sure to delete it?
-        </div>
-        <div class="d-flex justify-end px-12 py-4">
-          <v-btn
-            :color="this.$colors.red.darken4"
-            @click="deleteServices"
-            outlined
-          >
-            <v-icon class="mr-2">mdi-trash-can-outline</v-icon>Delete
-          </v-btn>
-          <v-btn
-            :color="this.$colors.grey.darken4"
-            @click="closeDeleteDialog"
-            outlined
-            class="ml-4"
-          >
-            Cancel
-          </v-btn>
-        </div>
-      </v-card>
-    </v-dialog>
+    <register-dialog
+      :dialogShow="registerDialogShow"
+      @close="registerDialogShow = false"
+      @clearSelected="selectedServices = []"
+      @error="errorSnackbar = true"
+    />
+    <delete-dialog
+      :dialogShow="deleteDialogShow"
+      :modelType="'service'"
+      :selectedItems="selectedServices"
+      @close="deleteDialogShow = false"
+    />
     <v-snackbar
-      :color="this.$colors.red.lighten1"
+      :color="$colors.red.lighten1"
       elevation="8"
       top
       v-model="errorSnackbar"
@@ -150,38 +75,30 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
 import { DataTableHeader } from 'vuetify/types'
-import { Service } from '@/store/service'
+import { Service } from '@/types'
+import DeleteDialog from '@/components/DeleteDialog.vue'
 import moment from 'moment'
-
-type ValidResult = boolean | string
-type Rule = (value: string) => ValidResult
+import NotExistMessage from '@/components/NotExistMessage.vue'
+import RegisterDialog from '@/components/index/RegisterDialog.vue'
+import Vue from 'vue'
 
 type DataObj = {
-  serviceTableItemPerNum: number
   serviceHeaders: DataTableHeader[]
   selectedServices: Service[]
   registerDialogShow: boolean
-  registerValid: boolean
-  inputtedName: string
-  nameRules: Rule[]
-  inputtedEndpoint: string
-  endpointRules: Rule[]
   deleteDialogShow: boolean
   errorSnackbar: boolean
 }
 
-type FormComponent = Vue & {
-  validate: () => boolean
-  reset: () => boolean
-  resetValidation: () => boolean
-}
-
 export default Vue.extend({
+  components: {
+    DeleteDialog,
+    NotExistMessage,
+    RegisterDialog
+  },
   data(): DataObj {
     return {
-      serviceTableItemPerNum: 5,
       serviceHeaders: [
         {
           text: 'Name',
@@ -202,21 +119,13 @@ export default Vue.extend({
       ],
       selectedServices: [],
       registerDialogShow: false,
-      registerValid: false,
-      inputtedName: '',
-      nameRules: [(v) => !!v || 'Name is required.'],
-      inputtedEndpoint: '',
-      endpointRules: [(v) => !!v || 'Endpoint is required.'],
       deleteDialogShow: false,
       errorSnackbar: false
     }
   },
   computed: {
-    services(): Service[] {
+    services() {
       return this.$store.state.service.services
-    },
-    serviceNames(): string[] {
-      return this.$store.getters['service/getServiceNames']
     }
   },
   methods: {
@@ -224,63 +133,8 @@ export default Vue.extend({
       if (serviceState === 'Available') return this.$colors.green.darken1
       else if (serviceState === 'Disconnect') return this.$colors.red.darken1
       else if (serviceState === 'Unknown') return this.$colors.grey.darken1
-      else return this.$colors.grey.darken1
-    },
-    openRegisterDialog(): void {
-      this.registerDialogShow = true
-    },
-    async submitService(): Promise<void> {
-      const validationResult = (this.$refs.form as FormComponent).validate()
-      if (validationResult) {
-        await this.$store
-          .dispatch('service/submitService', {
-            name: this.inputtedName,
-            endpoint: this.inputtedEndpoint
-          })
-          .then((serviceId) => {
-            ;(this.$refs.form as FormComponent).reset()
-            this.$router.push(`/service/${serviceId}`)
-          })
-          .catch((err) => {
-            this.errorSnackbar = true
-            console.error(err)
-          })
-      }
-    },
-    openDeleteDialog(): void {
-      this.deleteDialogShow = true
-    },
-    closeDeleteDialog(): void {
-      this.deleteDialogShow = false
-    },
-    async deleteServices(): Promise<void> {
-      await this.$store.dispatch(
-        'service/deleteServices',
-        this.selectedServices.map((service) => service.uuid)
-      )
-      this.deleteDialogShow = false
-      this.selectedServices = []
-    },
-    existName(name: string): boolean {
-      return this.serviceNames.includes(name)
-    },
-    validEndpoint(endpoint: string): boolean {
-      let url
-      try {
-        url = new URL(endpoint)
-      } catch (_) {
-        return false
-      }
-      return url.protocol === 'http:' || url.protocol === 'https:'
+      return this.$colors.grey.darken1
     }
-  },
-  created() {
-    this.nameRules.push(
-      (v) => !this.existName(v) || `Name ${v} already exists.`
-    )
-    this.endpointRules.push(
-      (v) => this.validEndpoint(v) || `Endpoint ${v} does not valid.`
-    )
   },
   filters: {
     formatDate(date: Date): string {

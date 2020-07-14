@@ -1,26 +1,7 @@
 import { ActionContext, ActionTree, GetterTree, MutationTree } from 'vuex'
+import { AgodashiResponse, Workflow } from '@/types'
 import { RootState } from '@/store'
-import { AgodashiResponse } from '@/utils/types'
 import { v4 as uuidv4 } from 'uuid'
-
-export type Workflow = {
-  name: string
-  type: string
-  version: string
-  url?: string
-  fileName?: string
-  content: string | object
-  addedDate: Date
-  serviceId: string
-  uuid: string
-  runIds: string[]
-}
-
-type SubmittedWorkflow = {
-  serviceId: string
-  name: string
-  url: string
-}
 
 type State = {
   workflows: Workflow[]
@@ -31,8 +12,23 @@ export const state = (): State => ({
 })
 
 export const getters: GetterTree<State, RootState> = {
-  getWorkflowNames(state: State): string[] {
+  workflowNames(state: State): string[] {
     return state.workflows.map((workflow) => workflow.name)
+  },
+  existName: (state: State) => (workflowName: string): boolean => {
+    return state.workflows
+      .map((workflow: Workflow) => workflow.name)
+      .includes(workflowName)
+  },
+  existWorkflowId: (state: State) => (workflowId: string) => {
+    return state.workflows
+      .map((workflow: Workflow) => workflow.uuid)
+      .includes(workflowId)
+  },
+  workflowFilterId: (state: State) => (workflowId: string): Workflow => {
+    return state.workflows.filter(
+      (workflow: Workflow) => workflow.uuid === workflowId
+    )[0]
   }
 }
 
@@ -40,9 +36,18 @@ export const mutations: MutationTree<State> = {
   clearWorkflows(state: State): void {
     state.workflows = []
   },
+  setWorkflows(state: State, workflows: Workflow[]): void {
+    state.workflows = workflows
+  },
   addWorkflow(state: State, workflow: Workflow): void {
     state.workflows.push(workflow)
   }
+}
+
+type SubmittedWorkflow = {
+  serviceId: string
+  name: string
+  url: string
 }
 
 export const actions: ActionTree<State, RootState> = {
@@ -75,11 +80,28 @@ export const actions: ActionTree<State, RootState> = {
       url: workflow.url,
       fileName: '',
       content: urlRes,
+      params: agodashiRes.wf_params || '',
       addedDate: new Date(),
       serviceId: workflow.serviceId,
       uuid: workflowId,
       runIds: []
     })
     return workflowId
+  },
+  async deleteWorkflows(
+    { commit, state, dispatch }: ActionContext<State, any>,
+    workflowIds: string[]
+  ): Promise<void> {
+    commit(
+      'setWorkflows',
+      state.workflows.filter((workflow) => !workflowIds.includes(workflow.uuid))
+    )
+    await dispatch(
+      'run/deleteRuns',
+      state.workflows
+        .filter((workflow) => workflowIds.includes(workflow.uuid))
+        .map((workflow) => workflow.runIds)
+        .flat()
+    )
   }
 }

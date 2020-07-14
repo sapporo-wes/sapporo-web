@@ -1,6 +1,4 @@
-import { Service } from '@/store/service'
-import { Workflow } from '@/store/workflow'
-import { Run } from '@/store/run'
+import { Service, Workflow, Run } from '@/types'
 
 export type RootState = {
   service: {

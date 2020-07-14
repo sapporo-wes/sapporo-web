@@ -10,7 +10,7 @@
     </div>
     <v-data-table
       :headers="runHeaders"
-      :items-per-page="runTableItemPerNum"
+      :items-per-page="Number(5)"
       :items="runs"
       calculate-widths
       class="info--text mx-6 my-2"
@@ -40,7 +40,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import { DataTableHeader } from 'vuetify/types'
-import { RunState } from '@/utils/types'
+import { RunState } from '@/types'
 
 type Run = {
   name: string

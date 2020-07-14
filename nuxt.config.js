@@ -27,7 +27,7 @@ export default {
   axios: {},
   webfontloader: {
     google: {
-      families: ['Quicksand']
+      families: ['Quicksand', 'Fira Code']
     }
   },
   vuetify: {
