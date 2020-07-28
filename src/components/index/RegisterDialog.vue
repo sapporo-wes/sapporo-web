@@ -15,14 +15,14 @@
       >
         <v-text-field
           :rules="nameRules"
+          clearable
           label="Name"
-          required
           v-model="inputtedName"
         />
         <v-text-field
           :rules="endpointRules"
+          clearable
           label="Endpoint"
-          required
           v-model="inputtedEndpoint"
         />
       </v-form>

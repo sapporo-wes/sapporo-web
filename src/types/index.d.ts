@@ -27,12 +27,6 @@ export type ServiceInfoResponse = {
   workflowTypeVersions: { string: WorkflowTypeVersion }
 }
 
-export type AgodashiResponse = {
-  wf_params: string
-  wf_version: string
-  wf_type: string
-}
-
 export type Service = ServiceInfoResponse & {
   name: string
   endpoint: string
@@ -42,6 +36,15 @@ export type Service = ServiceInfoResponse & {
   workflowIds: string[]
 }
 
+export type WorkflowParameter = {
+  name: string
+  type: string
+  default: string | null
+  optional: boolean
+  array: boolean
+  other: any
+}
+
 export type Workflow = {
   name: string
   type: string
@@ -49,7 +52,7 @@ export type Workflow = {
   url?: string
   fileName?: string
   content: string | object
-  params: string | object
+  params: WorkflowParameter[]
   addedDate: Date
   serviceId: string
   uuid: string
@@ -71,4 +74,9 @@ export type FormComponent = Vue & {
   validate: () => boolean
   reset: () => boolean
   resetValidation: () => boolean
+}
+
+export type WorkflowEngine = {
+  name: string
+  version: string
 }

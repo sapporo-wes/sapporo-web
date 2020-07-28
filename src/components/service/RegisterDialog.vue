@@ -15,12 +15,13 @@
       >
         <v-text-field
           :rules="nameRules"
+          clearable
           label="Name"
-          required
           v-model="inputtedName"
         />
         <v-text-field
           :rules="urlRules"
+          clearable
           label="URL"
           v-model="inputtedWorkflowUrl"
         />
@@ -29,6 +30,7 @@
           :rules="fileRules"
           clearable
           label="File"
+          show-size
           v-model="inputtedWorkflowFile"
         />
       </v-form>
@@ -54,7 +56,7 @@ type dataObj = {
   registerValid: boolean
   inputtedName: string
   nameRules: Rule[]
-  inputtedWorkflowUrl: string | undefined
+  inputtedWorkflowUrl: string
   urlRules: Rule[]
   inputtedWorkflowFile: File | undefined
   fileRules: Rule[]
@@ -129,11 +131,12 @@ export default Vue.extend({
           .dispatch('workflow/submitWorkflow', {
             serviceId: this.serviceId,
             name: this.inputtedName,
-            url: this.inputtedWorkflowUrl
+            url: this.inputtedWorkflowUrl,
+            file: this.inputtedWorkflowFile
           })
           .then((workflowId) => {
             ;(this.$refs.form as FormComponent).reset()
-            // this.$router.push(`/workflow/${workflowId}`)
+            this.$router.push(`/workflow/${workflowId}`)
           })
           .catch((err) => {
             ;(this.$refs.form as FormComponent).reset()

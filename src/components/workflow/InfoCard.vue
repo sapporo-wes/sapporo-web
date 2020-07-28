@@ -43,7 +43,6 @@
         <v-icon class="mr-2">mdi-card-bulleted-outline</v-icon>Prepare
       </v-btn>
     </div>
-    {{ workflow.params }}
     <prepare-dialog
       :dialogShow="prepareDialogShow"
       :service-id="service.uuid"

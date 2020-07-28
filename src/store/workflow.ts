@@ -1,7 +1,9 @@
 import { ActionContext, ActionTree, GetterTree, MutationTree } from 'vuex'
-import { AgodashiResponse, Workflow } from '@/types'
+import { extractWorkflowParameters } from '@/util/extractWorkflowParameters'
+import { inspectWorkflow } from '@/util/inspectWorkflow'
 import { RootState } from '@/store'
 import { v4 as uuidv4 } from 'uuid'
+import { Workflow } from '@/types'
 
 type State = {
   workflows: Workflow[]
@@ -48,6 +50,7 @@ type SubmittedWorkflow = {
   serviceId: string
   name: string
   url: string
+  file: File | undefined
 }
 
 export const actions: ActionTree<State, RootState> = {
@@ -58,29 +61,30 @@ export const actions: ActionTree<State, RootState> = {
     { commit }: ActionContext<State, any>,
     workflow: SubmittedWorkflow
   ) {
-    const urlRes = await this.$axios.$get(workflow.url).catch(() => {
-      throw new Error('An error has occurred on the entered workflow url.')
-    })
-    const formData = new FormData()
-    formData.append('wf_url', workflow.url)
-    const agodashiRes: AgodashiResponse = await this.$axios
-      .$post(`${process.env.agodashiUrl}/inspect-workflow`, formData, {
-        headers: {
-          'content-type': 'multipart/form-data'
-        }
+    let content: string
+    if (typeof workflow.file === 'undefined') {
+      content = await this.$axios.$get(workflow.url).catch(() => {
+        throw new Error('An error has occurred on the entered workflow url.')
       })
-      .catch(() => {
-        throw new Error('Agodashi returned an error.')
+    } else {
+      content = await readFile(workflow.file).catch((e) => {
+        throw e
       })
+    }
+    const workflowTypeVersion = inspectWorkflow(content)
+    const workflowParameters = extractWorkflowParameters(
+      content,
+      workflowTypeVersion.type
+    )
     const workflowId: string = uuidv4()
     commit('addWorkflow', {
       name: workflow.name,
-      type: agodashiRes.wf_type || '',
-      version: agodashiRes.wf_version || '',
+      type: workflowTypeVersion.type,
+      version: workflowTypeVersion.version,
       url: workflow.url,
-      fileName: '',
-      content: urlRes,
-      params: agodashiRes.wf_params || '',
+      fileName: workflow.file?.name || '',
+      content: content,
+      params: workflowParameters,
       addedDate: new Date(),
       serviceId: workflow.serviceId,
       uuid: workflowId,
@@ -101,7 +105,21 @@ export const actions: ActionTree<State, RootState> = {
       state.workflows
         .filter((workflow) => workflowIds.includes(workflow.uuid))
         .map((workflow) => workflow.runIds)
-        .flat()
+        .flat(),
+      { root: true }
     )
   }
+}
+
+const readFile = async (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    let reader = new FileReader()
+    reader.onload = () => {
+      resolve(reader.result as string)
+    }
+    reader.onerror = () => {
+      reject(reader.error)
+    }
+    reader.readAsText(file)
+  })
 }
