@@ -33,7 +33,7 @@ export default Vue.extend({
     },
     width: {
       type: Number,
-      default: 600
+      default: 800
     },
     serviceId: {
       type: String,

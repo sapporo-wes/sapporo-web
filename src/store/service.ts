@@ -1,6 +1,6 @@
 import { ActionContext, ActionTree, GetterTree, MutationTree } from 'vuex'
 import { RootState } from '@/store'
-import { Service } from '@/types'
+import { Service, WorkflowEngine } from '@/types'
 import { v4 as uuidv4 } from 'uuid'
 
 type State = {
@@ -27,6 +27,17 @@ export const getters: GetterTree<State, RootState> = {
     return state.services.filter(
       (service: Service) => service.uuid === serviceId
     )[0]
+  },
+  workflowEngines: (state: State) => (serviceId: string): WorkflowEngine[] => {
+    const service = state.services.filter(
+      (service: Service) => service.uuid === serviceId
+    )[0]
+    return Object.entries(service.workflowEngineVersions).map(
+      ([engineName, engineVersion]: [string, string]): WorkflowEngine => ({
+        name: engineName,
+        version: engineVersion
+      })
+    )
   }
 }
 
@@ -100,7 +111,8 @@ export const actions: ActionTree<State, RootState> = {
       state.services
         .filter((service) => serviceIds.includes(service.uuid))
         .map((service) => service.workflowIds)
-        .flat()
+        .flat(),
+      { root: true }
     )
   }
 }

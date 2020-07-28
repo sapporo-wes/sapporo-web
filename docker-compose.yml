@@ -11,7 +11,6 @@ services:
     environment:
       - SAPPORO_HOST=0.0.0.0
       - SAPPORO_PORT=3000
-      - AGODASHI_URL=http://agodashi.azurewebsites.net
     ports:
       - 3000:3000
     restart: always

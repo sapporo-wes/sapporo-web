@@ -85,17 +85,12 @@
 
 <script lang="ts">
 import { DataTableHeader } from 'vuetify/types'
-import { WorkflowTypeVersion, Service } from '@/types'
+import { WorkflowTypeVersion, Service, WorkflowEngine } from '@/types'
 import Vue from 'vue'
 
 type DataObj = {
   workflowEngineHeaders: DataTableHeader[]
   workflowLanguageHeaders: DataTableHeader[]
-}
-
-type WorkflowEngine = {
-  name: string
-  version: string
 }
 
 type WorkflowLanguage = {
@@ -136,12 +131,7 @@ export default Vue.extend({
       return this.$store.getters['service/serviceFilterId'](this.serviceId)
     },
     workflowEngines(): WorkflowEngine[] {
-      return Object.entries(this.service.workflowEngineVersions).map(
-        ([engineName, engineVersion]: [string, string]): WorkflowEngine => ({
-          name: engineName,
-          version: engineVersion
-        })
-      )
+      return this.$store.getters['service/workflowEngines'](this.serviceId)
     },
     workflowLanguages(): WorkflowLanguage[] {
       return Object.entries(this.service.workflowTypeVersions).map(
