@@ -1,48 +1,13 @@
-export enum RunState {
-  'UNKNOWN',
-  'QUEUED',
-  'INITIALIZING',
-  'RUNNING',
-  'PAUSED',
-  'COMPLETE',
-  'EXECUTOR_ERROR',
-  'SYSTEM_ERROR',
-  'CANCELED',
-  'CANCELING'
-}
+import { ServiceInfo, RunLog, State } from '@/types/WES'
 
-export type WorkflowTypeVersion = {
-  workflowTypeVersion: string[]
-}
-
-export type ServiceInfoResponse = {
-  authInstructionsUrl: string
-  contactInfoUrl: string
-  defaultWorkflowEngineParameters: string[]
-  supportedFilesystemProtocols: string[]
-  supportedWesVersions: string[]
-  systemStateCounts: { RunState: number }
-  tags: { string: string | boolean }
-  workflowEngineVersions: { string: string }
-  workflowTypeVersions: { string: WorkflowTypeVersion }
-}
-
-export type Service = ServiceInfoResponse & {
+export type Service = {
   name: string
   endpoint: string
   state: string
   addedDate: Date
-  uuid: string
+  id: string
   workflowIds: string[]
-}
-
-export type WorkflowParameter = {
-  name: string
-  type: string
-  default: string | null
-  optional: boolean
-  array: boolean
-  other: any
+  serviceInfo: ServiceInfo
 }
 
 export type Workflow = {
@@ -55,16 +20,27 @@ export type Workflow = {
   params: WorkflowParameter[]
   addedDate: Date
   serviceId: string
-  uuid: string
+  id: string
   runIds: string[]
 }
 
 export type Run = {
   name: string
-  state: string
+  state: State
   addedDate: Date
+  serviceId: string
   workflowId: string
-  uuid: string
+  id: string
+  runLog: RunLog
+}
+
+export type WorkflowParameter = {
+  name: string
+  type: string
+  default: string
+  required: boolean
+  array: boolean
+  additionalInfo?: { [key: string]: any }
 }
 
 type ValidResult = boolean | string
@@ -74,9 +50,4 @@ export type FormComponent = Vue & {
   validate: () => boolean
   reset: () => boolean
   resetValidation: () => boolean
-}
-
-export type WorkflowEngine = {
-  name: string
-  version: string
 }
