@@ -100,7 +100,7 @@ export const actions: ActionTree<State, RootState> = {
       params: wfParams,
       addedDate: new Date(),
       serviceId: workflow.serviceId,
-      uuid: workflowId,
+      id: workflowId,
       runIds: []
     })
 

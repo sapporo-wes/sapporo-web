@@ -71,7 +71,7 @@ export const actions: ActionTree<State, RootState> = {
   },
 
   async executeRun(
-    { dispatch, commit, rootGetters }: ActionContext<State, any>,
+    { dispatch, commit }: ActionContext<State, any>,
     payload: {
       service: Service
       workflow: Workflow

@@ -7,8 +7,11 @@
 }
 
 .card-header {
-  color: #424242;
   font-family: 'Quicksand', sans-serif;
-  font-size: 28px;
+  font-size: 1.75rem;
   font-weight: 600;
+}
+
+font {
+  color: #424242;
 }

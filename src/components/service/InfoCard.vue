@@ -9,10 +9,10 @@
         label
         small
         text-color="white"
-        v-for="(wesVersion, i) in service.supportedWesVersions"
-        v-text="`WES ${wesVersion}`"
+        v-for="(wes_version, i) in service.supported_wes_versions"
+        v-text="`WES ${wes_version}`"
       />
-      <v-spacer></v-spacer>
+      <v-spacer />
       <v-chip
         :color="getServiceStateColor(service.state)"
         class="mr-4"
@@ -32,7 +32,7 @@
       class="pl-12"
       :style="{
         color: $colors.grey.darken4,
-        fontSize: '14px',
+        fontSize: '0.9rem',
         fontWeight: '300'
       }"
       v-text="service.endpoint"
@@ -43,7 +43,7 @@
         class="d-flex flex-column"
         v-if="workflowLanguages.length"
       >
-        <div :style="{ fontSize: '20px' }" v-text="'Workflow Languages'" />
+        <div :style="{ fontSize: '1.2rem' }" v-text="'Workflow Languages'" />
         <v-data-table
           :headers="workflowLanguageHeaders"
           :items="workflowLanguages"
@@ -65,7 +65,7 @@
         class="d-flex flex-column"
         v-if="workflowEngines.length"
       >
-        <div :style="{ fontSize: '20px' }" v-text="'Workflow Engines'" />
+        <div :style="{ fontSize: '1.2rem' }" v-text="'Workflow Engines'" />
         <v-data-table
           :headers="workflowEngineHeaders"
           :items="workflowEngines"
@@ -84,18 +84,14 @@
 </template>
 
 <script lang="ts">
-import { DataTableHeader } from 'vuetify/types'
-import { WorkflowTypeVersion, Service, WorkflowEngine } from '@/types'
 import Vue from 'vue'
+import { DataTableHeader } from 'vuetify/types'
+import { Service } from '@/types'
+import { WorkflowTypeVersion } from '@/types/WES'
 
 type DataObj = {
   workflowEngineHeaders: DataTableHeader[]
   workflowLanguageHeaders: DataTableHeader[]
-}
-
-type WorkflowLanguage = {
-  name: string
-  versions: string[]
 }
 
 export default Vue.extend({
@@ -128,21 +124,18 @@ export default Vue.extend({
   },
   computed: {
     service(): Service {
-      return this.$store.getters['service/serviceFilterId'](this.serviceId)
+      return this.$store.getters['service/serviceFilteredById'](this.serviceId)
     },
-    workflowEngines(): WorkflowEngine[] {
+    workflowEngines(): { name: string; version: string }[] {
       return this.$store.getters['service/workflowEngines'](this.serviceId)
     },
-    workflowLanguages(): WorkflowLanguage[] {
-      return Object.entries(this.service.workflowTypeVersions).map(
-        ([name, versions]: [
-          string,
-          WorkflowTypeVersion
-        ]): WorkflowLanguage => ({
-          name: name,
-          versions: versions.workflowTypeVersion
-        })
-      )
+    workflowLanguages(): { name: string; versions: string[] }[] {
+      return Object.entries(
+        this.service.serviceInfo.workflow_type_versions
+      ).map(([name, versions]: [string, WorkflowTypeVersion]) => ({
+        name,
+        versions: versions.workflow_type_version
+      }))
     }
   },
   methods: {

@@ -1,18 +1,12 @@
 <template>
   <v-app>
-    <app-bar></app-bar>
+    <app-bar />
     <v-main class="background">
       <v-container fluid>
         <template v-if="this.existServiceId">
-          <info-card
-            :service-id="this.serviceId"
-            class="mt-4 mx-auto"
-          ></info-card>
-          <workflow-card
-            :service-id="this.serviceId"
-            class="mt-8 mx-auto"
-          ></workflow-card>
-          <run-card class="mt-8 mx-auto mb-4"></run-card>
+          <info-card :service-id="this.serviceId" class="mt-4 mx-auto" />
+          <workflow-card :service-id="this.serviceId" class="mt-8 mx-auto" />
+          <run-card class="mt-8 mx-auto mb-4" />
         </template>
         <template v-else>Does not exist.</template>
       </v-container>
@@ -22,11 +16,11 @@
 <script lang="ts">
 import Vue from 'vue'
 import { ComponentOptions } from 'vue/types'
-import { Service } from '@/store/service'
 import AppBar from '@/components/AppBar.vue'
 import InfoCard from '@/components/service/InfoCard.vue'
 import RunCard from '@/components/service/RunCard.vue'
 import WorkflowCard from '@/components/service/WorkflowCard.vue'
+import { Service } from '@/types'
 
 export default Vue.extend({
   components: {
@@ -38,11 +32,11 @@ export default Vue.extend({
   computed: {
     existServiceId(): boolean {
       return this.$store.state.service.services.some(
-        (service: Service) => service.uuid === this.$route.params.id
+        (service: Service) => service.id === this.$route.params.serviceId
       )
     },
     serviceId(): string {
-      return this.$route.params.id
+      return this.$route.params.serviceId
     }
   }
 })

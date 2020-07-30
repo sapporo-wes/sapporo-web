@@ -20,7 +20,7 @@
         v-text="confirmStatement"
       />
       <div
-        :style="{ fontSize: '20px', color: $colors.red.darken4 }"
+        :style="{ fontSize: '1.4rem', color: $colors.red.darken4 }"
         class="text-center"
         v-text="'Are you sure to delete it?'"
       />
@@ -98,7 +98,7 @@ export default Vue.extend({
     async deleteSelectedItems(): Promise<void> {
       await this.$store.dispatch(
         `${this.modelType}/delete${this.firstCapitalizedModelType}s`,
-        (this.selectedItems as Item[]).map((item: Item) => item.uuid)
+        (this.selectedItems as Item[]).map((item: Item) => item.id)
       )
       this.$emit('clearSelected')
       this.$emit('close')

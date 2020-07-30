@@ -83,6 +83,10 @@ const CWLInputFieldToParam = (id: string, input: any): WorkflowParameter => {
     type = type.slice(0, -2)
     array = true
   }
+  if (type === 'float') {
+    type = 'int'
+  }
+  type = type.toLowerCase()
 
   let param: WorkflowParameter = {
     name: id,
