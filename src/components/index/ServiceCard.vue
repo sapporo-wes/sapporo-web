@@ -9,15 +9,15 @@
       :items-per-page="Number(5)"
       :items="services"
       calculate-widths
-      class="info--text mx-6 my-2"
-      item-key="uuid"
+      class="mx-6 my-2"
+      item-key="id"
       show-select
       v-else
       v-model="selectedServices"
     >
       <template v-slot:item.name="{ item }">
         <nuxt-link
-          :to="`/service/${item.uuid}`"
+          :to="`/service/${item.id}`"
           class="text-decoration-none"
           v-text="item.name"
         />
@@ -75,13 +75,13 @@
 </template>
 
 <script lang="ts">
+import Vue from 'vue'
 import { DataTableHeader } from 'vuetify/types'
-import { Service } from '@/types'
 import DeleteDialog from '@/components/DeleteDialog.vue'
-import moment from 'moment'
 import NotExistMessage from '@/components/NotExistMessage.vue'
 import RegisterDialog from '@/components/index/RegisterDialog.vue'
-import Vue from 'vue'
+import { Service } from '@/types'
+import moment from 'moment'
 
 type DataObj = {
   serviceHeaders: DataTableHeader[]
@@ -109,7 +109,7 @@ export default Vue.extend({
           value: 'endpoint'
         },
         {
-          text: 'Date',
+          text: 'Added Date',
           value: 'addedDate'
         },
         {

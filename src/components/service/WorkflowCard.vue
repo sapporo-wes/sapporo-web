@@ -9,15 +9,15 @@
       :items-per-page="Number(5)"
       :items="workflows"
       calculate-widths
-      class="info--text mx-6 my-2"
-      item-key="uuid"
+      class="mx-6 my-2"
+      item-key="id"
       show-select
       v-else
       v-model="selectedWorkflows"
     >
       <template v-slot:item.name="{ item }">
         <nuxt-link
-          :to="`/workflow/${item.uuid}`"
+          :to="`/workflow/${item.id}`"
           class="text-decoration-none"
           v-text="item.name"
         />
@@ -50,7 +50,6 @@
     <register-dialog
       :dialogShow="registerDialogShow"
       :service-id="serviceId"
-      @clearSelected="selectedWorkflows = []"
       @close="registerDialogShow = false"
       @error="errorSnackbar = true"
     />
@@ -58,6 +57,7 @@
       :dialogShow="deleteDialogShow"
       :modelType="'workflow'"
       :selectedItems="selectedWorkflows"
+      @clearSelected="selectedWorkflows = []"
       @close="deleteDialogShow = false"
     />
     <v-snackbar
@@ -72,18 +72,12 @@
 </template>
 
 <script lang="ts">
+import Vue from 'vue'
 import { DataTableHeader } from 'vuetify/types'
-import {
-  FormComponent,
-  Rule,
-  Service,
-  Workflow,
-  WorkflowTypeVersion
-} from '@/types'
+import DeleteDialog from '@/components/DeleteDialog.vue'
 import NotExistMessage from '@/components/NotExistMessage.vue'
 import RegisterDialog from '@/components/service/RegisterDialog.vue'
-import DeleteDialog from '@/components/DeleteDialog.vue'
-import Vue from 'vue'
+import { FormComponent, Rule, Service, Workflow } from '@/types'
 import moment from 'moment'
 
 type DataObj = {
@@ -92,16 +86,6 @@ type DataObj = {
   registerDialogShow: boolean
   deleteDialogShow: boolean
   errorSnackbar: boolean
-}
-
-type TypeVersion = {
-  type: string
-  version: string
-}
-
-type WorkflowType = {
-  text: string
-  value: TypeVersion
 }
 
 export default Vue.extend({
@@ -128,7 +112,7 @@ export default Vue.extend({
           value: 'type'
         },
         {
-          text: 'Date',
+          text: 'Added Date',
           value: 'date'
         }
       ],
@@ -140,7 +124,7 @@ export default Vue.extend({
   },
   computed: {
     service(): Service {
-      return this.$store.getters['service/serviceFilterId'](this.serviceId)
+      return this.$store.getters['service/serviceFilteredById'](this.serviceId)
     },
     workflows(): Workflow[] {
       return this.$store.state.workflow.workflows

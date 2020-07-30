@@ -2,7 +2,7 @@
   <p
     class="info--text"
     :style="{
-      fontSize: '16px',
+      fontSize: '1rem',
       paddingLeft: '60px'
     }"
   >

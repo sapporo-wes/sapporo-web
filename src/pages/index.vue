@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <app-bar></app-bar>
+    <app-bar />
     <v-main class="background">
       <v-container fluid>
         <service-card class="mt-4 mx-auto"></service-card>

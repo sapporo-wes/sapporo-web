@@ -13,7 +13,7 @@
       <v-spacer />
       <nuxt-link
         :style="{ fontSize: '1.2em' }"
-        :to="`/service/${service.uuid}`"
+        :to="`/service/${service.id}`"
         class="text-decoration-none"
         v-text="service.name"
       />
@@ -28,27 +28,14 @@
       v-text="workflow.url"
       v-if="workflow.url"
     />
+    <div class="pt-4" />
     <codemirror
       ref="cmEditor"
       :value="workflow.content"
       :options="codeMirrorOptions"
-      class="mx-12 pt-2 pb-6"
+      class="mx-12 elevation-2"
     />
-    <div class="d-flex justify-end pb-6 mr-12">
-      <v-btn
-        :color="$colors.indigo.darken4"
-        @click.stop="prepareDialogShow = true"
-        outlined
-      >
-        <v-icon class="mr-2">mdi-card-bulleted-outline</v-icon>Prepare
-      </v-btn>
-    </div>
-    <prepare-dialog
-      :dialogShow="prepareDialogShow"
-      :service-id="service.uuid"
-      :workflow-id="workflow.uuid"
-      @close="prepareDialogShow = false"
-    />
+    <div class="pt-6" />
   </v-card>
 </template>
 
@@ -59,7 +46,6 @@ import 'codemirror/mode/yaml/yaml.js'
 import 'codemirror/theme/base16-light.css'
 import { codemirror } from 'vue-codemirror'
 import { Service, Workflow } from '@/types'
-import PrepareDialog from '@/components/workflow/PrepareDialog.vue'
 import Vue from 'vue'
 
 type CodeMirrorOptions = {
@@ -72,13 +58,11 @@ type CodeMirrorOptions = {
 
 type dataObj = {
   codeMirrorOptions: CodeMirrorOptions
-  prepareDialogShow: boolean
 }
 
 export default Vue.extend({
   components: {
-    codemirror,
-    PrepareDialog
+    codemirror
   },
   props: {
     workflowId: {
@@ -94,16 +78,17 @@ export default Vue.extend({
         mode: 'text/yaml',
         readOnly: 'nocursor',
         theme: 'base16-light'
-      },
-      prepareDialogShow: false
+      }
     }
   },
   computed: {
     workflow(): Workflow {
-      return this.$store.getters['workflow/workflowFilterId'](this.workflowId)
+      return this.$store.getters['workflow/workflowFilteredById'](
+        this.workflowId
+      )
     },
     service(): Service {
-      return this.$store.getters['service/serviceFilterId'](
+      return this.$store.getters['service/serviceFilteredById'](
         this.workflow.serviceId
       )
     }
@@ -114,7 +99,7 @@ export default Vue.extend({
 <style>
 .CodeMirror {
   height: 400px !important;
-  font-size: 0.8rem !important;
+  font-size: 0.9rem !important;
 }
 .CodeMirror-lines {
   font-family: 'Fira Code', monospace, sans-serif !important;

@@ -51,6 +51,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import { Rule, FormComponent } from '@/types'
+import { validUrl } from '@/util'
 
 type dataObj = {
   registerValid: boolean
@@ -138,25 +139,15 @@ export default Vue.extend({
             ;(this.$refs.form as FormComponent).reset()
             this.$router.push(`/workflow/${workflowId}`)
           })
-          .catch((err) => {
+          .catch((e) => {
             ;(this.$refs.form as FormComponent).reset()
             ;(this.$refs.form as FormComponent).resetValidation()
             this.$emit('error')
             this.$emit('close')
-            console.error(err)
+            console.error(e)
           })
       }
     }
   }
 })
-
-const validUrl = (val: string): boolean => {
-  let url
-  try {
-    url = new URL(val)
-  } catch (_) {
-    return false
-  }
-  return url.protocol === 'http:' || url.protocol === 'https:'
-}
 </script>
