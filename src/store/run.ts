@@ -33,7 +33,7 @@ export const mutations: MutationTree<State> = {
   },
 
   updateRunState(state: State, runStatus: RunStatus): void {
-    for (let i = 0; i++; i < state.runs.length) {
+    for (let i = 0; i < state.runs.length; i++) {
       if (state.runs[i].id === runStatus.run_id) {
         state.runs[i].state = runStatus.state
         break
@@ -41,14 +41,11 @@ export const mutations: MutationTree<State> = {
     }
   },
 
-  updateRun(
-    state: State,
-    payload: { runStatus: RunStatus; runLog: RunLog }
-  ): void {
-    for (let i = 0; i++; i < state.runs.length) {
-      if (state.runs[i].id === payload.runStatus.run_id) {
-        state.runs[i].state = payload.runStatus.state
-        state.runs[i].runLog = payload.runLog
+  updateRun(state: State, runLog: RunLog): void {
+    for (let i = 0; i < state.runs.length; i++) {
+      if (state.runs[i].id === runLog.run_id) {
+        state.runs[i].state = runLog.state
+        state.runs[i].runLog = runLog
         break
       }
     }
@@ -155,19 +152,12 @@ export const actions: ActionTree<State, RootState> = {
     const service: Service = rootGetters['service/serviceFilteredById'](
       run.serviceId
     )
-    const runStatus = await getRunsIdStatus(
-      this.$axios,
-      service.endpoint,
-      runId
-    ).catch((e) => {
-      throw e
-    })
     const runLog = await getRunsId(this.$axios, service.endpoint, runId).catch(
       (e) => {
         throw e
       }
     )
 
-    commit('updateRun', { runStatus, runLog })
+    commit('updateRun', runLog)
   }
 }
