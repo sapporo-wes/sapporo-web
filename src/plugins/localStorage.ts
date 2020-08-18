@@ -7,7 +7,7 @@ const ls = new SecureLS({ isCompression: false })
 interface MyWindow extends Window {
   onNuxtReady(obj: object): void
 }
-declare var window: MyWindow
+declare let window: MyWindow
 
 const localStorage: Plugin = (ctx: Context) => {
   window.onNuxtReady(() => {

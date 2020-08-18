@@ -33,12 +33,17 @@ export const getters: GetterTree<State, RootState> = {
     )[0]
   },
 
-  workflowEngines: (state: State) => (
+  serviceFilteredByRunId: (state: State, getters, rootState, rootGetters) => (
+    runId: string
+  ): Service => {
+    const run = rootGetters['run/runFilteredById'](runId)
+    return getters.serviceFilteredById(run.serviceId)
+  },
+
+  workflowEngines: (state: State, getters, rootState, rootGetters) => (
     serviceId: string
   ): { name: string; version: string }[] => {
-    const service = state.services.filter(
-      (service: Service) => service.id === serviceId
-    )[0]
+    const service: Service = getters.serviceFilteredById(serviceId)
     if (typeof service !== 'undefined') {
       return Object.entries(service.serviceInfo.workflow_engine_versions).map(
         ([name, version]: [string, string]) => ({

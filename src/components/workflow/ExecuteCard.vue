@@ -228,8 +228,7 @@ export default Vue.extend({
             wfEngineParams
           })
           .then((runId) => {
-            console.log(runId)
-            // this.$router.push(`/service/${this.serviceId}/${runId}`)
+            this.$router.push(`/run/${runId}`)
           })
           .catch((err) => {
             // Error dialog

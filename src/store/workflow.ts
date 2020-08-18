@@ -34,6 +34,13 @@ export const getters: GetterTree<State, RootState> = {
     return state.workflows.filter(
       (workflow: Workflow) => workflow.id === workflowId
     )[0]
+  },
+
+  workflowFilteredByRunId: (state: State, getters, rootState, rootGetters) => (
+    runId: string
+  ): Workflow => {
+    const run = rootGetters['run/runFilteredById'](runId)
+    return getters.workflowFilteredById(run.workflowId)
   }
 }
 
@@ -51,7 +58,7 @@ export const mutations: MutationTree<State> = {
   },
 
   addRunId(state: State, payload: { workflowId: string; runId: string }) {
-    for (let i = 0; i++; i < state.workflows.length) {
+    for (let i = 0; i < state.workflows.length; i++) {
       const workflow = state.workflows[i]
       if (workflow.id === payload.workflowId) {
         state.workflows[i].runIds.push(payload.runId)
