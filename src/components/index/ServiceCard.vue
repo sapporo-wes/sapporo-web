@@ -15,17 +15,17 @@
       v-else
       v-model="selectedServices"
     >
-      <template v-slot:item.name="{ item }">
+      <template v-slot:[`item.name`]="{ item }">
         <nuxt-link
           :to="`/service/${item.id}`"
           class="text-decoration-none"
           v-text="item.name"
         />
       </template>
-      <template v-slot:item.addedDate="{ item }">
+      <template v-slot:[`item.addedDate`]="{ item }">
         {{ item.addedDate | formatDate }}
       </template>
-      <template v-slot:item.state="{ item }">
+      <template v-slot:[`item.state`]="{ item }">
         <v-chip
           :color="getServiceStateColor(item.state)"
           text-color="white"
@@ -125,7 +125,7 @@ export default Vue.extend({
   },
   computed: {
     services() {
-      return this.$store.state.service.services
+      return this.$store.getters['service/servicesList']
     }
   },
   methods: {

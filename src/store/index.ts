@@ -2,12 +2,12 @@ import { Service, Workflow, Run } from '@/types'
 
 export type RootState = {
   service: {
-    services: Service[]
+    services: { [id: string]: Service }
   }
   workflow: {
-    workflows: Workflow[]
+    workflows: { [id: string]: Workflow }
   }
   run: {
-    runs: Run[]
+    runs: { [id: string]: Run }
   }
 }

@@ -1,7 +1,7 @@
 <template>
   <v-card elevation="8" max-width="960" v-if="service">
     <div class="d-flex align-center px-6 pt-4">
-      <div class="card-header" v-text="this.service.name" />
+      <div class="card-header" v-text="service.name" />
       <v-chip
         :class="[i === 0 ? 'ml-4' : 'ml-2']"
         :color="$colors.indigo.lighten2"
@@ -29,7 +29,7 @@
       </v-btn>
     </div>
     <div
-      class="pl-12"
+      class="px-10"
       :style="{
         color: $colors.grey.darken4,
         fontSize: '0.9rem',
@@ -55,7 +55,7 @@
           hide-default-footer
           item-key="name"
         >
-          <template v-slot:item.versions="{ item }">
+          <template v-slot:[`item.versions`]="{ item }">
             {{ item.versions.join(', ') }}
           </template>
         </v-data-table>
@@ -145,8 +145,8 @@ export default Vue.extend({
       else if (serviceState === 'Unknown') return this.$colors.grey.darken1
       return this.$colors.grey.darken1
     },
-    reloadServiceState(): void {
-      alert('Reload state') // TODO
+    async reloadServiceState(): Promise<void> {
+      await this.$store.dispatch('service/updateServiceState', this.serviceId)
     }
   }
 })

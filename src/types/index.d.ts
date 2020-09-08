@@ -7,6 +7,7 @@ export type Service = {
   addedDate: Date
   id: string
   workflowIds: string[]
+  runIds: string[]
   serviceInfo: ServiceInfo
 }
 
