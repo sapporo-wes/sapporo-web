@@ -1,9 +1,15 @@
 import yaml from 'js-yaml'
 import { WorkflowParameter } from '@/types'
 
+type CWLStep = {
+  class: 'Workflow' | 'CommandLineTool'
+  inputs: any[] | { [key: string]: any }
+}
+
 type CWLWorkflow = {
   cwlVersion: string
-  inputs: any[] | { [key: string]: any }
+  inputs?: any[] | { [key: string]: any }
+  $graph?: CWLStep[]
 }
 
 export const inspectWorkflow = (
@@ -57,14 +63,26 @@ export const extractWorkflowParameters = (
 
 const extractCWL = (wfObj: CWLWorkflow): WorkflowParameter[] => {
   let wfParams: WorkflowParameter[] = []
-  let inputs = wfObj.inputs
+  let inputs
+  if ('inputs' in wfObj) {
+    inputs = wfObj.inputs
+  } else if ('$graph' in wfObj) {
+    inputs = wfObj.$graph?.filter(
+      (step: CWLStep) => step.class === 'Workflow'
+    )[0].inputs
+  }
+
   if (Array.isArray(inputs)) {
     for (let input of inputs) {
       wfParams.push(CWLInputFieldToParam(input?.id || '', input))
     }
   } else {
-    for (let [id, input] of Object.entries(inputs)) {
-      wfParams.push(CWLInputFieldToParam(id, input))
+    if (typeof inputs === 'undefined') {
+      throw Error('Can not find the input object in CWL.')
+    } else {
+      for (let [id, input] of Object.entries(inputs)) {
+        wfParams.push(CWLInputFieldToParam(id, input))
+      }
     }
   }
 
@@ -72,9 +90,12 @@ const extractCWL = (wfObj: CWLWorkflow): WorkflowParameter[] => {
 }
 
 const CWLInputFieldToParam = (id: string, input: any): WorkflowParameter => {
-  let type: string = input?.type || ''
+  let type: string | string[] = input?.type || ''
   let required: boolean = true
   let array: boolean = false
+  if (Array.isArray(type)) {
+    type = type.filter((ele) => ele !== 'null')[0] + '?'
+  }
   if (type.endsWith('?')) {
     type = type.slice(0, -1)
     required = false

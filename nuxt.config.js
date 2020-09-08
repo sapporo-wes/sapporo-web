@@ -41,8 +41,5 @@ export default {
       }
     }
   },
-  srcDir: './src/',
-  env: {
-    agodashiUrl: process.env.AGODASHI_URL || 'http://agodashi.azurewebsites.net'
-  }
+  srcDir: './src/'
 }

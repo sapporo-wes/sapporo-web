@@ -15,17 +15,17 @@
       v-else
       v-model="selectedWorkflows"
     >
-      <template v-slot:item.name="{ item }">
+      <template v-slot:[`item.name`]="{ item }">
         <nuxt-link
           :to="`/workflow/${item.id}`"
           class="text-decoration-none"
           v-text="item.name"
         />
       </template>
-      <template v-slot:item.type="{ item }">
+      <template v-slot:[`item.type`]="{ item }">
         {{ item.type }} {{ item.version }}
       </template>
-      <template v-slot:item.date="{ item }">
+      <template v-slot:[`item.addedDate`]="{ item }">
         {{ item.addedDate | formatDate }}
       </template>
     </v-data-table>
@@ -113,7 +113,7 @@ export default Vue.extend({
         },
         {
           text: 'Added Date',
-          value: 'date'
+          value: 'addedDate'
         }
       ],
       selectedWorkflows: [],
@@ -127,7 +127,7 @@ export default Vue.extend({
       return this.$store.getters['service/serviceFilteredById'](this.serviceId)
     },
     workflows(): Workflow[] {
-      return this.$store.state.workflow.workflows
+      return this.$store.getters['workflow/workflowsList']
     }
   },
   filters: {

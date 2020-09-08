@@ -4,7 +4,7 @@ import SecureLS from 'secure-ls'
 
 const ls = new SecureLS({ isCompression: false })
 
-interface MyWindow extends Window {
+export interface MyWindow extends Window {
   onNuxtReady(obj: object): void
 }
 declare let window: MyWindow

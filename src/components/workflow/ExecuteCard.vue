@@ -1,8 +1,6 @@
 <template>
   <v-card elevation="8" max-width="960">
-    <div class="card-header pl-6 pt-4">
-      Execute Run
-    </div>
+    <div class="card-header pl-6 pt-4" v-text="'Execute Run'" />
     <v-card class="mx-12 mt-4" elevation="2">
       <v-card-title class="param-card-header" v-text="'Run Parameters'" />
       <v-form
@@ -77,7 +75,9 @@
           />
           <v-text-field
             :hint="hintSentenses[param.name]"
-            :rules="[(v) => !!v || param.optional || hintSentenses[param.name]]"
+            :rules="[
+              (v) => !!v || !param.required || hintSentenses[param.name]
+            ]"
             :type="'number'"
             class="pt-0 px-4 pb-4"
             clearable
@@ -88,7 +88,9 @@
           />
           <v-text-field
             :hint="hintSentenses[param.name]"
-            :rules="[(v) => !!v || param.optional || hintSentenses[param.name]]"
+            :rules="[
+              (v) => !!v || !param.required || hintSentenses[param.name]
+            ]"
             class="pt-0 px-4 pb-4"
             clearable
             persistent-hint
@@ -98,7 +100,9 @@
           />
           <v-text-field
             :hint="hintSentenses[param.name]"
-            :rules="[(v) => !!v || param.optional || hintSentenses[param.name]]"
+            :rules="[
+              (v) => !!v || !param.required || hintSentenses[param.name]
+            ]"
             class="pt-0 px-4 pb-4"
             clearable
             label="URL"
@@ -120,6 +124,14 @@
         <v-icon class="mr-2">mdi-rocket-launch-outline</v-icon>Execute
       </v-btn>
     </div>
+    <v-snackbar
+      :color="$colors.red.lighten1"
+      elevation="8"
+      top
+      v-model="errorSnackbar"
+    >
+      Error!! There's something problem with the values you inputted.
+    </v-snackbar>
   </v-card>
 </template>
 
@@ -136,6 +148,7 @@ type dataObj = {
   wfEngineParams: string
   tags: string
   inputtedValues: { [key: string]: any }
+  errorSnackbar: boolean
 }
 
 export default Vue.extend({
@@ -157,7 +170,8 @@ export default Vue.extend({
       workflowEngine: '',
       wfEngineParams: '{}',
       tags: '{}',
-      inputtedValues: {}
+      inputtedValues: {},
+      errorSnackbar: false
     }
   },
   created() {
@@ -213,10 +227,8 @@ export default Vue.extend({
         .workflowParamForm as FormComponent).validate()
       if (runParamValidationResult && workflowParamValidationResult) {
         const wfEngineName = this.workflowEngine.split(' ')[0]
-        const wfEngineParams = !!this.wfEngineParams
-          ? this.wfEngineParams
-          : '{}'
-        const tags = !!this.tags ? this.tags : '{}'
+        const wfEngineParams = this.wfEngineParams || '{}'
+        const tags = this.tags || '{}'
         await this.$store
           .dispatch('run/executeRun', {
             service: this.service,
@@ -231,7 +243,7 @@ export default Vue.extend({
             this.$router.push(`/run/${runId}`)
           })
           .catch((err) => {
-            // Error dialog
+            this.errorSnackbar = true
             console.error(err)
           })
       }

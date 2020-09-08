@@ -1,54 +1,82 @@
 import { ActionContext, ActionTree, GetterTree, MutationTree } from 'vuex'
 import { RootState } from '@/store'
 import { Service, Workflow, Run } from '@/types'
-import { RunStatus, RunLog } from '@/types/WES'
+import { RunStatus, RunLog, RunListResponse } from '@/types/WES'
 import { generateWorkflowParameters } from '@/util/agodashi'
-import { postRuns, getRunsId, getRunsIdStatus } from '@/util/WESRequest'
+import {
+  postRuns,
+  getRunsId,
+  getRunsIdStatus,
+  getRuns
+} from '@/util/WESRequest'
+import Vue from 'vue'
 
 type State = {
-  runs: Run[]
+  runs: { [id: string]: Run }
 }
 
 export const state = (): State => ({
-  runs: []
+  runs: {}
 })
 
 export const getters: GetterTree<State, RootState> = {
+  runsList(state: State): Run[] {
+    return Object.values(state.runs)
+  },
+
   runFilteredById: (state: State) => (runId: string): Run => {
-    return state.runs.filter((run: Run) => run.id === runId)[0]
+    return state.runs[runId]
+  },
+
+  runsFilteredByServiceId: (state: State, getters, rootState) => (
+    serviceId: string
+  ): Run[] => {
+    const runIds: string[] = rootState.service.services[serviceId].runIds
+    const runs: Run[] = []
+    runIds.forEach((runId: string) => {
+      runs.push(state.runs[runId])
+    })
+
+    return runs
+  },
+
+  existId: (state: State, getters) => (runId: string): boolean => {
+    return Object.keys(state.runs).includes(runId)
   }
 }
 
 export const mutations: MutationTree<State> = {
   clearRuns(state: State): void {
-    state.runs = []
+    Vue.set(state, 'runs', {})
   },
 
-  setRuns(state: State, runs: Run[]): void {
-    state.runs = runs
+  deleteRun(state: State, runId: string): void {
+    Vue.delete(state.runs, runId)
   },
 
-  addRun(state: State, run: Run): void {
-    state.runs.push(run)
+  setRuns(state: State, runs: { [id: string]: Run }): void {
+    Vue.set(state, 'runs', runs)
   },
 
-  updateRunState(state: State, runStatus: RunStatus): void {
-    for (let i = 0; i < state.runs.length; i++) {
-      if (state.runs[i].id === runStatus.run_id) {
-        state.runs[i].state = runStatus.state
-        break
-      }
-    }
+  addRun(state: State, payload: { runId: string; run: Run }): void {
+    Vue.set(state.runs, payload.runId, payload.run)
+  },
+
+  setRunState(state: State, runStatus: RunStatus): void {
+    Vue.set(state.runs[runStatus.run_id], 'state', runStatus.state)
   },
 
   updateRun(state: State, runLog: RunLog): void {
-    for (let i = 0; i < state.runs.length; i++) {
-      if (state.runs[i].id === runLog.run_id) {
-        state.runs[i].state = runLog.state
-        state.runs[i].runLog = runLog
-        break
+    Vue.set(state.runs[runLog.run_id], 'state', runLog.state)
+    Vue.set(state.runs[runLog.run_id], 'runLog', runLog)
+  },
+
+  updateRunsState(state: State, runsStatus: RunStatus[]): void {
+    runsStatus.forEach((runStatus: RunStatus) => {
+      if (state.runs.hasOwnProperty(runStatus.run_id)) {
+        Vue.set(state.runs[runStatus.run_id], 'state', runStatus.state)
       }
-    }
+    })
   }
 }
 
@@ -58,13 +86,23 @@ export const actions: ActionTree<State, RootState> = {
   },
 
   async deleteRuns(
-    { commit, state }: ActionContext<State, any>,
+    { commit, state, dispatch }: ActionContext<State, any>,
     runIds: string[]
   ): Promise<void> {
-    commit(
-      'setRuns',
-      state.runs.filter((run) => !runIds.includes(run.id))
-    )
+    for (const runId of runIds) {
+      const run = state.runs[runId]
+      await dispatch(
+        'service/removeRunIdFromRunIds',
+        { serviceId: run.serviceId, runId },
+        { root: true }
+      )
+      await dispatch(
+        'workflow/removeRunIdFromRunIds',
+        { workflowId: run.workflowId, runId },
+        { root: true }
+      )
+      commit('deleteRun', runId)
+    }
   },
 
   async executeRun(
@@ -108,18 +146,26 @@ export const actions: ActionTree<State, RootState> = {
     )
 
     await dispatch(
+      'service/addRunId',
+      { serviceId: payload.service.id, runId: runId.run_id },
+      { root: true }
+    )
+    await dispatch(
       'workflow/addRunId',
       { workflowId: payload.workflow.id, runId: runId.run_id },
       { root: true }
     )
     commit('addRun', {
-      name: payload.runName,
-      state: runStatus.state,
-      addedDate: new Date(),
-      serviceId: payload.service.id,
-      workflowId: payload.workflow.id,
-      id: runId.run_id,
-      runLog
+      runId: runId.run_id,
+      run: {
+        name: payload.runName,
+        state: runStatus.state,
+        addedDate: new Date(),
+        serviceId: payload.service.id,
+        workflowId: payload.workflow.id,
+        id: runId.run_id,
+        runLog
+      }
     })
 
     return runId.run_id
@@ -138,10 +184,41 @@ export const actions: ActionTree<State, RootState> = {
       service.endpoint,
       runId
     ).catch((e) => {
-      throw e
+      commit('setRunState', {
+        run_id: runId,
+        state: 'UNKNOWN'
+      })
+      return
     })
 
     commit('updateRunState', runStatus)
+  },
+
+  async updateAllRunsState({ commit, rootState }: ActionContext<State, any>) {
+    const services: Service[] = Object.values(rootState.service.services)
+    for (const service of services) {
+      const runListRes: RunListResponse = await getRuns(
+        this.$axios,
+        service.endpoint
+      ).catch((e) => {
+        throw e
+      })
+      commit('updateRunsState', runListRes.runs)
+    }
+  },
+
+  async updateAllRunsStateByService(
+    { commit, rootState }: ActionContext<State, any>,
+    serviceId: string
+  ) {
+    const service: Service = rootState.service.services[serviceId]
+    const runListRes: RunListResponse = await getRuns(
+      this.$axios,
+      service.endpoint
+    ).catch((e) => {
+      throw e
+    })
+    commit('updateRunsState', runListRes.runs)
   },
 
   async updateRun(

@@ -3,34 +3,43 @@ import { RootState } from '@/store'
 import { Service } from '@/types'
 import { getServiceInfo } from '@/util/WESRequest'
 import { v4 as uuidv4 } from 'uuid'
+import Vue from 'vue'
 
 type State = {
-  services: Service[]
+  services: { [id: string]: Service }
 }
 
 export const state = (): State => ({
-  services: []
+  services: {}
 })
 
 export const getters: GetterTree<State, RootState> = {
-  serviceNames(state: State): string[] {
-    return state.services.map((service: Service) => service.name)
-  },
-
-  existName: (state: State) => (serviceName: string): boolean => {
-    return state.services
-      .map((service: Service) => service.name)
-      .includes(serviceName)
+  servicesList(state: State): Service[] {
+    return Object.values(state.services)
   },
 
   serviceIds(state: State): string[] {
-    return state.services.map((service: Service) => service.id)
+    return Object.keys(state.services)
+  },
+
+  serviceNames(state: State, getters): string[] {
+    return getters.servicesList.map((service: Service) => service.name)
+  },
+
+  existId: (state: State, getters) => (serviceId: string): boolean => {
+    return getters.serviceIds.includes(serviceId)
+  },
+
+  existName: (state: State, getters) => (serviceName: string): boolean => {
+    return getters.serviceNames.includes(serviceName)
+  },
+
+  idToName: (state: State) => (serviceId: string): string => {
+    return state.services[serviceId]?.name
   },
 
   serviceFilteredById: (state: State) => (serviceId: string): Service => {
-    return state.services.filter(
-      (service: Service) => service.id === serviceId
-    )[0]
+    return state.services[serviceId]
   },
 
   serviceFilteredByRunId: (state: State, getters, rootState, rootGetters) => (
@@ -59,15 +68,52 @@ export const getters: GetterTree<State, RootState> = {
 
 export const mutations: MutationTree<State> = {
   clearServices(state: State): void {
-    state.services = []
+    Vue.set(state, 'services', {})
   },
 
-  setServices(state: State, services: Service[]): void {
-    state.services = services
+  deleteService(state: State, serviceId: string): void {
+    Vue.delete(state.services, serviceId)
   },
 
-  addService(state: State, service: Service): void {
-    state.services.push(service)
+  setServices(state: State, services: { [id: string]: Service }): void {
+    Vue.set(state, 'services', services)
+  },
+
+  addService(
+    state: State,
+    payload: { serviceId: string; service: Service }
+  ): void {
+    Vue.set(state.services, payload.serviceId, payload.service)
+  },
+
+  setServiceState(state: State, payload: { serviceId: string; state: string }) {
+    Vue.set(state.services[payload.serviceId], 'state', payload.state)
+  },
+
+  setWorkflowIds(
+    state: State,
+    payload: { serviceId: string; workflowIds: string[] }
+  ) {
+    Vue.set(
+      state.services[payload.serviceId],
+      'workflowIds',
+      payload.workflowIds
+    )
+  },
+
+  setRunIds(state: State, payload: { serviceId: string; runIds: string[] }) {
+    Vue.set(state.services[payload.serviceId], 'runIds', payload.runIds)
+  },
+
+  addRunId(state: State, payload: { serviceId: string; runId: string }) {
+    state.services[payload.serviceId].runIds.push(payload.runId)
+  },
+
+  addWorkflowId(
+    state: State,
+    payload: { serviceId: string; workflowId: string }
+  ) {
+    state.services[payload.serviceId].workflowIds.push(payload.workflowId)
   }
 }
 
@@ -89,13 +135,17 @@ export const actions: ActionTree<State, RootState> = {
 
     const serviceId: string = uuidv4()
     commit('addService', {
-      name: service.name,
-      endpoint: service.endpoint,
-      state: 'Available',
-      addedDate: new Date(),
-      id: serviceId,
-      workflowIds: [],
-      serviceInfo
+      serviceId,
+      service: {
+        name: service.name,
+        endpoint: service.endpoint,
+        state: 'Available',
+        addedDate: new Date(),
+        id: serviceId,
+        workflowIds: [],
+        runIds: [],
+        serviceInfo
+      }
     })
 
     return serviceId
@@ -105,17 +155,81 @@ export const actions: ActionTree<State, RootState> = {
     { commit, state, dispatch }: ActionContext<State, any>,
     serviceIds: string[]
   ): Promise<void> {
-    commit(
-      'setServices',
-      state.services.filter((service) => !serviceIds.includes(service.id))
+    const workflowIds = serviceIds.flatMap(
+      (serviceId: string) => state.services[serviceId].workflowIds
     )
-    await dispatch(
-      'workflow/deleteWorkflows',
-      state.services
-        .filter((service) => serviceIds.includes(service.id))
-        .map((service) => service.workflowIds)
-        .flat(),
-      { root: true }
+    const runIds = serviceIds.flatMap(
+      (serviceId: string) => state.services[serviceId].runIds
     )
+    serviceIds.forEach((serviceId: string) =>
+      commit('deleteService', serviceId)
+    )
+    await dispatch('workflow/deleteWorkflows', workflowIds, {
+      root: true
+    })
+  },
+
+  async updateServiceState(
+    { commit, getters }: ActionContext<State, any>,
+    serviceId: string
+  ): Promise<void> {
+    const service = getters.serviceFilteredById(serviceId)
+    const _ = await getServiceInfo(this.$axios, service.endpoint).catch((e) => {
+      commit('setServiceState', { serviceId, state: 'Disconnect' })
+      return
+    })
+    commit('setServiceState', { serviceId, state: 'Available' })
+  },
+
+  async updateAllServicesState({
+    getters,
+    dispatch
+  }: ActionContext<State, any>): Promise<void> {
+    const queue = []
+    for (const service of getters.servicesList) {
+      queue.push(dispatch('updateServiceState', service.id))
+    }
+    await Promise.all(queue)
+  },
+
+  async addWorkflowId(
+    { commit }: ActionContext<State, any>,
+    payload: { serviceId: string; workflowId: string }
+  ): Promise<void> {
+    commit('addWorkflowId', payload)
+  },
+
+  async removeWorkflowIdFromWorkflowIds(
+    { commit, state }: ActionContext<State, any>,
+    payload: { serviceId: string; workflowId: string }
+  ) {
+    const workflowIds = state.services[payload.serviceId].workflowIds.filter(
+      (workflowId: string) => {
+        workflowId !== payload.workflowId
+      }
+    )
+    commit('setWorkflowIds', {
+      serviceId: payload.serviceId,
+      workflowIds
+    })
+  },
+
+  async addRunId(
+    { commit }: ActionContext<State, any>,
+    payload: { serviceId: string; runId: string }
+  ): Promise<void> {
+    commit('addRunId', payload)
+  },
+
+  async removeRunIdFromRunIds(
+    { commit, state }: ActionContext<State, any>,
+    payload: { serviceId: string; runId: string }
+  ) {
+    const runIds = state.services[payload.serviceId].runIds.filter(
+      (runId: string) => {
+        runId !== payload.runId
+      }
+    )
+    commit('setRunIds', { serviceId: payload.serviceId, runIds })
   }
 }

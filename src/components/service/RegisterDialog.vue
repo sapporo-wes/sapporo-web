@@ -63,6 +63,7 @@ type dataObj = {
   fileRules: Rule[]
 }
 
+// TODO Close button
 export default Vue.extend({
   props: {
     overlayOpacity: {
@@ -139,12 +140,9 @@ export default Vue.extend({
             ;(this.$refs.form as FormComponent).reset()
             this.$router.push(`/workflow/${workflowId}`)
           })
-          .catch((e) => {
-            ;(this.$refs.form as FormComponent).reset()
-            ;(this.$refs.form as FormComponent).resetValidation()
+          .catch((err) => {
             this.$emit('error')
-            this.$emit('close')
-            console.error(e)
+            console.error(err)
           })
       }
     }
