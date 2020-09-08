@@ -92,6 +92,7 @@ import moment from 'moment'
 type DataObj = {
   runHeaders: DataTableHeader[]
   selectedRuns: Run[]
+  deleteDialogShow: boolean
 }
 
 export default Vue.extend({
