@@ -6,21 +6,42 @@
 
 Web base management system for GA4GH WES
 
-## Build Setup
+## Production
 
 ```bash
 # install dependencies
 $ yarn install
 
-# serve with hot reload at localhost:3000
-$ yarn dev
-
 # build for production and launch server
 $ yarn build
 $ yarn start
 
-# generate static project
-$ yarn generate
+# Access localhost:3000 in your browser
+```
+
+### Using Docker
+
+```bash
+$ docker-compose up -d
+
+# Access localhost:3000 in your browser
+```
+
+## Development
+
+```bash
+# serve with hot reload at localhost:3000
+$ yarn dev
+```
+
+### Using Docker
+
+```bash
+$ docker-compose -f docker-compose.dev.yml up -d
+
+$ docker-compose -f docker-compose.dev.yml exec app yarn dev
+
+# Access localhost:3000 in your browser
 ```
 
 ## License
