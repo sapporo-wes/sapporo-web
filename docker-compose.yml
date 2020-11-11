@@ -5,9 +5,9 @@ services:
     container_name: sapporo-web
     environment:
       - NUXT_HOST=0.0.0.0
-      - NUXT_PORT=3000
+      - NUXT_PORT=1121
     ports:
-      - 3000:3000
+      - 1121:1121
     restart: always
     working_dir: /app
     command: ["yarn", "start"]
