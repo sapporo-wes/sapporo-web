@@ -11,3 +11,10 @@ services:
     restart: always
     working_dir: /app
     command: ["yarn", "start"]
+    networks:
+      - sapporo
+
+networks:
+  sapporo:
+    external:
+      name: sapporo-network
