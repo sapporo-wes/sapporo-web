@@ -10,8 +10,8 @@ services:
       - /app/node_modules
     environment:
       - NUXT_HOST=0.0.0.0
-      - NUXT_PORT=3000
+      - NUXT_PORT=1121
     ports:
-      - 3000:3000
+      - 1121:1121
     restart: always
     command: ["tail", "-f", "/dev/null"]
