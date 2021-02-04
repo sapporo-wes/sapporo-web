@@ -16,7 +16,7 @@ $ yarn install
 $ yarn build
 $ yarn start
 
-# Access localhost:3000 in your browser
+# Access localhost:1121 in your browser
 ```
 
 ### Using Docker
@@ -24,13 +24,13 @@ $ yarn start
 ```bash
 $ docker-compose up -d
 
-# Access localhost:3000 in your browser
+# Access localhost:1121 in your browser
 ```
 
 ## Development
 
 ```bash
-# serve with hot reload at localhost:3000
+# serve with hot reload at localhost:1121
 $ yarn dev
 ```
 
@@ -41,7 +41,7 @@ $ docker-compose -f docker-compose.dev.yml up -d
 
 $ docker-compose -f docker-compose.dev.yml exec app yarn dev
 
-# Access localhost:3000 in your browser
+# Access localhost:1121 in your browser
 ```
 
 ## License
