@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar :color="$colors.indigo.darken2" app elevation="8" hide-on-scroll>
+  <v-app-bar :color="$colors.indigo.darken2" app elevation="8">
     <v-toolbar-title>
       <nuxt-link class="white--text text-decoration-none" to="/">
         SAPPORO
@@ -7,7 +7,7 @@
     </v-toolbar-title>
     <v-spacer />
     <v-menu offset-y>
-      <template v-slot:activator="{ on }">
+      <template #activator="{ on }">
         <v-btn class="mr-2" icon v-on="on">
           <v-icon color="white">mdi-cog</v-icon>
         </v-btn>
@@ -16,7 +16,7 @@
         <v-list-item
           v-for="menuItem in menuItems"
           :key="menuItem.title"
-          @click="menuAction(menuItem.title)"
+          @click.stop="menuAction(menuItem.title)"
         >
           <v-list-item-icon class="ml-2">
             <v-icon v-text="menuItem.icon" />
@@ -29,31 +29,38 @@
     </v-menu>
     <v-btn href="https://github.com/ddbj/SAPPORO-web" color="white" outlined>
       GitHub
-      <v-icon class="ml-2" color="white">
-        mdi-github
-      </v-icon>
+      <v-icon class="ml-2" color="white"> mdi-github </v-icon>
     </v-btn>
-    <v-dialog overlay-opacity="0.8" v-model="deleteDialogShow" width="600">
+
+    <v-dialog
+      v-model="deleteDialogShow"
+      overlay-opacity="0.8"
+      width="600"
+      @click:outside="deleteDialogShow = false"
+    >
       <v-card>
-        <div class="card-header pl-6 pt-4" v-text="'Delete Data'" />
+        <div class="card-header pl-6 pt-4" v-text="'Delete All Data'" />
         <div
           class="px-12 py-2"
           v-text="'All data (service, workflow, run, etc.) will be deleted.'"
         />
         <div
           class="px-12 py-2 text-center"
-          :style="{ fontSize: '1.4rem', color: $colors.red.darken4 }"
+          :style="{
+            fontSize: '1.4rem',
+            color: $vuetify.theme.themes.light.error,
+          }"
           v-text="'Are you sure to delete it?'"
         />
         <div class="d-flex justify-end px-12 pt-4 pb-6">
-          <v-btn :color="$colors.red.darken4" @click="deleteData" outlined>
+          <v-btn color="error" outlined @click.stop="deleteAction">
             <v-icon class="mr-2">mdi-trash-can-outline</v-icon>Delete
           </v-btn>
           <v-btn
-            :color="$colors.grey.darken4"
-            @click="deleteDialogShow = false"
+            color="info"
             class="ml-4"
             outlined
+            @click.stop="deleteDialogShow = false"
           >
             <v-icon class="mr-2">mdi-close</v-icon>Cancel
           </v-btn>
@@ -64,6 +71,7 @@
 </template>
 
 <script lang="ts">
+import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import Vue from 'vue'
 
 type MenuItem = {
@@ -71,49 +79,79 @@ type MenuItem = {
   icon: string
 }
 
-type DataObj = {
+type Data = {
   menuItems: MenuItem[]
   deleteDialogShow: boolean
 }
 
-export default Vue.extend({
-  data(): DataObj {
+type Methods = {
+  menuAction: (title: string) => void
+  importData: () => void
+  exportData: () => void
+  deleteData: () => void
+  deleteAction: () => void
+}
+
+type Computed = Record<string, unknown>
+
+type Props = Record<string, unknown>
+
+const options: ThisTypedComponentOptionsWithRecordProps<
+  Vue,
+  Data,
+  Methods,
+  Computed,
+  Props
+> = {
+  data() {
     return {
       menuItems: [
         {
           title: 'Import Data',
-          icon: 'mdi-application-import'
+          icon: 'mdi-application-import',
         },
         {
           title: 'Export Data',
-          icon: 'mdi-application-export'
+          icon: 'mdi-application-export',
         },
         {
           title: 'Delete Data',
-          icon: 'mdi-trash-can'
-        }
+          icon: 'mdi-trash-can',
+        },
       ],
-      deleteDialogShow: false
+      deleteDialogShow: false,
     }
   },
+
   methods: {
-    async menuAction(title: string): Promise<void> {
+    menuAction(title: string) {
       if (title === 'Import Data') {
-        alert('Import Data')
+        this.importData()
       } else if (title === 'Export Data') {
-        alert('Export Data')
+        this.exportData()
       } else if (title === 'Delete Data') {
-        this.deleteDialogShow = true
+        this.deleteData()
       }
     },
-    async deleteData() {
-      await this.$store.dispatch('service/clearServices')
-      await this.$store.dispatch('workflow/clearWorkflows')
-      await this.$store.dispatch('run/clearRuns')
+    importData() {
+      alert('Import Data')
+    },
+    exportData() {
+      alert('Export Data')
+    },
+    deleteData() {
+      this.deleteDialogShow = true
+    },
+    deleteAction() {
+      this.$store.dispatch('services/clearServices')
+      this.$store.dispatch('workflows/clearWorkflows')
+      this.$store.dispatch('runs/clearRuns')
       this.deleteDialogShow = false
-    }
-  }
-})
+    },
+  },
+}
+
+export default Vue.extend(options)
 </script>
 
 <style scoped>

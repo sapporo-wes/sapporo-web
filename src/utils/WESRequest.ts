@@ -1,21 +1,17 @@
-import { NuxtAxiosInstance } from '@nuxtjs/axios'
 import {
   RunId,
   RunListResponse,
   RunLog,
   RunStatus,
-  ServiceInfo
+  ServiceInfo,
 } from '@/types/WES'
+import { NuxtAxiosInstance } from '@nuxtjs/axios'
 
 export const getServiceInfo = async (
   axios: NuxtAxiosInstance,
   endpoint: string
 ): Promise<ServiceInfo> => {
-  const res: ServiceInfo = await axios
-    .$get(`${endpoint}/service-info`)
-    .catch((e) => {
-      throw e
-    })
+  const res: ServiceInfo = await axios.$get(`${endpoint}/service-info`)
 
   return res
 }
@@ -24,11 +20,7 @@ export const getRuns = async (
   axios: NuxtAxiosInstance,
   endpoint: string
 ): Promise<RunListResponse> => {
-  const res: RunListResponse = await axios
-    .$get(`${endpoint}/runs`)
-    .catch((e) => {
-      throw e
-    })
+  const res: RunListResponse = await axios.$get(`${endpoint}/runs`)
 
   return res
 }
@@ -36,13 +28,10 @@ export const getRuns = async (
 export const postRuns = async (
   axios: NuxtAxiosInstance,
   endpoint: string,
-  params: FormData
+  data: FormData
 ): Promise<RunId> => {
-  const res: RunId = await axios
-    .$post(`${endpoint}/runs`, params)
-    .catch((e) => {
-      throw e
-    })
+  const headers = { 'content-type': 'multipart/form-data' }
+  const res: RunId = await axios.$post(`${endpoint}/runs`, data, { headers })
 
   return res
 }
@@ -52,11 +41,7 @@ export const getRunsId = async (
   endpoint: string,
   runId: string
 ): Promise<RunLog> => {
-  const res: RunLog = await axios
-    .$get(`${endpoint}/runs/${runId}`)
-    .catch((e) => {
-      throw e
-    })
+  const res: RunLog = await axios.$get(`${endpoint}/runs/${runId}`)
 
   return res
 }
@@ -66,11 +51,7 @@ export const postRunsIdCancel = async (
   endpoint: string,
   runId: string
 ): Promise<RunId> => {
-  const res: RunId = await axios
-    .$post(`${endpoint}/runs/${runId}/cancel`)
-    .catch((e) => {
-      throw e
-    })
+  const res: RunId = await axios.$post(`${endpoint}/runs/${runId}/cancel`)
 
   return res
 }
@@ -80,11 +61,7 @@ export const getRunsIdStatus = async (
   endpoint: string,
   runId: string
 ): Promise<RunStatus> => {
-  const res: RunStatus = await axios
-    .$get(`${endpoint}/runs/${runId}/status`)
-    .catch((e) => {
-      throw e
-    })
+  const res: RunStatus = await axios.$get(`${endpoint}/runs/${runId}/status`)
 
   return res
 }

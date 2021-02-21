@@ -1,13 +1,9 @@
-import { Service, Workflow, Run } from '@/types'
+import { State as RunState } from '@/store/runs'
+import { State as ServiceState } from '@/store/services'
+import { State as WorkflowState } from '@/store/workflows'
 
 export type RootState = {
-  service: {
-    services: { [id: string]: Service }
-  }
-  workflow: {
-    workflows: { [id: string]: Workflow }
-  }
-  run: {
-    runs: { [id: string]: Run }
-  }
+  services: ServiceState
+  workflows: WorkflowState
+  runs: RunState
 }

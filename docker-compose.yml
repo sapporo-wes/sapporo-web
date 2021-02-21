@@ -1,16 +1,17 @@
-version: "3.5"
+version: '3.5'
 services:
   app:
-    image: suecharo/sapporo-web:1.0.1
+    image: suecharo/sapporo-web:1.0.2
     container_name: sapporo-web
     environment:
       - NUXT_HOST=0.0.0.0
       - NUXT_PORT=1121
+      # - SAPPORO_URL_PREFIX="/prefix/"
     ports:
-      - 1121:1121
-    restart: always
+      - 0.0.0.0:1121:1121
+    restart: on-failure
     working_dir: /app
-    command: ["yarn", "start"]
+    command: ['yarn', 'start']
     networks:
       - sapporo
 
