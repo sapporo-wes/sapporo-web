@@ -1,7 +1,7 @@
 <template>
   <v-card elevation="8" max-width="1200">
-    <div class="card-header pl-6 pt-4" v-text="'WES Services'" />
-    <div v-if="!services.length" class="my-2">
+    <div class="card-header pl-6 pt-4" v-text="'Workflows'" />
+    <div v-if="!workflows.length" class="my-2">
       <p
         :style="{
           fontSize: '1rem',
@@ -13,7 +13,7 @@
             color: $vuetify.theme.themes.light.error,
             textDecorationLine: 'underline',
           }"
-          v-text="'NO WES services are registered.'"
+          v-text="'NO workflows are registered.'"
         />
         Click
         <span
@@ -23,43 +23,40 @@
         button.
       </p>
     </div>
-
     <v-data-table
-      v-if="services.length"
-      v-model="selectedServices"
-      :headers="serviceHeaders"
+      v-if="workflows.length"
+      v-model="selectedWorkflows"
+      :headers="workflowHeaders"
       :items-per-page="Number(5)"
-      :items="services"
+      :items="workflows"
       calculate-widths
       class="mx-6 my-2"
       item-key="id"
+      multi-sort
       show-select
     >
       <template #[`item.name`]="{ item }">
-        <nuxt-link :to="`/services/${item.id}`" v-text="item.name" />
+        <nuxt-link :to="`/workflows/${item.id}`" v-text="item.name" />
+      </template>
+      <template #[`item.type`]="{ item }">
+        {{ item.type }} {{ item.version }}
       </template>
       <template #[`item.addedDate`]="{ item }">
         {{ item.addedDate | formatDate }}
       </template>
-      <template #[`item.state`]="{ item }">
-        <v-chip
-          :color="$store.getters['services/stateColor'](item.id)"
-          text-color="white"
-          v-text="item.state"
-        />
-      </template>
     </v-data-table>
     <div class="d-flex justify-end pb-6 pr-6">
       <v-btn
-        color="primary"
+        :disabled="service.registeredOnlyMode"
         class="mr-4"
+        color="primary"
         outlined
         @click.stop="registerDialogShow = true"
       >
         <v-icon class="mr-2">mdi-sticker-plus-outline</v-icon>Register
       </v-btn>
       <v-btn
-        :disabled="!selectedServices.length"
+        :disabled="!selectedWorkflows.length"
         color="error"
         outlined
         @click.stop="deleteDialogShow = true"
@@ -68,20 +65,21 @@
       </v-btn>
     </div>
 
-    <service-register-dialog
+    <workflow-register-dialog
       :dialog-show="registerDialogShow"
+      :service-id="serviceId"
       @close="registerDialogShow = false"
-      @error="registrationError"
+      @error="errorSnackbar = true"
     />
 
-    <service-delete-dialog
+    <workflow-delete-dialog
       :dialog-show="deleteDialogShow"
-      :selected-items="selectedServices"
+      :selected-items="selectedWorkflows"
       @close="deleteDialogShow = false"
     />
 
     <v-snackbar v-model="errorSnackbar" color="error" elevation="8" top>
-      {{ errorMessage }}
+      Error!! There's something problem with the values you inputted.
     </v-snackbar>
   </v-card>
 </template>
@@ -89,30 +87,33 @@
 <script lang="ts">
 import { DataTableHeader } from 'vuetify/types'
 import { Service } from '@/store/services'
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
+import { Workflow } from '@/store/workflows'
 import dayjs from 'dayjs'
-import ServiceDeleteDialog from '@/components/index/ServiceDeleteDialog.vue'
-import ServiceRegisterDialog from '@/components/index/ServiceRegisterDialog.vue'
 import Vue from 'vue'
+import WorkflowDeleteDialog from '@/components/services/WorkflowDeleteDialog.vue'
+import WorkflowRegisterDialog from '@/components/services/WorkflowRegisterDialog.vue'
+
+import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 
 type Data = {
-  serviceHeaders: DataTableHeader[]
-  selectedServices: Service[]
+  workflowHeaders: DataTableHeader[]
+  selectedWorkflows: Workflow[]
   registerDialogShow: boolean
   deleteDialogShow: boolean
   errorSnackbar: boolean
   errorMessage: string
 }
 
-type Methods = {
-  registrationError: (inputtedEndpoint: string) => void
-}
+type Methods = Record<string, never>
 
 type Computed = {
-  services: Service[]
+  service: Service
+  workflows: Workflow[]
 }
 
-type Props = Record<string, unknown>
+type Props = {
+  serviceId: string
+}
 
 const options: ThisTypedComponentOptionsWithRecordProps<
   Vue,
@@ -122,49 +123,51 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   Props
 > = {
   components: {
-    ServiceDeleteDialog,
-    ServiceRegisterDialog,
+    WorkflowDeleteDialog,
+    WorkflowRegisterDialog,
+  },
+
+  props: {
+    serviceId: {
+      type: String,
+      required: true,
+    },
   },
 
   data() {
     return {
-      serviceHeaders: [
+      workflowHeaders: [
         {
           text: 'Name',
           value: 'name',
         },
         {
-          text: 'Endpoint',
-          value: 'endpoint',
+          text: 'Type Version',
+          value: 'type',
         },
         {
           text: 'Added Date',
           value: 'addedDate',
         },
-        {
-          text: 'State',
-          value: 'state',
-        },
       ],
-      selectedServices: [],
+      selectedWorkflows: [],
       registerDialogShow: false,
       deleteDialogShow: false,
       errorSnackbar: false,
       errorMessage:
-        "Error!! There's something problem with the endpoint you inputted.",
+        "Error!! There's something problem with the values you inputted.",
     }
   },
 
   computed: {
-    services() {
-      return this.$store.getters['services/services']
+    service() {
+      return this.$store.getters['services/service'](this.serviceId)
     },
-  },
 
-  methods: {
-    registrationError(inputtedEndpoint: string) {
-      this.errorMessage = `Error!! There's something problem with the endpoint ${inputtedEndpoint} you inputted.`
-      this.errorSnackbar = true
+    workflows() {
+      return this.$store.getters['workflows/workflowsByIds'](
+        this.service.workflowIds
+      )
     },
   },
 

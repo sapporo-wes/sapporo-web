@@ -87,9 +87,10 @@
 <script lang="ts">
 import { DataTableHeader } from 'vuetify/types'
 import { Run } from '@/store/runs'
+import { Service } from '@/store/services'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import dayjs from 'dayjs'
-import RunDeleteDialog from '@/components/index/RunDeleteDialog.vue'
+import RunDeleteDialog from '@/components/services/RunDeleteDialog.vue'
 import Vue from 'vue'
 
 type Data = {
@@ -103,10 +104,13 @@ type Methods = {
 }
 
 type Computed = {
+  service: Service
   runs: Run[]
 }
 
-type Props = Record<string, unknown>
+type Props = {
+  serviceId: string
+}
 
 const options: ThisTypedComponentOptionsWithRecordProps<
   Vue,
@@ -119,16 +123,19 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     RunDeleteDialog,
   },
 
+  props: {
+    serviceId: {
+      type: String,
+      required: true,
+    },
+  },
+
   data() {
     return {
       runHeaders: [
         {
           text: 'Name',
           value: 'name',
-        },
-        {
-          text: 'Service',
-          value: 'service',
         },
         {
           text: 'Workflow',
@@ -153,14 +160,21 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   },
 
   computed: {
+    service(): Service {
+      return this.$store.getters['services/service'](this.serviceId)
+    },
+
     runs(): Run[] {
-      return this.$store.getters['runs/runs']
+      return this.$store.getters['runs/runsByIds'](this.service.runIds)
     },
   },
 
   methods: {
     async reloadRunState(): Promise<void> {
-      await this.$store.dispatch('runs/updateAllRunsState')
+      await this.$store.dispatch(
+        'runs/updateAllRunsStateByService',
+        this.service.id
+      )
     },
   },
 

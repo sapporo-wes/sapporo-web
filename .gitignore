@@ -1,4 +1,4 @@
-### https://raw.github.com/github/gitignore/18aa6d83774d514da479d73a4beb864cd4220231/Global/Windows.gitignore
+### https://raw.github.com/github/gitignore/218a941be92679ce67d0484547e3e142b2f5f6f0/Global/Windows.gitignore
 
 # Windows thumbnail cache files
 Thumbs.db
@@ -26,7 +26,7 @@ $RECYCLE.BIN/
 *.lnk
 
 
-### https://raw.github.com/github/gitignore/18aa6d83774d514da479d73a4beb864cd4220231/Global/macOS.gitignore
+### https://raw.github.com/github/gitignore/218a941be92679ce67d0484547e3e142b2f5f6f0/Global/macOS.gitignore
 
 # General
 .DS_Store
@@ -57,7 +57,7 @@ Temporary Items
 .apdisk
 
 
-### https://raw.github.com/github/gitignore/18aa6d83774d514da479d73a4beb864cd4220231/Global/Linux.gitignore
+### https://raw.github.com/github/gitignore/218a941be92679ce67d0484547e3e142b2f5f6f0/Global/Linux.gitignore
 
 *~
 
@@ -74,7 +74,7 @@ Temporary Items
 .nfs*
 
 
-### https://raw.github.com/github/gitignore/18aa6d83774d514da479d73a4beb864cd4220231/Global/VisualStudioCode.gitignore
+### https://raw.github.com/github/gitignore/218a941be92679ce67d0484547e3e142b2f5f6f0/Global/VisualStudioCode.gitignore
 
 .vscode/*
 *.code-workspace
@@ -83,7 +83,7 @@ Temporary Items
 .history/
 
 
-### https://raw.github.com/github/gitignore/18aa6d83774d514da479d73a4beb864cd4220231/Node.gitignore
+### https://raw.github.com/github/gitignore/218a941be92679ce67d0484547e3e142b2f5f6f0/Node.gitignore
 
 # Logs
 logs

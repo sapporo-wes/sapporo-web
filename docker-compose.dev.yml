@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 services:
   app:
     build:
@@ -11,7 +11,8 @@ services:
     environment:
       - NUXT_HOST=0.0.0.0
       - NUXT_PORT=1121
+      # - SAPPORO_URL_PREFIX="/prefix/"
     ports:
-      - 1121:1121
-    restart: always
-    command: ["tail", "-f", "/dev/null"]
+      - 0.0.0.0:1121:1121
+    restart: on-failure
+    command: ['tail', '-f', '/dev/null']

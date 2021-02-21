@@ -1,12 +1,8 @@
 import colors from 'vuetify/lib/util/colors'
-import { Colors } from 'vuetify/lib/util/colors'
 
-declare module 'vue/types/vue' {
-  interface Vue {
-    $colors: Colors
-  }
-}
+import { Context } from '@nuxt/types'
+import { Inject } from '@nuxt/types/app'
 
-export default ({}, inject: any) => {
+export default (_context: Context, inject: Inject): void => {
   inject('colors', colors)
 }
