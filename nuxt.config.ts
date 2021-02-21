@@ -3,6 +3,7 @@ import colors from 'vuetify/lib/util/colors'
 
 const config: NuxtConfig = {
   ssr: false,
+  target: 'static',
   head: {
     title: 'Sapporo-web',
     meta: [
