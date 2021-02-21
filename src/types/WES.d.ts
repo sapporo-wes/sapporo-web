@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 export type DefaultWorkflowEngineParameter = {
   name: string
   type: string
@@ -6,7 +7,7 @@ export type DefaultWorkflowEngineParameter = {
 
 export type Log = {
   name: string
-  cmd: string[]
+  cmd: string
   start_time: string
   end_time: string
   stdout: string
@@ -14,18 +15,17 @@ export type Log = {
   exit_code: number
 }
 
-export enum State {
-  'UNKNOWN',
-  'QUEUED',
-  'INITIALIZING',
-  'RUNNING',
-  'PAUSED',
-  'COMPLETE',
-  'EXECUTOR_ERROR',
-  'SYSTEM_ERROR',
-  'CANCELED',
-  'CANCELING'
-}
+export type State =
+  | 'UNKNOWN'
+  | 'QUEUED'
+  | 'INITIALIZING'
+  | 'RUNNING'
+  | 'PAUSED'
+  | 'COMPLETE'
+  | 'EXECUTOR_ERROR'
+  | 'SYSTEM_ERROR'
+  | 'CANCELED'
+  | 'CANCELING'
 
 export type WorkflowTypeVersion = {
   workflow_type_version: string[]
@@ -85,7 +85,7 @@ export type RunLog = {
   state: State
   run_log: Log
   task_logs: Log[]
-  outputs: { [key: string]: any }
+  outputs: { [key: string]: Record<string, unknown> }
 }
 
 export type RunId = {
