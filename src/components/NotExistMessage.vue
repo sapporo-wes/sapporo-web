@@ -14,7 +14,7 @@
       v-text="`NO ${this.content} are registered.`"
     />
     Click
-    <span :style="{ color: this.$colors.indigo.darken4 }" v-text="'RESISTER'" />
+    <span :style="{ color: this.$colors.indigo.darken4 }" v-text="'REGISTER'" />
     button.
   </p>
 </template>
