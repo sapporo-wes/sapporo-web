@@ -2,42 +2,24 @@
   "compilerOptions": {
     "target": "es2018",
     "module": "esnext",
-    "moduleResolution": "node",
-    "lib": [
-      "esnext",
-      "esnext.asynciterable",
-      "dom"
-    ],
-    "esModuleInterop": true,
+    "lib": ["ESNext", "ESNext.AsyncIterable", "DOM"],
     "allowJs": true,
     "sourceMap": true,
-    "strict": true,
     "noEmit": true,
-    "experimentalDecorators": true,
+    "strict": true,
+    "moduleResolution": "node",
     "baseUrl": ".",
+    "allowSyntheticDefaultImports": true,
     "paths": {
-      "~/*": [
-        "src/*"
-      ],
-      "@/*": [
-        "src/*"
-      ]
+      "~/*": ["src/*"],
+      "@/*": ["src/*"]
     },
-    "types": [
-      "./src/types/codemirror",
-      "@nuxt/types",
-      "@nuxtjs/axios",
-      "@types/crypto-js",
-      "@types/js-yaml",
-      "@types/lz-string",
-      "@types/node",
-      "@types/uuid",
-      "vuetify"
+    "typeRoots": [
+      "./node_modules/@types",
+      "./@nuxt/types",
+      "./src/types",
+      "./node_modules/vuetify/types"
     ]
   },
-  "exclude": [
-    "node_modules",
-    ".nuxt",
-    "dist"
-  ]
+  "exclude": ["node_modules", ".nuxt", "dist"]
 }
