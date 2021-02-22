@@ -10,7 +10,7 @@
     "start": "nuxt-ts start",
     "generate": "nuxt-ts generate",
     "lint": "eslint --ext .ts,.js,.vue ./src",
-    "deploy": "yarn generate && gh-pages -d dist"
+    "deploy": "SAPPORO_URL_PREFIX=/SAPPORO-web/ yarn generate && gh-pages -d dist"
   },
   "dependencies": {
     "@nuxt/typescript-runtime": "^2.0.1",
