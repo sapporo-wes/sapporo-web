@@ -16,7 +16,7 @@ RUN yarn install
 
 COPY . .
 
-RUN yarn build
+RUN yarn generate
 
 ENV NUXT_HOST 0.0.0.0
 ENV NUXT_PORT 1121
