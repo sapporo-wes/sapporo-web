@@ -53,7 +53,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
           to: '/',
         },
       ]
-      if (this.type === 'services') {
+      if (this.type === 'service') {
         const service: Service | undefined = this.$store.getters[
           'services/service'
         ](this.id)
@@ -61,10 +61,10 @@ const options: ThisTypedComponentOptionsWithRecordProps<
           items.push({
             text: service.name,
             nuxt: true,
-            to: `/services/${service.id}`,
+            to: `/services?serviceId=${service.id}`,
           })
         }
-      } else if (this.type === 'workflows') {
+      } else if (this.type === 'workflow') {
         const workflow: Workflow | undefined = this.$store.getters[
           'workflows/workflow'
         ](this.id)
@@ -76,16 +76,16 @@ const options: ThisTypedComponentOptionsWithRecordProps<
             items.push({
               text: service.name,
               nuxt: true,
-              to: `/services/${service.id}`,
+              to: `/services?serviceId=${service.id}`,
             })
           }
           items.push({
             text: workflow.name,
             nuxt: true,
-            to: `/workflows/${workflow.id}`,
+            to: `/workflows?workflowId=${workflow.id}`,
           })
         }
-      } else if (this.type === 'runs') {
+      } else if (this.type === 'run') {
         const run: Run | undefined = this.$store.getters['runs/run'](this.id)
         if (typeof run !== 'undefined') {
           const workflow: Workflow | undefined = this.$store.getters[
@@ -99,19 +99,19 @@ const options: ThisTypedComponentOptionsWithRecordProps<
               items.push({
                 text: service.name,
                 nuxt: true,
-                to: `/services/${service.id}`,
+                to: `/services?serviceId=${service.id}`,
               })
             }
             items.push({
               text: workflow.name,
               nuxt: true,
-              to: `/workflows/${workflow.id}`,
+              to: `/workflows?workflowId=${workflow.id}`,
             })
           }
           items.push({
             text: run.name,
             nuxt: true,
-            to: `/runs/${run.id}`,
+            to: `/runs?runId=${run.id}`,
           })
         }
       }
@@ -120,11 +120,17 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   },
 
   created() {
-    const path = this.$route.path
-    const splitPath = path.split('/')
-    if (splitPath.length === 3) {
-      this.type = splitPath[1]
-      this.id = splitPath[2]
+    const query = this.$route.query
+    for (const key of Object.keys(query)) {
+      if (key.includes('Id')) {
+        this.type = key.slice(0, -2)
+        let id = query[key] || ''
+        if (Array.isArray(id)) {
+          id = id[0] || ''
+        }
+        this.id = id
+        break
+      }
     }
   },
 }

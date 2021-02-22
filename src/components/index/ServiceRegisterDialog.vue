@@ -121,7 +121,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
             endpoint: this.endpoint,
           })
           .then((serviceId) => {
-            this.$router.push(`/services/${serviceId}`)
+            this.$router.push({ path: '/services', query: { serviceId } })
           })
       }
     },

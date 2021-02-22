@@ -36,7 +36,10 @@
       show-select
     >
       <template #[`item.name`]="{ item }">
-        <nuxt-link :to="`/services/${item.id}`" v-text="item.name" />
+        <nuxt-link
+          :to="{ path: '/services', query: { serviceId: item.id } }"
+          v-text="item.name"
+        />
       </template>
       <template #[`item.addedDate`]="{ item }">
         {{ item.addedDate | formatDate }}

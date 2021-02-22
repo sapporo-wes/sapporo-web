@@ -53,16 +53,14 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     WorkflowCard,
   },
 
-  middleware({ store, route, $axios }) {
+  middleware({ store, route }) {
+    let serviceId = route.query.serviceId || ''
+    if (Array.isArray(serviceId)) {
+      serviceId = serviceId[0] || ''
+    }
     ;((window as unknown) as MyWindow).onNuxtReady(async () => {
-      await store.dispatch(
-        'services/updateServiceState',
-        route.params.serviceId
-      )
-      await store.dispatch(
-        'runs/updateAllRunsStateByService',
-        route.params.serviceId
-      )
+      await store.dispatch('services/updateServiceState', serviceId)
+      await store.dispatch('runs/updateAllRunsStateByService', serviceId)
     })
   },
 
@@ -72,7 +70,13 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     },
 
     serviceId() {
-      return this.$route.params.serviceId
+      const serviceId = this.$route.query.serviceId || ''
+      if (Array.isArray(serviceId)) {
+        return serviceId[0] || ''
+      } else {
+        console.log(serviceId)
+        return serviceId
+      }
     },
   },
 }

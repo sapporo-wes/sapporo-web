@@ -36,7 +36,10 @@
       show-select
     >
       <template #[`item.name`]="{ item }">
-        <nuxt-link :to="`/workflows/${item.id}`" v-text="item.name" />
+        <nuxt-link
+          :to="{ path: '/workflows', query: { workflowId: item.id } }"
+          v-text="item.name"
+        />
       </template>
       <template #[`item.type`]="{ item }">
         {{ item.type }} {{ item.version }}
