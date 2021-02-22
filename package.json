@@ -9,7 +9,7 @@
     "build": "nuxt-ts build",
     "start": "nuxt-ts start",
     "generate": "nuxt-ts generate",
-    "lint": "eslint --ext .ts,.js,.vue .",
+    "lint": "eslint --ext .ts,.js,.vue ./src",
     "deploy": "yarn generate && gh-pages -d deploy"
   },
   "dependencies": {
