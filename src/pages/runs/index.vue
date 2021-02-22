@@ -49,14 +49,23 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   },
 
   middleware({ store, route }) {
+    let runId = route.query.runId || ''
+    if (Array.isArray(runId)) {
+      runId = runId[0] || ''
+    }
     ;((window as unknown) as MyWindow).onNuxtReady(async () => {
-      await store.dispatch('runs/updateRun', route.params.runId)
+      await store.dispatch('runs/updateRun', runId)
     })
   },
 
   computed: {
-    runId(): string {
-      return this.$route.params.runId
+    runId() {
+      const runId = this.$route.query.runId || ''
+      if (Array.isArray(runId)) {
+        return runId[0] || ''
+      } else {
+        return runId
+      }
     },
 
     existRunId(): boolean {

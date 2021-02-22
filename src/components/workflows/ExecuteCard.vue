@@ -382,7 +382,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
               : this.wfParams,
           })
           .then((runId) => {
-            this.$router.push(`/runs/${runId}`)
+            this.$router.push({ path: '/runs', query: { runId } })
           })
       }
     },

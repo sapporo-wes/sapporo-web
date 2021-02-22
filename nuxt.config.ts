@@ -60,6 +60,9 @@ const config: NuxtConfig = {
   router: {
     base: process.env.SAPPORO_URL_PREFIX || '/',
   },
+  generate: {
+    fallback: true,
+  },
 }
 
 export default config

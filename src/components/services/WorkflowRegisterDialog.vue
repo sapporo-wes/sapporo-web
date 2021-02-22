@@ -257,7 +257,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
           .then((workflowId) => {
             ;((this.$refs.form as unknown) as FormComponent).reset()
             ;((this.$refs.form as unknown) as FormComponent).resetValidation()
-            this.$router.push(`/workflows/${workflowId}`)
+            this.$router.push({ path: '/workflows', query: { workflowId } })
           })
       }
     },

@@ -65,11 +65,14 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   },
 
   middleware({ store, route }) {
+    let workflowId = route.query.workflowId || ''
+    if (Array.isArray(workflowId)) {
+      workflowId = workflowId[0] || ''
+    }
     ;((window as unknown) as MyWindow).onNuxtReady(async () => {
       await store.dispatch(
         'services/updateServiceState',
-        this.$store.getters['workflows/workflow'](route.params.workflowId)
-          .serviceId
+        this.$store.getters['workflows/workflow'](workflowId).serviceId
       )
     })
   },
@@ -83,8 +86,13 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return this.$store.getters['workflows/workflow'](this.workflowId)
     },
 
-    workflowId(): string {
-      return this.$route.params.workflowId
+    workflowId() {
+      const workflowId = this.$route.query.workflowId || ''
+      if (Array.isArray(workflowId)) {
+        return workflowId[0] || ''
+      } else {
+        return workflowId
+      }
     },
 
     existWorkflowId(): boolean {

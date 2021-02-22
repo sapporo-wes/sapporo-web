@@ -16,7 +16,7 @@
       <template #[`item.value`]="{ item }">
         <nuxt-link
           v-if="item.key === 'Service'"
-          :to="`/services/${service.id}`"
+          :to="{ path: '/services', query: { serviceId: service.id } }"
           v-text="service.name"
         />
         <a

@@ -46,12 +46,12 @@
       <template #[`item.value`]="{ item }">
         <nuxt-link
           v-if="item.key === 'Service'"
-          :to="`/services/${service.id}`"
+          :to="{ path: '/services', query: { serviceId: service.id } }"
           v-text="service.name"
         />
         <nuxt-link
           v-else-if="item.key === 'Workflow'"
-          :to="`/workflows/${workflow.id}`"
+          :to="{ path: '/workflows', query: { workflowId: workflow.id } }"
           v-text="workflow.name"
         />
         <a

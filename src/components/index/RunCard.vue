@@ -33,17 +33,20 @@
       show-select
     >
       <template #[`item.name`]="{ item }">
-        <nuxt-link :to="`/runs/${item.id}`" v-text="item.name" />
+        <nuxt-link
+          :to="{ path: '/runs', query: { runId: item.id } }"
+          v-text="item.name"
+        />
       </template>
       <template #[`item.service`]="{ item }">
         <nuxt-link
-          :to="`/services/${item.serviceId}`"
+          :to="{ path: '/services', query: { serviceId: item.serviceId } }"
           v-text="$store.getters['services/service'](item.serviceId).name"
         />
       </template>
       <template #[`item.workflow`]="{ item }">
         <nuxt-link
-          :to="`/workflows/${item.workflowId}`"
+          :to="{ path: '/workflows', query: { workflowId: item.workflowId } }"
           v-text="$store.getters['workflows/workflow'](item.workflowId).name"
         />
       </template>
