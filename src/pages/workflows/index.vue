@@ -23,6 +23,7 @@
         }}</template>
       </v-container>
     </v-main>
+    <app-footer />
   </v-app>
 </template>
 
@@ -32,6 +33,7 @@ import { Service } from '@/store/services'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import { Workflow } from '@/store/workflows'
 import AppBar from '@/components/AppBar.vue'
+import AppFooter from '@/components/AppFooter.vue'
 import Breadcrumbs from '@/components/Breadcrumbs.vue'
 import ExecuteCard from '@/components/workflows/ExecuteCard.vue'
 import InfoCard from '@/components/workflows/InfoCard.vue'
@@ -59,6 +61,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 > = {
   components: {
     AppBar,
+    AppFooter,
     Breadcrumbs,
     ExecuteCard,
     InfoCard,

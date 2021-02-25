@@ -66,6 +66,9 @@ const config: NuxtConfig = {
   generate: {
     fallback: true,
   },
+  env: {
+    SAPPORO_WEB_VERSION: process.env.version || '',
+  },
 }
 
 export default config
