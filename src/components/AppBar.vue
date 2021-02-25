@@ -2,7 +2,7 @@
   <v-app-bar :color="$colors.indigo.darken2" app elevation="8">
     <v-toolbar-title>
       <nuxt-link class="white--text text-decoration-none" to="/">
-        SAPPORO
+        <img src="~/assets/logo.svg" alt="logo" height="64" />
       </nuxt-link>
     </v-toolbar-title>
     <v-spacer />

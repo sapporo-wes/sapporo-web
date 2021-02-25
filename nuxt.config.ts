@@ -15,7 +15,10 @@ const config: NuxtConfig = {
         content: process.env.npm_package_description || '',
       },
     ],
-    link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+    link: [
+      { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+      { rel: 'icon alternate', type: 'image/png', href: '/favicon.png' },
+    ],
     // not working
     // script: [
     //   {
