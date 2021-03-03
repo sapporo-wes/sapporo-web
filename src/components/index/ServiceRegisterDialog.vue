@@ -36,6 +36,7 @@
 </template>
 
 <script lang="ts">
+import { Service } from '@/store/services'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import { validUrl } from '@/utils'
 import Vue from 'vue'
@@ -88,7 +89,9 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     },
 
     serviceNames() {
-      return this.$store.getters['services/serviceNames']
+      return this.$store.getters['services/services'].map(
+        (service: Service) => service.name
+      )
     },
 
     nameError() {
@@ -119,6 +122,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
           .dispatch('services/submitService', {
             name: this.name,
             endpoint: this.endpoint,
+            preRegistered: false,
           })
           .then((serviceId) => {
             this.$router.push({ path: '/services', query: { serviceId } })

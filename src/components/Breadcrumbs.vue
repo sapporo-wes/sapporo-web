@@ -57,7 +57,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         const service: Service | undefined = this.$store.getters[
           'services/service'
         ](this.id)
-        if (typeof service !== 'undefined') {
+        if (service) {
           items.push({
             text: service.name,
             nuxt: true,
@@ -68,11 +68,11 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         const workflow: Workflow | undefined = this.$store.getters[
           'workflows/workflow'
         ](this.id)
-        if (typeof workflow !== 'undefined') {
+        if (workflow) {
           const service: Service | undefined = this.$store.getters[
             'services/service'
           ](workflow.serviceId)
-          if (typeof service !== 'undefined') {
+          if (service) {
             items.push({
               text: service.name,
               nuxt: true,
@@ -87,15 +87,15 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         }
       } else if (this.type === 'run') {
         const run: Run | undefined = this.$store.getters['runs/run'](this.id)
-        if (typeof run !== 'undefined') {
+        if (run) {
           const workflow: Workflow | undefined = this.$store.getters[
             'workflows/workflow'
           ](run.workflowId)
-          if (typeof workflow !== 'undefined') {
+          if (workflow) {
             const service: Service | undefined = this.$store.getters[
               'services/service'
             ](run.serviceId)
-            if (typeof service !== 'undefined') {
+            if (service) {
               items.push({
                 text: service.name,
                 nuxt: true,

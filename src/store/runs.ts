@@ -24,13 +24,16 @@ export type Run = {
   name: string
   state: WesState
   addedDate: Date
+  updatedDate: Date
   serviceId: string
   workflowId: string
   id: string
   runLog: RunLog
 }
 
-export type State = { [id: string]: Run }
+export interface State {
+  [id: string]: Run
+}
 
 export const state = (): State => ({})
 
@@ -46,30 +49,29 @@ export const getters: GetterTree<State, RootState> = {
   runsByIds: (_state, getters) => (runIds: string[]): Run[] => {
     return runIds
       .map((runId) => getters.run(runId))
-      .filter((run: Run | undefined) => typeof run !== 'undefined')
+      .filter((run: Run | undefined) => run)
   },
 
   runIds(state): string[] {
     return Object.keys(state)
   },
 
-  existId: (_state, getters) => (runId: string): boolean => {
-    return getters.runIds.includes(runId)
-  },
-
-  stateColor: (state) => (runId: string): string => {
-    const runState = state[runId]?.state
-    if (runState === 'UNKNOWN') return colors.grey.darken1
-    else if (runState === 'QUEUED') return colors.lightBlue.darken1
-    else if (runState === 'INITIALIZING') return colors.lightBlue.darken1
-    else if (runState === 'RUNNING') return colors.indigo.darken1
-    else if (runState === 'PAUSED') return colors.lightBlue.darken1
-    else if (runState === 'COMPLETE') return colors.green.darken1
-    else if (runState === 'EXECUTOR_ERROR') return colors.red.darken1
-    else if (runState === 'SYSTEM_ERROR') return colors.red.darken1
-    else if (runState === 'CANCELED') return colors.amber.darken1
-    else if (runState === 'CANCELING') return colors.amber.darken1
-    else return colors.grey.darken1
+  stateColor: (_state, getters) => (runId: string): string => {
+    const run: Run | undefined = getters.run(runId)
+    if (run) {
+      const runState = run.state
+      if (runState === 'UNKNOWN') return colors.grey.darken1
+      else if (runState === 'QUEUED') return colors.lightBlue.darken1
+      else if (runState === 'INITIALIZING') return colors.lightBlue.darken1
+      else if (runState === 'RUNNING') return colors.indigo.darken1
+      else if (runState === 'PAUSED') return colors.lightBlue.darken1
+      else if (runState === 'COMPLETE') return colors.green.darken1
+      else if (runState === 'EXECUTOR_ERROR') return colors.red.darken1
+      else if (runState === 'SYSTEM_ERROR') return colors.red.darken1
+      else if (runState === 'CANCELED') return colors.amber.darken1
+      else if (runState === 'CANCELING') return colors.amber.darken1
+    }
+    return colors.grey.darken1
   },
 }
 
@@ -96,43 +98,18 @@ export const mutations: MutationTree<State> = {
     state,
     payload: {
       key: keyof Run
-      value: string | WesState | Date | RunLog
+      value: Date | RunLog | string | WesState
       runId: string
     }
   ) {
-    if (state[payload.runId]) {
+    if (payload.runId in state) {
       Vue.set(state[payload.runId], payload.key, payload.value)
       if (typeof payload.value === 'object' && 'run_id' in payload.value) {
         // For reactivity
-        const runLog: RunLog = payload.value
-        Vue.set(state[payload.runId].runLog, 'state', runLog.state)
-        Vue.set(
-          state[payload.runId].runLog.run_log,
-          'start_time',
-          runLog.run_log.start_time
-        )
-        Vue.set(
-          state[payload.runId].runLog.run_log,
-          'end_time',
-          runLog.run_log.end_time
-        )
-        Vue.set(
-          state[payload.runId].runLog.run_log,
-          'stdout',
-          runLog.run_log.stdout
-        )
-        Vue.set(
-          state[payload.runId].runLog.run_log,
-          'stderr',
-          runLog.run_log.stderr
-        )
-        Vue.set(
-          state[payload.runId].runLog.run_log,
-          'exit_code',
-          runLog.run_log.exit_code
-        )
-      } else {
-        Vue.set(state[payload.runId], payload.key, payload.value)
+        const runLog = payload.value
+        for (const [key, value] of Object.entries(runLog)) {
+          Vue.set(state[payload.runId].runLog, key, value)
+        }
       }
     }
   },
@@ -144,7 +121,7 @@ export const actions: ActionTree<State, RootState> = {
   },
 
   async executeRun(
-    { dispatch, commit },
+    { dispatch, commit, rootGetters },
     payload: {
       service: Service
       workflow: Workflow
@@ -158,16 +135,40 @@ export const actions: ActionTree<State, RootState> = {
     }
   ): Promise<string> {
     const data = new FormData()
-    if (payload.service.registeredOnlyMode) {
+    if (payload.workflow.preRegistered) {
       data.append('workflow_name', payload.workflow.name)
+      data.append('tags', payload.tags)
     } else {
+      data.append('workflow_url', payload.workflow.url)
       data.append('workflow_type', payload.workflow.type)
       data.append('workflow_type_version', payload.workflow.version)
-      data.append('workflow_url', payload.workflow.url)
-      if (
-        !validUrl(payload.workflow.url) &&
-        payload.service.workflowAttachment
-      ) {
+      const tags = JSON.parse(payload.tags)
+      if (!('workflow_name' in tags)) {
+        tags.workflow_name = payload.workflow.name
+      }
+      data.append('tags', JSON.stringify(tags))
+    }
+    data.append('workflow_engine_name', payload.wfEngineName)
+    data.append('workflow_engine_parameters', payload.wfEngineParams)
+    data.append(
+      'workflow_params',
+      isYaml(payload.wfParams) ? yamlToJson(payload.wfParams) : payload.wfParams
+    )
+
+    if (
+      !validUrl(payload.workflow.url) &&
+      rootGetters['services/workflowAttachment'](payload.service.id)
+    ) {
+      const wfFileName = payload.workflow.url.split('/').slice(-1)[0]
+      const attachedFileNames = [
+        ...payload.workflow.preRegisteredWorkflowAttachment
+          .map((attachedFile) => attachedFile.file_name)
+          .map((fileName) => fileName.split('/').slice(-1)[0]),
+        ...(payload.fileNames.filter((fileName) => fileName) as string[]).map(
+          (fileName: string) => fileName.split('/').slice(-1)[0]
+        ),
+      ]
+      if (!(wfFileName in attachedFileNames)) {
         data.append(
           'workflow_attachment[]',
           new Blob([payload.workflow.content]),
@@ -175,29 +176,16 @@ export const actions: ActionTree<State, RootState> = {
         )
       }
     }
-    data.append(
-      'workflow_params',
-      isYaml(payload.wfParams) ? yamlToJson(payload.wfParams) : payload.wfParams
-    )
-    data.append('workflow_engine_name', payload.wfEngineName)
-    data.append('workflow_engine_parameters', payload.wfEngineParams)
-    const tags = JSON.parse(payload.tags)
-    if (!('workflow_name' in tags)) {
-      tags.workflow_name = payload.workflow.name
-    }
-    data.append('tags', JSON.stringify(tags))
-    if (
-      payload.service.workflowAttachment &&
-      typeof payload.workflowAttachment !== 'undefined'
-    ) {
+
+    if (rootGetters['services/workflowAttachment'](payload.service.id)) {
       for (let i = 0; i < payload.workflowAttachment.length; i++) {
         const file: File | null = payload.workflowAttachment[i]
-        if (file !== null) {
+        if (file) {
           const fileName: string | null = payload.fileNames[i]
-          if (fileName === null) {
-            data.append('workflow_attachment[]', file)
-          } else {
+          if (fileName) {
             data.append('workflow_attachment[]', file, fileName)
+          } else {
+            data.append('workflow_attachment[]', file)
           }
         }
       }
@@ -223,10 +211,13 @@ export const actions: ActionTree<State, RootState> = {
       { workflowId: payload.workflow.id, runId },
       { root: true }
     )
+
+    const date = new Date()
     commit('addRun', {
       name: payload.runName,
       state: runStatus.state,
-      addedDate: new Date(),
+      addedDate: date,
+      updatedDate: date,
       serviceId: payload.service.id,
       workflowId: payload.workflow.id,
       id: runId,
@@ -242,7 +233,7 @@ export const actions: ActionTree<State, RootState> = {
   ): Promise<void> {
     for (const runId of runIds) {
       const run: Run | undefined = getters.run(runId)
-      if (typeof run !== 'undefined') {
+      if (run) {
         await dispatch(
           'services/removeRunId',
           { serviceId: run.serviceId, runId },
@@ -262,35 +253,46 @@ export const actions: ActionTree<State, RootState> = {
     { commit, rootGetters, getters },
     runId: string
   ): Promise<void> {
-    const run: Run = getters.run(runId)
-    const service: Service = rootGetters['services/service'](run.serviceId)
-    const runStatus = await getRunsIdStatus(
-      this.$axios,
-      service.endpoint,
-      runId
-    )
-    commit('setProp', {
-      key: 'state',
-      value: runStatus.state,
-      runId: run.id,
-    })
-    const runLog = await getRunsId(this.$axios, service.endpoint, runId)
-    commit('setProp', { key: 'runLog', value: runLog, runId: run.id })
+    const run: Run | undefined = getters.run(runId)
+    if (run) {
+      const service: Service | undefined = rootGetters['services/service'](
+        run.serviceId
+      )
+      if (service) {
+        const runLog = await getRunsId(this.$axios, service.endpoint, runId)
+        commit('setProp', {
+          key: 'state',
+          value: runLog.state,
+          runId: run.id,
+        })
+        commit('setProp', { key: 'runLog', value: runLog, runId: run.id })
+        commit('setProp', {
+          key: 'updatedDate',
+          value: new Date(),
+          runId: run.id,
+        })
+      }
+    }
   },
 
-  async updateAllRunsState({ rootState, dispatch }) {
-    const services: Service[] = Object.values(rootState.services)
+  async updateAllRunsState({ rootGetters, dispatch }) {
+    const services: Service[] = rootGetters['services/services']
     const queue = []
     for (const service of services) {
-      queue.push(await dispatch('updateAllRunsStateByService', service))
+      queue.push(await dispatch('updateAllRunsStateByService', service.id))
     }
     Promise.all(queue)
   },
 
-  async updateAllRunsStateByService({ commit, rootState }, serviceId: string) {
-    const service: Service | undefined = rootState.services[serviceId]
-    if (typeof service !== 'undefined') {
-      if (service.getRuns) {
+  async updateAllRunsStateByService(
+    { commit, rootGetters },
+    serviceId: string
+  ) {
+    const service: Service | undefined = rootGetters['services/service'](
+      serviceId
+    )
+    if (service) {
+      if (rootGetters['services/getRuns'](service.id)) {
         const runListRes: RunListResponse = await getRuns(
           this.$axios,
           service.endpoint
@@ -313,24 +315,31 @@ export const actions: ActionTree<State, RootState> = {
               runId,
             })
           }
+          commit('setProp', {
+            key: 'updatedDate',
+            value: new Date(),
+            runId,
+          })
         }
       } else {
         for (const runId of service.runIds) {
-          await getRunsIdStatus(this.$axios, service.endpoint, runId)
-            .then((runStatus) => {
-              commit('setProp', {
-                key: 'state',
-                value: runStatus.state,
-                runId,
+          const state = (
+            await getRunsIdStatus(this.$axios, service.endpoint, runId).catch(
+              (_) => ({
+                state: 'UNKNOWN',
               })
-            })
-            .catch((_) => {
-              commit('setProp', {
-                key: 'state',
-                value: 'UNKNOWN',
-                runId,
-              })
-            })
+            )
+          ).state
+          commit('setProp', {
+            key: 'state',
+            value: state,
+            runId,
+          })
+          commit('setProp', {
+            key: 'updatedDate',
+            value: new Date(),
+            runId,
+          })
         }
       }
     }
@@ -338,14 +347,14 @@ export const actions: ActionTree<State, RootState> = {
 
   async cancelRun({ rootGetters, getters }, runId: string): Promise<void> {
     const run: Run | undefined = getters.run(runId)
-    if (typeof run === 'undefined') {
-      return
-    }
-    if (['QUEUED', 'INITIALIZING', 'RUNNING', 'PAUSED'].includes(run.state)) {
+    if (
+      run &&
+      ['QUEUED', 'INITIALIZING', 'RUNNING', 'PAUSED'].includes(run.state)
+    ) {
       const service: Service | undefined = rootGetters['services/service'](
         run.serviceId
       )
-      if (typeof service !== 'undefined') {
+      if (service) {
         await postRunsIdCancel(this.$axios, service.endpoint, runId)
       }
     }

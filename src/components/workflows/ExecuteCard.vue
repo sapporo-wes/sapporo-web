@@ -94,7 +94,7 @@
         }"
         class="mx-4 mt-4 mb-4 elevation-2 input-field-middle"
       />
-      <div v-if="service.workflowAttachment" class="d-flex flex-column mx-4">
+      <div v-if="serviceWorkflowAttachment" class="d-flex flex-column mx-4">
         <div v-for="ind in workflowAttachment.length" :key="ind" class="d-flex">
           <v-file-input
             v-model="workflowAttachment[ind - 1]"
@@ -143,7 +143,7 @@
         </div>
       </div>
       <div
-        v-if="!service.workflowAttachment"
+        v-if="!serviceWorkflowAttachment"
         class="mx-6 mb-4"
         :style="{
           color: $vuetify.theme.themes.light.error,
@@ -202,7 +202,7 @@ import 'codemirror/mode/yaml/yaml.js'
 import { codemirror } from 'vue-codemirror'
 import { codeMirrorMode, isJson, isYaml, yamlToJson } from '@/utils'
 import { Run } from '@/store/runs'
-import { Service } from '@/store/services'
+import { Service, WorkflowEngine } from '@/store/services'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import { Workflow } from '@/store/workflows'
 import dayjs from 'dayjs'
@@ -230,6 +230,7 @@ type Methods = {
 
 type Computed = {
   service: Service
+  serviceWorkflowAttachment: boolean
   workflow: Workflow
   runNames: string[]
   wfEngines: string[]
@@ -281,6 +282,12 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return this.$store.getters['services/service'](this.workflow.serviceId)
     },
 
+    serviceWorkflowAttachment() {
+      return this.$store.getters['services/workflowAttachment'](
+        this.workflow.serviceId
+      )
+    },
+
     workflow() {
       return this.$store.getters['workflows/workflow'](this.workflowId)
     },
@@ -295,8 +302,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return this.$store.getters['services/workflowEngines'](
         this.service.id
       ).map(
-        (wfEngine: { name: string; version: string }) =>
-          `${wfEngine.name} ${wfEngine.version}`
+        (wfEngine: WorkflowEngine) => `${wfEngine.name} ${wfEngine.version}`
       )
     },
 
