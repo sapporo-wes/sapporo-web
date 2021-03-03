@@ -97,7 +97,9 @@ import { codemirror } from 'vue-codemirror'
 import { codeMirrorMode, validUrl, convertGitHubUrl } from '@/utils'
 import { Rule, FormComponent } from '@/types'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
+import { Workflow } from '@/store/workflows'
 import Vue from 'vue'
+import { WorkflowLanguages } from '@/store/services'
 
 const boxInitialText =
   '  Enter the content of the workflow or drag and drop a file here.'
@@ -122,10 +124,7 @@ type Methods = {
 }
 
 type Computed = {
-  languages: {
-    name: string
-    versions: string[]
-  }[]
+  languages: WorkflowLanguages
   types: string[]
   versions: string[]
   urlErrorMessages: string | Array<boolean | string>
@@ -173,10 +172,12 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   },
 
   created() {
+    // TODO
     this.nameRules.push(
       (v) =>
-        !this.$store.getters['workflows/existName'](v) ||
-        `Workflow name ${v} already exists.`
+        !this.$store.getters['workflows/workflows']
+          .map((workflow: Workflow) => workflow.name)
+          .includes(v) || `Workflow name ${v} already exists.`
     )
   },
 
@@ -238,7 +239,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     setDragFileName(e: DragEvent) {
       this.wfContent = ''
-      if (typeof e?.dataTransfer?.files[0].name !== 'undefined') {
+      if (e?.dataTransfer?.files?.[0]?.name) {
         this.inputtedUrl = e?.dataTransfer?.files[0].name
       }
     },
@@ -253,6 +254,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
             version: this.inputtedVersion,
             url: this.inputtedUrl,
             content: this.wfContent,
+            preRegistered: false,
           })
           .then((workflowId) => {
             ;((this.$refs.form as unknown) as FormComponent).reset()

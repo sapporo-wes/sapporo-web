@@ -213,7 +213,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
   methods: {
     async reloadServiceState(): Promise<void> {
-      await this.$store.dispatch('services/updateServiceState', this.serviceId)
+      await this.$store.dispatch('services/updateService', this.serviceId)
     },
 
     codeMirrorMode(content) {

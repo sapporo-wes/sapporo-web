@@ -1,11 +1,11 @@
 /* eslint-disable camelcase */
-export type DefaultWorkflowEngineParameter = {
+export interface DefaultWorkflowEngineParameter {
   name: string
   type: string
   default_value: string
 }
 
-export type Log = {
+export interface Log {
   name: string
   cmd: string
   start_time: string
@@ -27,16 +27,18 @@ export type State =
   | 'CANCELED'
   | 'CANCELING'
 
-export type WorkflowTypeVersion = {
+export interface WorkflowTypeVersion {
   workflow_type_version: string[]
 }
 
-export type AttachedFile = {
+// sapporo original implementation
+export interface AttachedFile {
   file_name: string
   file_url: string
 }
 
-export type Workflow = {
+// sapporo original implementation
+export interface Workflow {
   workflow_name: string
   workflow_url: string
   workflow_type: string
@@ -44,7 +46,7 @@ export type Workflow = {
   workflow_attachment: AttachedFile[]
 }
 
-export type ServiceInfo = {
+export interface ServiceInfo {
   workflow_type_versions: { [key: string]: WorkflowTypeVersion }
   supported_wes_versions: string[]
   supported_filesystem_protocols: string[]
@@ -53,46 +55,46 @@ export type ServiceInfo = {
   system_state_counts: { State: number }
   auth_instructions_url: string
   contact_info_url: string
-  tags: { [key: string]: string }
-  executable_workflows: Workflow[]
+  tags: { [key: string]: string | boolean }
+  executable_workflows?: Workflow[] // sapporo original implementation
 }
 
-export type RunStatus = {
+export interface RunStatus {
   run_id: string
   state: State
 }
 
-export type RunListResponse = {
+export interface RunListResponse {
   runs: RunStatus[]
   next_page_token: string
 }
 
-export type RunRequest = {
+export interface RunRequest {
   workflow_params: string
   workflow_type: string
   workflow_type_version: string
   tags: string
-  workflow_engine_name: string
+  workflow_engine_name?: string // sapporo original implementation
   workflow_engine_parameters: string
   workflow_url: string
-  workflow_name: string
-  workflow_attachment: AttachedFile[]
+  workflow_name?: string // sapporo original implementation
+  workflow_attachment?: AttachedFile[] // sapporo original implementation
 }
 
-export type RunLog = {
+export interface RunLog {
   run_id: string
   request: RunRequest
   state: State
   run_log: Log
   task_logs: Log[]
-  outputs: { [key: string]: Record<string, unknown> }
+  outputs: AttachedFile[] | unknown
 }
 
-export type RunId = {
+export interface RunId {
   run_id: string
 }
 
-export type ErrorResponse = {
+export interface ErrorResponse {
   msg: string
   status_code: number
 }

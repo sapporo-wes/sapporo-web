@@ -69,7 +69,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
   computed: {
     existServiceId() {
-      return this.$store.getters['services/existId'](this.serviceId)
+      return this.$store.getters['services/serviceIds'].includes(this.serviceId)
     },
 
     serviceId() {

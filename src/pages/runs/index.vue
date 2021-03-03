@@ -72,7 +72,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     },
 
     existRunId(): boolean {
-      return this.$store.getters['runs/existId'](this.runId)
+      return this.$store.getters['runs/runIds'].includes(this.runId)
     },
   },
 }

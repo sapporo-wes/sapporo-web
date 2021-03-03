@@ -48,7 +48,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   middleware({ store }) {
     ;((window as unknown) as MyWindow).onNuxtReady(async () => {
       const queue = [
-        store.dispatch('services/updateAllServicesState'),
+        store.dispatch('services/updateAllServices'),
         store.dispatch('runs/updateAllRunsState'),
       ]
       await Promise.all(queue)

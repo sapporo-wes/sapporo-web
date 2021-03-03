@@ -74,8 +74,8 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     }
     ;((window as unknown) as MyWindow).onNuxtReady(async () => {
       await store.dispatch(
-        'services/updateServiceState',
-        this.$store.getters['workflows/workflow'](workflowId).serviceId
+        'services/updateService',
+        store.getters['workflows/workflow'](workflowId).serviceId
       )
     })
   },
@@ -99,7 +99,9 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     },
 
     existWorkflowId(): boolean {
-      return this.$store.getters['workflows/existId'](this.workflowId)
+      return this.$store.getters['workflows/workflowIds'].includes(
+        this.workflowId
+      )
     },
   },
 }

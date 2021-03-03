@@ -50,7 +50,7 @@
     </v-data-table>
     <div class="d-flex justify-end pb-6 pr-6">
       <v-btn
-        :disabled="service.registeredOnlyMode"
+        :disabled="registeredOnlyMode"
         class="mr-4"
         color="primary"
         outlined
@@ -112,6 +112,7 @@ type Methods = Record<string, never>
 type Computed = {
   service: Service
   workflows: Workflow[]
+  registeredOnlyMode: boolean
 }
 
 type Props = {
@@ -171,6 +172,10 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return this.$store.getters['workflows/workflowsByIds'](
         this.service.workflowIds
       )
+    },
+
+    registeredOnlyMode() {
+      return this.$store.getters['services/registeredOnlyMode'](this.serviceId)
     },
   },
 
