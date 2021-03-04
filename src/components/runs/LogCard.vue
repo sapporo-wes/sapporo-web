@@ -1,6 +1,18 @@
 <template>
   <v-card elevation="8" max-width="1200">
-    <div class="card-header px-6 pt-4" v-text="'Run Log'" />
+    <div class="d-flex align-center px-6 pt-4">
+      <div class="card-header" v-text="'Run Log'" />
+      <v-spacer />
+      <v-btn
+        :color="$colors.grey.darken2"
+        outlined
+        class="mr-4"
+        @click.stop="downloadRunLog"
+      >
+        <v-icon class="mr-2" v-text="'mdi-download'" />
+        <span v-text="'Download Run Log'" />
+      </v-btn>
+    </div>
     <v-data-table
       :headers="logInfoHeaders"
       :items="logInfoContents"
@@ -102,6 +114,7 @@ type Data = {
 type Methods = {
   codeMirrorMode: (content: string) => ReturnType<typeof codeMirrorMode>
   downloadOutputFile: (file: AttachedFile) => void
+  downloadRunLog: () => Promise<void>
 }
 
 type Computed = {
@@ -217,6 +230,20 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       link.href = file.file_url
       link.click()
       link.remove()
+    },
+
+    async downloadRunLog() {
+      await this.$store.dispatch('runs/updateRun', this.run.id)
+      const blob = new Blob([JSON.stringify(this.run.runLog, null, 2)], {
+        type: 'application/json',
+      })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.download = `${this.run.name}.json`
+      link.href = url
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
     },
   },
 }

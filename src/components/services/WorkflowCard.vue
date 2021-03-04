@@ -31,7 +31,7 @@
       :items="workflowTableItems"
       calculate-widths
       class="mx-6 my-2"
-      item-key="id"
+      item-key="workflowId"
       multi-sort
       show-select
     >
