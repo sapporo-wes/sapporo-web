@@ -39,9 +39,31 @@
         outline: `solid 1px ${$colors.grey.lighten1}`,
       }"
       :value="workflow.content"
-      class="mx-12 mt-6 elevation-2 content-viewer"
+      class="mx-12 mt-4 elevation-2 content-viewer"
     />
-    <div class="pt-6" />
+    <div class="d-flex mt-4 pb-6 mr-12">
+      <v-spacer />
+      <v-btn
+        :color="$colors.grey.darken2"
+        class="mr-4"
+        outlined
+        width="150"
+        @click.stop="downloadWorkflowContent"
+      >
+        <v-icon class="mr-2">mdi-download</v-icon>download
+      </v-btn>
+      <v-btn
+        :color="$colors.grey.darken2"
+        outlined
+        width="150"
+        @click.stop="copyWorkflowContent"
+      >
+        <template v-if="copy"> copied!</template>
+        <template v-else>
+          <v-icon class="mr-2">mdi-clipboard-outline</v-icon>copy
+        </template>
+      </v-btn>
+    </div>
   </v-card>
 </template>
 
@@ -55,16 +77,18 @@ import { DataTableHeader } from 'vuetify/types'
 import { Service } from '@/store/services'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import { Workflow } from '@/store/workflows'
-import dayjs from 'dayjs'
 import Vue from 'vue'
 
 type Data = {
   workflowInfoHeaders: DataTableHeader[]
+  copy: boolean
 }
 
 type Methods = {
   validUrl: (val: string) => ReturnType<typeof validUrl>
   codeMirrorMode: (content: string) => ReturnType<typeof codeMirrorMode>
+  copyWorkflowContent: () => void
+  downloadWorkflowContent: () => void
 }
 
 type Computed = {
@@ -104,6 +128,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         { text: 'Key', value: 'key' },
         { text: 'Value', value: 'value' },
       ],
+      copy: false,
     }
   },
 
@@ -125,8 +150,14 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         },
         { key: 'Workflow URL', value: this.workflow.url },
         {
-          key: 'Added Date',
-          value: dayjs(this.workflow.addedDate).format('YYYY-MM-DD hh:mm:ss'),
+          key: 'Added / Updated Date',
+          value: this.workflow.preRegistered
+            ? this.$dayjs(this.workflow.updatedDate)
+                .local()
+                .format('YYYY-MM-DD HH:mm:ss')
+            : this.$dayjs(this.workflow.addedDate)
+                .local()
+                .format('YYYY-MM-DD HH:mm:ss'),
         },
       ]
     },
@@ -139,6 +170,22 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     codeMirrorMode(content) {
       return codeMirrorMode(content)
+    },
+
+    copyWorkflowContent() {
+      this.$copyText(this.workflow.content)
+      this.copy = true
+      setTimeout(() => {
+        this.copy = false
+      }, 2000)
+    },
+
+    downloadWorkflowContent() {
+      const blob = new Blob([this.workflow.content], { type: 'text/plane' })
+      const link = document.createElement('a')
+      link.href = window.URL.createObjectURL(blob)
+      link.download = this.workflow.url.split('/').slice(-1)[0]
+      link.click()
     },
   },
 }

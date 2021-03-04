@@ -16,9 +16,10 @@
         />
         <v-text-field
           v-model="endpoint"
-          :error-messages="endpointError"
+          :error-messages="endpointError || checkConnectionMessage"
           clearable
           label="Endpoint"
+          @blur="checkConnection"
         />
       </div>
       <div class="d-flex justify-end px-12 pb-6">
@@ -40,14 +41,17 @@ import { Service } from '@/store/services'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import { validUrl } from '@/utils'
 import Vue from 'vue'
+import { getServiceInfo } from '@/utils/WESRequest'
 
 type Data = {
   name: string
   endpoint: string
+  checkConnectionMessage: string
 }
 
 type Methods = {
   submitService: () => Promise<void>
+  checkConnection: () => Promise<void>
 }
 
 type Computed = {
@@ -80,6 +84,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     return {
       name: '',
       endpoint: '',
+      checkConnectionMessage: '',
     }
   },
 
@@ -128,6 +133,16 @@ const options: ThisTypedComponentOptionsWithRecordProps<
             this.$router.push({ path: '/services', query: { serviceId } })
           })
       }
+    },
+
+    async checkConnection(): Promise<void> {
+      await getServiceInfo(this.$axios, this.endpoint)
+        .then((_) => {
+          this.checkConnectionMessage = ''
+        })
+        .catch((_) => {
+          this.checkConnectionMessage = `GET ${this.endpoint}/service_info is not working.`
+        })
     },
   },
 }

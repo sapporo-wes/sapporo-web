@@ -1,3 +1,5 @@
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 import { v4 as uuidv4 } from 'uuid'
 import Vue from 'vue'
 import colors from 'vuetify/lib/util/colors'
@@ -13,14 +15,16 @@ import {
 } from '@/types/WES'
 import { getServiceInfo } from '@/utils/WESRequest'
 
+dayjs.extend(utc)
+
 export type ServiceState = 'Available' | 'Disconnect' | 'Unknown'
 
 export interface Service {
   name: string
   endpoint: string
   state: ServiceState
-  addedDate: Date
-  updatedDate: Date
+  addedDate: string // utc string
+  updatedDate: string // utc string
   preRegistered: boolean
   id: string
   workflowIds: string[]
@@ -167,9 +171,9 @@ export const getters: GetterTree<State, RootState> = {
 }
 
 export const mutations: MutationTree<State> = {
-  clearServices(state) {
+  clearServices(state, force: boolean) {
     for (const serviceId of Object.keys(state)) {
-      if (serviceId in state && !state[serviceId].preRegistered) {
+      if (serviceId in state && (force || !state[serviceId].preRegistered)) {
         Vue.delete(state, serviceId)
       }
     }
@@ -187,7 +191,7 @@ export const mutations: MutationTree<State> = {
     state,
     payload: {
       key: keyof Service
-      value: boolean | Date | ServiceInfo | ServiceState | string | string[]
+      value: boolean | string | ServiceInfo | ServiceState | string | string[]
       serviceId: string
     }
   ) {
@@ -200,7 +204,15 @@ export const mutations: MutationTree<State> = {
         // For reactivity
         const serviceInfo = payload.value
         for (const [key, value] of Object.entries(serviceInfo)) {
-          Vue.set(state[payload.serviceId].serviceInfo, key, value)
+          if (value === null || typeof value !== 'object') {
+            Vue.set(state[payload.serviceId].serviceInfo, key, value)
+          } else {
+            for (const [key1, value1] of Object.entries(value)) {
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              Vue.set(state[payload.serviceId].serviceInfo[key], key1, value1)
+            }
+          }
         }
       }
     }
@@ -208,8 +220,8 @@ export const mutations: MutationTree<State> = {
 }
 
 export const actions: ActionTree<State, RootState> = {
-  clearServices({ commit }) {
-    commit('clearServices')
+  clearServices({ commit }, payload: { force?: boolean }) {
+    commit('clearServices', !!payload?.force)
   },
 
   async submitService(
@@ -258,7 +270,7 @@ export const actions: ActionTree<State, RootState> = {
       }
     }
 
-    const date = new Date()
+    const date = dayjs().utc().format()
     commit('setService', {
       name: payload.name,
       endpoint: payload.endpoint,
@@ -289,7 +301,11 @@ export const actions: ActionTree<State, RootState> = {
     for (const service of deletableServices) {
       commit('deleteService', service.id)
     }
-    dispatch('workflows/deleteWorkflows', workflowIds, { root: true })
+    dispatch(
+      'workflows/deleteWorkflows',
+      { workflowIds, force: true },
+      { root: true }
+    )
     dispatch('runs/deleteRuns', runIds, { root: true })
   },
 
@@ -371,6 +387,7 @@ export const actions: ActionTree<State, RootState> = {
                         (workflow: Workflow) => workflow.name === wfName
                       )[0].id,
                     ],
+                    force: true,
                   },
                   { root: true }
                 )
@@ -384,7 +401,7 @@ export const actions: ActionTree<State, RootState> = {
         })
       commit('setProp', {
         key: 'updatedDate',
-        value: new Date(),
+        value: dayjs().utc().format(),
         serviceId,
       })
     }

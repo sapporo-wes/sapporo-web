@@ -62,7 +62,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       serviceId = serviceId[0] || ''
     }
     ;((window as unknown) as MyWindow).onNuxtReady(async () => {
-      await store.dispatch('services/updateServiceState', serviceId)
+      await store.dispatch('services/updateService', serviceId)
       await store.dispatch('runs/updateAllRunsStateByService', serviceId)
     })
   },

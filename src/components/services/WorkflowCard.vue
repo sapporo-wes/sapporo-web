@@ -13,7 +13,7 @@
             color: $vuetify.theme.themes.light.error,
             textDecorationLine: 'underline',
           }"
-          v-text="'NO workflows are registered.'"
+          v-text="'Workflow is not registered.'"
         />
         Click
         <span
@@ -44,24 +44,50 @@
       <template #[`item.type`]="{ item }">
         {{ item.type }} {{ item.version }}
       </template>
-      <template #[`item.addedDate`]="{ item }">
-        {{ item.addedDate | formatDate }}
+      <template #[`item.date`]="{ item }">
+        {{
+          item.preRegistered
+            ? $dayjs(item.updatedDate).local().format('YYYY-MM-DD HH:mm:ss')
+            : $dayjs(item.addedDate).local().format('YYYY-MM-DD HH:mm:ss')
+        }}
+      </template>
+      <template #[`item.preRegistered`]="{ item }">
+        <v-icon v-if="item.preRegistered">mdi-check</v-icon>
+      </template>
+      <template #[`item.data-table-select`]="{ item, isSelected, select }">
+        <v-simple-checkbox
+          :disabled="item.preRegistered"
+          :value="isSelected"
+          @input="select"
+        />
       </template>
     </v-data-table>
     <div class="d-flex justify-end pb-6 pr-6">
-      <v-btn
-        :disabled="registeredOnlyMode"
-        class="mr-4"
-        color="primary"
-        outlined
-        @click.stop="registerDialogShow = true"
-      >
-        <v-icon class="mr-2">mdi-sticker-plus-outline</v-icon>Register
-      </v-btn>
+      <v-tooltip :value="tooltipShow" top color="primary" max-width="300">
+        <template #activator="{}">
+          <v-btn
+            :disabled="registeredOnlyMode"
+            class="mr-4"
+            color="primary"
+            outlined
+            width="140"
+            @click.stop="registerDialogShow = true"
+            @mouseover="overRegisterButton"
+            @mouseleave="tooltipShow = false"
+          >
+            <v-icon class="mr-2">mdi-sticker-plus-outline</v-icon>Register
+          </v-btn>
+        </template>
+        <span
+          >This service is running in a mode that executes only pre-registered
+          workflows, so it is not possible to register workflows.</span
+        >
+      </v-tooltip>
       <v-btn
         :disabled="!selectedWorkflows.length"
         color="error"
         outlined
+        width="140"
         @click.stop="deleteDialogShow = true"
       >
         <v-icon class="mr-2">mdi-trash-can-outline</v-icon>Delete
@@ -72,18 +98,14 @@
       :dialog-show="registerDialogShow"
       :service-id="serviceId"
       @close="registerDialogShow = false"
-      @error="errorSnackbar = true"
     />
 
     <workflow-delete-dialog
       :dialog-show="deleteDialogShow"
       :selected-items="selectedWorkflows"
+      @clear-selected="selectedWorkflows = []"
       @close="deleteDialogShow = false"
     />
-
-    <v-snackbar v-model="errorSnackbar" color="error" elevation="8" top>
-      Error!! There's something problem with the values you inputted.
-    </v-snackbar>
   </v-card>
 </template>
 
@@ -91,7 +113,6 @@
 import { DataTableHeader } from 'vuetify/types'
 import { Service } from '@/store/services'
 import { Workflow } from '@/store/workflows'
-import dayjs from 'dayjs'
 import Vue from 'vue'
 import WorkflowDeleteDialog from '@/components/services/WorkflowDeleteDialog.vue'
 import WorkflowRegisterDialog from '@/components/services/WorkflowRegisterDialog.vue'
@@ -103,11 +124,12 @@ type Data = {
   selectedWorkflows: Workflow[]
   registerDialogShow: boolean
   deleteDialogShow: boolean
-  errorSnackbar: boolean
-  errorMessage: string
+  tooltipShow: boolean
 }
 
-type Methods = Record<string, never>
+type Methods = {
+  overRegisterButton: () => void
+}
 
 type Computed = {
   service: Service
@@ -150,16 +172,18 @@ const options: ThisTypedComponentOptionsWithRecordProps<
           value: 'type',
         },
         {
-          text: 'Added Date',
-          value: 'addedDate',
+          text: 'Added / Updated Date',
+          value: 'date',
+        },
+        {
+          text: 'Pre-registered',
+          value: 'preRegistered',
         },
       ],
       selectedWorkflows: [],
       registerDialogShow: false,
       deleteDialogShow: false,
-      errorSnackbar: false,
-      errorMessage:
-        "Error!! There's something problem with the values you inputted.",
+      tooltipShow: false,
     }
   },
 
@@ -179,9 +203,11 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     },
   },
 
-  filters: {
-    formatDate(date: Date): string {
-      return dayjs(date).format('YYYY-MM-DD hh:mm:ss')
+  methods: {
+    overRegisterButton() {
+      if (this.$store.getters['services/registeredOnlyMode'](this.serviceId)) {
+        this.tooltipShow = true
+      }
     },
   },
 }

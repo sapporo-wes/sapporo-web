@@ -16,7 +16,7 @@
     <div v-if="!runs.length" class="my-2">
       <p
         :style="{ fontSize: '1rem', paddingLeft: '60px' }"
-        v-text="'No executed runs exist.'"
+        v-text="'The executed run does not exist.'"
       />
     </div>
 
@@ -41,24 +41,28 @@
       <template #[`item.service`]="{ item }">
         <nuxt-link
           :to="{ path: '/services', query: { serviceId: item.serviceId } }"
-          v-text="$store.getters['services/service'](item.serviceId).name"
+          v-text="$store.getters['services/service'](item.serviceId).name || ''"
         />
       </template>
       <template #[`item.workflow`]="{ item }">
         <nuxt-link
           :to="{ path: '/workflows', query: { workflowId: item.workflowId } }"
-          v-text="$store.getters['workflows/workflow'](item.workflowId).name"
+          v-text="
+            $store.getters['workflows/workflow'](item.workflowId).name || ''
+          "
         />
       </template>
       <template #[`item.workflowTypeVersion`]="{ item }">
         {{
-          `${$store.getters['workflows/workflow'](item.workflowId).type} ${
-            $store.getters['workflows/workflow'](item.workflowId).version
+          `${
+            $store.getters['workflows/workflow'](item.workflowId).type || ''
+          } ${
+            $store.getters['workflows/workflow'](item.workflowId).version || ''
           }`
         }}
       </template>
       <template #[`item.addedDate`]="{ item }">
-        {{ item.addedDate | formatDate }}
+        {{ $dayjs(item.addedDate).local().format('YYYY-MM-DD HH:mm:ss') }}
       </template>
       <template #[`item.state`]="{ item }">
         <v-chip
@@ -74,14 +78,17 @@
         color="error"
         :disabled="!selectedRuns.length"
         outlined
+        width="140"
         @click.stop="deleteDialogShow = true"
       >
         <v-icon class="mr-2">mdi-trash-can-outline</v-icon>Delete
       </v-btn>
     </div>
+
     <run-delete-dialog
       :dialog-show="deleteDialogShow"
       :selected-items="selectedRuns"
+      @clear-selected="selectedRuns = []"
       @close="deleteDialogShow = false"
     />
   </v-card>
@@ -91,7 +98,6 @@
 import { DataTableHeader } from 'vuetify/types'
 import { Run } from '@/store/runs'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import dayjs from 'dayjs'
 import RunDeleteDialog from '@/components/index/RunDeleteDialog.vue'
 import Vue from 'vue'
 
@@ -164,12 +170,6 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   methods: {
     async reloadRunState(): Promise<void> {
       await this.$store.dispatch('runs/updateAllRunsState')
-    },
-  },
-
-  filters: {
-    formatDate(date: Date): string {
-      return dayjs(date).format('YYYY-MM-DD hh:mm:ss')
     },
   },
 }

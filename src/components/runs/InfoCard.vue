@@ -44,8 +44,19 @@
       item-key="key"
     >
       <template #[`item.value`]="{ item }">
+        <div v-if="item.key === 'Run ID'" class="align-center">
+          <span>{{ item.value }}</span>
+          <v-tooltip top :value="runIdTooltip" color="primary">
+            <template #activator="{}">
+              <v-icon class="ml-2" @click.stop="copyRunId"
+                >mdi-clipboard-outline</v-icon
+              >
+            </template>
+            <span>Coppied!</span>
+          </v-tooltip>
+        </div>
         <nuxt-link
-          v-if="item.key === 'Service'"
+          v-else-if="item.key === 'Service'"
           :to="{ path: '/services', query: { serviceId: service.id } }"
           v-text="service.name"
         />
@@ -72,6 +83,8 @@
             textTransform: 'none',
             justifyContent: 'start',
             letterSpacing: 'normal',
+            maxWidth: '210px',
+            minWidth: '210px',
           }"
           v-text="tabItem.key"
         />
@@ -111,6 +124,7 @@ import Vue from 'vue'
 type Data = {
   runInfoHeaders: DataTableHeader[]
   tab: number | null
+  runIdTooltip: boolean
 }
 
 type Methods = {
@@ -118,6 +132,7 @@ type Methods = {
   codeMirrorMode: (content: string) => ReturnType<typeof codeMirrorMode>
   validUrl: (val: string) => ReturnType<typeof validUrl>
   cancelRun: () => Promise<void>
+  copyRunId: () => void
 }
 
 type Computed = {
@@ -163,6 +178,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         { text: 'Value', value: 'value' },
       ],
       tab: 3,
+      runIdTooltip: false,
     }
   },
 
@@ -181,6 +197,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     runInfoContents() {
       return [
+        { key: 'Run ID', value: this.runId },
         { key: 'Service', value: '' },
         { key: 'Workflow', value: '' },
         { key: 'Workflow URL', value: this.run.runLog.request.workflow_url },
@@ -243,6 +260,14 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         await this.$store.dispatch('runs/cancelRun', this.runId)
         await this.$store.dispatch('runs/updateRun', this.runId)
       }
+    },
+
+    copyRunId() {
+      this.$copyText(this.runId)
+      this.runIdTooltip = true
+      setTimeout(() => {
+        this.runIdTooltip = false
+      }, 1500)
     },
   },
 }

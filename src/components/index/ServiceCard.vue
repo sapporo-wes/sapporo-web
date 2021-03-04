@@ -13,7 +13,7 @@
             color: $vuetify.theme.themes.light.error,
             textDecorationLine: 'underline',
           }"
-          v-text="'NO WES services are registered.'"
+          v-text="'WES service is not registered.'"
         />
         Click
         <span
@@ -42,13 +42,23 @@
         />
       </template>
       <template #[`item.addedDate`]="{ item }">
-        {{ item.addedDate | formatDate }}
+        {{ $dayjs(item.addedDate).local().format('YYYY-MM-DD HH:mm:ss') }}
+      </template>
+      <template #[`item.preRegistered`]="{ item }">
+        <v-icon v-if="item.preRegistered">mdi-check</v-icon>
       </template>
       <template #[`item.state`]="{ item }">
         <v-chip
           :color="$store.getters['services/stateColor'](item.id)"
           text-color="white"
-          v-text="item.state"
+          v-text="item.state || ''"
+        />
+      </template>
+      <template #[`item.data-table-select`]="{ item, isSelected, select }">
+        <v-simple-checkbox
+          :disabled="item.preRegistered"
+          :value="isSelected"
+          @input="select"
         />
       </template>
     </v-data-table>
@@ -57,6 +67,7 @@
         color="primary"
         class="mr-4"
         outlined
+        width="140"
         @click.stop="registerDialogShow = true"
       >
         <v-icon class="mr-2">mdi-sticker-plus-outline</v-icon>Register
@@ -65,6 +76,7 @@
         :disabled="!selectedServices.length"
         color="error"
         outlined
+        width="140"
         @click.stop="deleteDialogShow = true"
       >
         <v-icon class="mr-2">mdi-trash-can-outline</v-icon>Delete
@@ -74,7 +86,6 @@
     <service-register-dialog
       :dialog-show="registerDialogShow"
       @close="registerDialogShow = false"
-      @error="registrationError"
     />
 
     <service-delete-dialog
@@ -82,10 +93,6 @@
       :selected-items="selectedServices"
       @close="deleteDialogShow = false"
     />
-
-    <v-snackbar v-model="errorSnackbar" color="error" elevation="8" top>
-      {{ errorMessage }}
-    </v-snackbar>
   </v-card>
 </template>
 
@@ -93,7 +100,6 @@
 import { DataTableHeader } from 'vuetify/types'
 import { Service } from '@/store/services'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import dayjs from 'dayjs'
 import ServiceDeleteDialog from '@/components/index/ServiceDeleteDialog.vue'
 import ServiceRegisterDialog from '@/components/index/ServiceRegisterDialog.vue'
 import Vue from 'vue'
@@ -103,8 +109,6 @@ type Data = {
   selectedServices: Service[]
   registerDialogShow: boolean
   deleteDialogShow: boolean
-  errorSnackbar: boolean
-  errorMessage: string
 }
 
 type Methods = {
@@ -145,6 +149,10 @@ const options: ThisTypedComponentOptionsWithRecordProps<
           value: 'addedDate',
         },
         {
+          text: 'Pre-registered',
+          value: 'preRegistered',
+        },
+        {
           text: 'State',
           value: 'state',
         },
@@ -152,28 +160,12 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       selectedServices: [],
       registerDialogShow: false,
       deleteDialogShow: false,
-      errorSnackbar: false,
-      errorMessage:
-        "Error!! There's something problem with the endpoint you inputted.",
     }
   },
 
   computed: {
     services() {
       return this.$store.getters['services/services']
-    },
-  },
-
-  methods: {
-    registrationError(inputtedEndpoint: string) {
-      this.errorMessage = `Error!! There's something problem with the endpoint ${inputtedEndpoint} you inputted.`
-      this.errorSnackbar = true
-    },
-  },
-
-  filters: {
-    formatDate(date: Date): string {
-      return dayjs(date).format('YYYY-MM-DD hh:mm:ss')
     },
   },
 }

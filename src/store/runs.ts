@@ -1,3 +1,5 @@
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 import Vue from 'vue'
 import colors from 'vuetify/lib/util/colors'
 import { ActionTree, GetterTree, MutationTree } from 'vuex'
@@ -11,7 +13,7 @@ import {
   RunStatus,
   State as WesState,
 } from '@/types/WES'
-import { isYaml, validUrl, yamlToJson } from '@/utils'
+import { validUrl } from '@/utils'
 import {
   getRuns,
   getRunsId,
@@ -20,11 +22,13 @@ import {
   postRunsIdCancel,
 } from '@/utils/WESRequest'
 
+dayjs.extend(utc)
+
 export type Run = {
   name: string
   state: WesState
-  addedDate: Date
-  updatedDate: Date
+  addedDate: string // utc string
+  updatedDate: string // utc string
   serviceId: string
   workflowId: string
   id: string
@@ -98,7 +102,7 @@ export const mutations: MutationTree<State> = {
     state,
     payload: {
       key: keyof Run
-      value: Date | RunLog | string | WesState
+      value: RunLog | string | WesState
       runId: string
     }
   ) {
@@ -108,7 +112,15 @@ export const mutations: MutationTree<State> = {
         // For reactivity
         const runLog = payload.value
         for (const [key, value] of Object.entries(runLog)) {
-          Vue.set(state[payload.runId].runLog, key, value)
+          if (value === null || typeof value !== 'object') {
+            Vue.set(state[payload.runId].runLog, key, value)
+          } else {
+            for (const [key1, value1] of Object.entries(value)) {
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              Vue.set(state[payload.runId].runLog[key], key1, value1)
+            }
+          }
         }
       }
     }
@@ -150,10 +162,7 @@ export const actions: ActionTree<State, RootState> = {
     }
     data.append('workflow_engine_name', payload.wfEngineName)
     data.append('workflow_engine_parameters', payload.wfEngineParams)
-    data.append(
-      'workflow_params',
-      isYaml(payload.wfParams) ? yamlToJson(payload.wfParams) : payload.wfParams
-    )
+    data.append('workflow_params', payload.wfParams)
 
     if (
       !validUrl(payload.workflow.url) &&
@@ -168,7 +177,7 @@ export const actions: ActionTree<State, RootState> = {
           (fileName: string) => fileName.split('/').slice(-1)[0]
         ),
       ]
-      if (!(wfFileName in attachedFileNames)) {
+      if (!attachedFileNames.includes(wfFileName)) {
         data.append(
           'workflow_attachment[]',
           new Blob([payload.workflow.content]),
@@ -212,7 +221,7 @@ export const actions: ActionTree<State, RootState> = {
       { root: true }
     )
 
-    const date = new Date()
+    const date = dayjs().utc().format()
     commit('addRun', {
       name: payload.runName,
       state: runStatus.state,
@@ -268,7 +277,7 @@ export const actions: ActionTree<State, RootState> = {
         commit('setProp', { key: 'runLog', value: runLog, runId: run.id })
         commit('setProp', {
           key: 'updatedDate',
-          value: new Date(),
+          value: dayjs().utc().format(),
           runId: run.id,
         })
       }
@@ -292,6 +301,7 @@ export const actions: ActionTree<State, RootState> = {
       serviceId
     )
     if (service) {
+      const date = dayjs().utc().format()
       if (rootGetters['services/getRuns'](service.id)) {
         const runListRes: RunListResponse = await getRuns(
           this.$axios,
@@ -317,7 +327,7 @@ export const actions: ActionTree<State, RootState> = {
           }
           commit('setProp', {
             key: 'updatedDate',
-            value: new Date(),
+            value: date,
             runId,
           })
         }
@@ -337,7 +347,7 @@ export const actions: ActionTree<State, RootState> = {
           })
           commit('setProp', {
             key: 'updatedDate',
-            value: new Date(),
+            value: date,
             runId,
           })
         }

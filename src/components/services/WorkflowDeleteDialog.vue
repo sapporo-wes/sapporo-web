@@ -21,7 +21,7 @@
           color: $vuetify.theme.themes.light.error,
         }"
         class="text-center"
-        v-text="'Are you sure to delete it?'"
+        v-text="'Are you sure to delete these?'"
       />
       <div class="d-flex justify-end px-12 pt-4 pb-6">
         <v-btn color="error" outlined @click.stop="deleteSelectedItems">
@@ -75,10 +75,11 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
   methods: {
     async deleteSelectedItems(): Promise<void> {
-      await this.$store.dispatch(
-        'workflows/deleteWorkflows',
-        (this.selectedItems as Workflow[]).map((workflow) => workflow.id)
-      )
+      await this.$store.dispatch('workflows/deleteWorkflows', {
+        workflowIds: (this.selectedItems as Workflow[]).map(
+          (workflow) => workflow.id
+        ),
+      })
       this.$emit('clearSelected')
       this.$emit('close')
     },

@@ -1,10 +1,15 @@
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 import { v4 as uuidv4 } from 'uuid'
 import Vue from 'vue'
 import { ActionTree, GetterTree, MutationTree } from 'vuex'
-import { AttachedFile, Workflow as WesWorkflow } from '@/types/WES'
+
 import { RootState } from '@/store'
 import { Run } from '@/store/runs'
+import { AttachedFile, Workflow as WesWorkflow } from '@/types/WES'
 import { convertGitHubUrl, validUrl } from '@/utils'
+
+dayjs.extend(utc)
 
 export interface Workflow {
   name: string
@@ -12,8 +17,8 @@ export interface Workflow {
   version: string
   url: string
   content: string
-  addedDate: Date
-  updatedDate: Date
+  addedDate: string // utc string
+  updatedDate: string // utc string
   preRegistered: boolean
   preRegisteredWorkflowAttachment: AttachedFile[]
   serviceId: string
@@ -57,9 +62,9 @@ export const getters: GetterTree<State, RootState> = {
 }
 
 export const mutations: MutationTree<State> = {
-  clearWorkflows(state) {
+  clearWorkflows(state, force: boolean) {
     for (const workflowId of Object.keys(state)) {
-      if (workflowId in state && !state[workflowId].preRegistered) {
+      if (workflowId in state && (force || !state[workflowId].preRegistered)) {
         Vue.delete(state, workflowId)
       }
     }
@@ -77,7 +82,7 @@ export const mutations: MutationTree<State> = {
     state,
     payload: {
       key: keyof Workflow
-      value: AttachedFile[] | boolean | Date | string | string[]
+      value: AttachedFile[] | boolean | string | string | string[]
       workflowId: string
     }
   ) {
@@ -88,8 +93,8 @@ export const mutations: MutationTree<State> = {
 }
 
 export const actions: ActionTree<State, RootState> = {
-  clearWorkflows({ commit }) {
-    commit('clearWorkflows')
+  clearWorkflows({ commit }, payload: { force?: boolean }) {
+    commit('clearWorkflows', !!payload?.force)
   },
 
   submitWorkflow(
@@ -113,7 +118,7 @@ export const actions: ActionTree<State, RootState> = {
       },
       { root: true }
     )
-    const date = new Date()
+    const date = dayjs()
     commit('setWorkflow', {
       name: payload.name,
       type: payload.type,
@@ -153,11 +158,9 @@ export const actions: ActionTree<State, RootState> = {
         content = JSON.stringify(res, null, 2)
       }
     } else {
-      const splitPath = payload.workflow.workflow_url.split('/')
-      const fileName = splitPath[splitPath.length - 1]
+      const fileName = payload.workflow.workflow_url.split('/').slice(-1)[0]
       for (const file of payload.workflow.workflow_attachment) {
-        const attachedSplitPath = file.file_name.split('/')
-        const attachedFileName = attachedSplitPath[attachedSplitPath.length - 1]
+        const attachedFileName = file.file_name.split('/').slice(-1)[0]
         if (fileName === attachedFileName) {
           const url = await convertGitHubUrl(this.$axios, file.file_url)
           const res = await this.$axios.$get(url)
@@ -171,7 +174,7 @@ export const actions: ActionTree<State, RootState> = {
       }
     }
 
-    const date = new Date()
+    const date = dayjs()
     commit('setWorkflow', {
       name: payload.workflow.workflow_name,
       type: payload.workflow.workflow_type,
@@ -210,11 +213,9 @@ export const actions: ActionTree<State, RootState> = {
         content = JSON.stringify(res, null, 2)
       }
     } else {
-      const splitPath = payload.workflow.workflow_url.split('/')
-      const fileName = splitPath[splitPath.length - 1]
+      const fileName = payload.workflow.workflow_url.split('/').slice(-1)[0]
       for (const file of payload.workflow.workflow_attachment) {
-        const attachedSplitPath = file.file_name.split('/')
-        const attachedFileName = attachedSplitPath[attachedSplitPath.length - 1]
+        const attachedFileName = file.file_name.split('/').slice(-1)[0]
         if (fileName === attachedFileName) {
           const url = await convertGitHubUrl(this.$axios, file.file_url)
           const res = await this.$axios.$get(url)
@@ -250,7 +251,7 @@ export const actions: ActionTree<State, RootState> = {
     })
     commit('setProp', {
       key: 'updatedDate',
-      value: new Date(),
+      value: dayjs(),
       workflowId: payload.workflowId,
     })
     commit('setProp', {
@@ -262,12 +263,13 @@ export const actions: ActionTree<State, RootState> = {
 
   deleteWorkflows(
     { commit, dispatch, getters, rootGetters },
-    workflowIds: string[]
+    payload: { workflowIds: string[]; force?: boolean }
   ) {
-    const deletableWorkflows: Workflow[] = workflowIds
+    const deletableWorkflows: Workflow[] = payload.workflowIds
       .map((workflowId: string) => getters.workflow(workflowId))
       .filter(
-        (workflow: Workflow | undefined) => workflow && !workflow.preRegistered
+        (workflow: Workflow | undefined) =>
+          workflow && (!!payload.force || !workflow.preRegistered)
       )
     const runIds = deletableWorkflows.flatMap(
       (workflow: Workflow) => workflow.runIds
@@ -281,7 +283,7 @@ export const actions: ActionTree<State, RootState> = {
         },
         { root: true }
       )
-      commit('deleteWorkflow', workflow)
+      commit('deleteWorkflow', workflow.id)
     }
     for (const runId of runIds) {
       const run: Run | undefined = rootGetters['runs/run'](runId)

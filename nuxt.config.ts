@@ -34,6 +34,8 @@ const config: NuxtConfig = {
   plugins: [
     '~/plugins/vuetifyColors.ts',
     { src: '~/plugins/localStorage.ts', ssr: false },
+    '~/plugins/dayjs.ts',
+    '~/plugins/vue-clipboard2.ts',
   ],
   buildModules: ['@nuxt/typescript-build', '@nuxtjs/vuetify'],
   modules: ['@nuxtjs/axios', 'nuxt-webfontloader'],
@@ -68,6 +70,8 @@ const config: NuxtConfig = {
   },
   env: {
     SAPPORO_WEB_VERSION: process.env.version || '',
+    LOAD_PRE_REGISTERED_SERVICES:
+      process.env.SAPPORO_LOAD_PRE_REGISTERED_SERVICES || 'false',
   },
 }
 

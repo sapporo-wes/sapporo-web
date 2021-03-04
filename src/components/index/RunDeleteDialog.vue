@@ -17,7 +17,7 @@
           color: $vuetify.theme.themes.light.error,
         }"
         class="text-center"
-        v-text="'Are you sure to delete it?'"
+        v-text="'Are you sure to delete these?'"
       />
       <div class="d-flex justify-end px-12 pt-4 pb-6">
         <v-btn color="error" outlined @click.stop="deleteSelectedItems">
