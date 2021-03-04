@@ -36,6 +36,19 @@ export type Run = {
   runLog: RunLog
 }
 
+export interface RunTableItem {
+  runId: string
+  runName: string
+  serviceId: string
+  serviceName: string
+  workflowId: string
+  workflowName: string
+  workflowTypeVersion: string
+  addedDate: string
+  state: string
+  stateColor: string
+}
+
 export interface State {
   [id: string]: Run
 }
@@ -59,6 +72,36 @@ export const getters: GetterTree<State, RootState> = {
 
   runIds(state): string[] {
     return Object.keys(state)
+  },
+
+  tableItems: (_state, getters, _rootState, rootGetter) => (
+    runIds: string[]
+  ): RunTableItem[] => {
+    const items: RunTableItem[] = []
+    const runs: Run[] = getters.runsByIds(runIds)
+    for (const run of runs) {
+      const service: Service | undefined = rootGetter['services/service'](
+        run.serviceId
+      )
+      const workflow: Workflow | undefined = rootGetter['workflows/workflow'](
+        run.workflowId
+      )
+      items.push({
+        runId: run.id,
+        runName: run.name,
+        serviceId: run.serviceId,
+        serviceName: service ? service.name : '',
+        workflowId: run.workflowId,
+        workflowName: workflow ? workflow.name : '',
+        workflowTypeVersion: `${workflow ? workflow.type : ''} ${
+          workflow ? workflow.version : ''
+        }`,
+        addedDate: dayjs(run.addedDate).local().format('YYYY-MM-DD HH:mm:ss'),
+        state: run.state,
+        stateColor: getters.stateColor(run.id),
+      })
+    }
+    return items
   },
 
   stateColor: (_state, getters) => (runId: string): string => {

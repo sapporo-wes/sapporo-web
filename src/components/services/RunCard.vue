@@ -5,7 +5,7 @@
       <v-spacer />
       <v-btn
         :color="$colors.grey.darken2"
-        :disabled="!runs.length"
+        :disabled="!runsTableItems.length"
         outlined
         small
         @click.stop="reloadRunState"
@@ -13,7 +13,7 @@
         <v-icon v-text="'mdi-reload'" />
       </v-btn>
     </div>
-    <div v-if="!runs.length" class="my-2">
+    <div v-if="!runsTableItems.length" class="my-2">
       <p
         :style="{ fontSize: '1rem', paddingLeft: '60px' }"
         v-text="'The executed run does not exist.'"
@@ -21,52 +21,32 @@
     </div>
 
     <v-data-table
-      v-if="runs.length"
+      v-if="runsTableItems.length"
       v-model="selectedRuns"
       :headers="runHeaders"
       :items-per-page="Number(10)"
-      :items="runs"
+      :items="runsTableItems"
       calculate-widths
       class="mx-6 my-2"
       item-key="id"
       multi-sort
       show-select
     >
-      <template #[`item.name`]="{ item }">
+      <template #[`item.runName`]="{ item }">
         <nuxt-link
-          :to="{ path: '/runs', query: { runId: item.id } }"
-          v-text="item.name"
+          :to="{ path: '/runs', query: { runId: item.runId } }"
+          v-text="item.runName"
         />
       </template>
-      <template #[`item.service`]="{ item }">
-        <nuxt-link
-          :to="{ path: '/services', query: { serviceId: item.serviceId } }"
-          v-text="$store.getters['services/service'](item.serviceId).name || ''"
-        />
-      </template>
-      <template #[`item.workflow`]="{ item }">
+      <template #[`item.workflowName`]="{ item }">
         <nuxt-link
           :to="{ path: '/workflows', query: { workflowId: item.workflowId } }"
-          v-text="
-            $store.getters['workflows/workflow'](item.workflowId).name || ''
-          "
+          v-text="item.workflowName"
         />
-      </template>
-      <template #[`item.workflowTypeVersion`]="{ item }">
-        {{
-          `${
-            $store.getters['workflows/workflow'](item.workflowId).type || ''
-          } ${
-            $store.getters['workflows/workflow'](item.workflowId).version || ''
-          }`
-        }}
-      </template>
-      <template #[`item.addedDate`]="{ item }">
-        {{ $dayjs(item.addedDate).local().format('YYYY-MM-DD HH:mm:ss') }}
       </template>
       <template #[`item.state`]="{ item }">
         <v-chip
-          :color="$store.getters['runs/stateColor'](item.id)"
+          :color="item.stateColor"
           text-color="white"
           v-text="item.state"
         />
@@ -97,7 +77,7 @@
 
 <script lang="ts">
 import { DataTableHeader } from 'vuetify/types'
-import { Run } from '@/store/runs'
+import { RunTableItem } from '@/store/runs'
 import { Service } from '@/store/services'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import RunDeleteDialog from '@/components/services/RunDeleteDialog.vue'
@@ -105,7 +85,7 @@ import Vue from 'vue'
 
 type Data = {
   runHeaders: DataTableHeader[]
-  selectedRuns: Run[]
+  selectedRuns: RunTableItem[]
   deleteDialogShow: boolean
 }
 
@@ -115,7 +95,7 @@ type Methods = {
 
 type Computed = {
   service: Service
-  runs: Run[]
+  runsTableItems: RunTableItem[]
 }
 
 type Props = {
@@ -145,11 +125,11 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       runHeaders: [
         {
           text: 'Name',
-          value: 'name',
+          value: 'runName',
         },
         {
           text: 'Workflow',
-          value: 'workflow',
+          value: 'workflowName',
         },
         {
           text: 'Type Version',
@@ -174,8 +154,8 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return this.$store.getters['services/service'](this.serviceId)
     },
 
-    runs(): Run[] {
-      return this.$store.getters['runs/runsByIds'](this.service.runIds)
+    runsTableItems() {
+      return this.$store.getters['runs/tableItems'](this.service.runIds)
     },
   },
 

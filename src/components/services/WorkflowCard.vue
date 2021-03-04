@@ -1,7 +1,7 @@
 <template>
   <v-card elevation="8" max-width="1200">
     <div class="card-header pl-6 pt-4" v-text="'Workflows'" />
-    <div v-if="!workflows.length" class="my-2">
+    <div v-if="!workflowTableItems.length" class="my-2">
       <p
         :style="{
           fontSize: '1rem',
@@ -24,32 +24,22 @@
       </p>
     </div>
     <v-data-table
-      v-if="workflows.length"
+      v-if="workflowTableItems.length"
       v-model="selectedWorkflows"
       :headers="workflowHeaders"
-      :items-per-page="Number(5)"
-      :items="workflows"
+      :items-per-page="Number(10)"
+      :items="workflowTableItems"
       calculate-widths
       class="mx-6 my-2"
       item-key="id"
       multi-sort
       show-select
     >
-      <template #[`item.name`]="{ item }">
+      <template #[`item.workflowName`]="{ item }">
         <nuxt-link
-          :to="{ path: '/workflows', query: { workflowId: item.id } }"
-          v-text="item.name"
+          :to="{ path: '/workflows', query: { workflowId: item.workflowId } }"
+          v-text="item.workflowName"
         />
-      </template>
-      <template #[`item.type`]="{ item }">
-        {{ item.type }} {{ item.version }}
-      </template>
-      <template #[`item.date`]="{ item }">
-        {{
-          item.preRegistered
-            ? $dayjs(item.updatedDate).local().format('YYYY-MM-DD HH:mm:ss')
-            : $dayjs(item.addedDate).local().format('YYYY-MM-DD HH:mm:ss')
-        }}
       </template>
       <template #[`item.preRegistered`]="{ item }">
         <v-icon v-if="item.preRegistered" v-text="'mdi-check'" />
@@ -80,9 +70,10 @@
           </v-btn>
         </template>
         <span
-          >This service is running in a mode that executes only pre-registered
-          workflows, so it is not possible to register workflows.</span
-        >
+          v-text="
+            'This service is running in a mode that executes only pre-registered workflows, so it is not possible to register workflows.'
+          "
+        />
       </v-tooltip>
       <v-btn
         :disabled="!selectedWorkflows.length"
@@ -114,7 +105,7 @@
 <script lang="ts">
 import { DataTableHeader } from 'vuetify/types'
 import { Service } from '@/store/services'
-import { Workflow } from '@/store/workflows'
+import { WorkflowTableItem } from '@/store/workflows'
 import Vue from 'vue'
 import WorkflowDeleteDialog from '@/components/services/WorkflowDeleteDialog.vue'
 import WorkflowRegisterDialog from '@/components/services/WorkflowRegisterDialog.vue'
@@ -123,7 +114,7 @@ import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 
 type Data = {
   workflowHeaders: DataTableHeader[]
-  selectedWorkflows: Workflow[]
+  selectedWorkflows: WorkflowTableItem[]
   registerDialogShow: boolean
   deleteDialogShow: boolean
   tooltipShow: boolean
@@ -135,7 +126,7 @@ type Methods = {
 
 type Computed = {
   service: Service
-  workflows: Workflow[]
+  workflowTableItems: WorkflowTableItem[]
   registeredOnlyMode: boolean
 }
 
@@ -167,11 +158,11 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       workflowHeaders: [
         {
           text: 'Name',
-          value: 'name',
+          value: 'workflowName',
         },
         {
           text: 'Type Version',
-          value: 'type',
+          value: 'workflowTypeVersion',
         },
         {
           text: 'Added / Updated Date',
@@ -194,8 +185,8 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return this.$store.getters['services/service'](this.serviceId)
     },
 
-    workflows() {
-      return this.$store.getters['workflows/workflowsByIds'](
+    workflowTableItems() {
+      return this.$store.getters['workflows/tableItems'](
         this.service.workflowIds
       )
     },

@@ -26,6 +26,14 @@ export interface Workflow {
   runIds: string[]
 }
 
+export interface WorkflowTableItem {
+  workflowId: string
+  workflowName: string
+  workflowTypeVersion: string
+  date: string
+  preRegistered: boolean
+}
+
 export interface State {
   [id: string]: Workflow
 }
@@ -58,6 +66,23 @@ export const getters: GetterTree<State, RootState> = {
     if (run) {
       return getters.workflow(run.workflowId)
     }
+  },
+
+  tableItems: (_state, getters) => (workflowIds: string[]) => {
+    const items: WorkflowTableItem[] = []
+    const workflows: Workflow[] = getters.workflowsByIds(workflowIds)
+    for (const workflow of workflows) {
+      items.push({
+        workflowId: workflow.id,
+        workflowName: workflow.name,
+        workflowTypeVersion: `${workflow.type} ${workflow.version}`,
+        date: workflow.preRegistered
+          ? dayjs(workflow.updatedDate).local().format('YYYY-MM-DD HH:mm:ss')
+          : dayjs(workflow.addedDate).local().format('YYYY-MM-DD HH:mm:ss'),
+        preRegistered: workflow.preRegistered,
+      })
+    }
+    return items
   },
 }
 
