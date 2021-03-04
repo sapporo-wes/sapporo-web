@@ -23,6 +23,8 @@
             textTransform: 'none',
             justifyContent: 'start',
             letterSpacing: 'normal',
+            maxWidth: '210px',
+            minWidth: '210px',
           }"
           v-text="tabItem.key"
         />
@@ -56,7 +58,6 @@ import { codeMirrorMode } from '@/utils'
 import { DataTableHeader } from 'vuetify/types'
 import { Run } from '@/store/runs'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import dayjs from 'dayjs'
 import Vue from 'vue'
 
 type Data = {
@@ -122,17 +123,19 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         {
           key: 'Start Time',
           value: this.run.runLog.run_log.start_time
-            ? dayjs(this.run.runLog.run_log.start_time).format(
-                'YYYY-MM-DD hh:mm:ss'
-              )
+            ? this.$dayjs
+                .utc(this.run.runLog.run_log.start_time)
+                .local()
+                .format('YYYY-MM-DD HH:mm:ss')
             : '',
         },
         {
           key: 'End Time',
           value: this.run.runLog.run_log.end_time
-            ? dayjs(this.run.runLog.run_log.end_time).format(
-                'YYYY-MM-DD hh:mm:ss'
-              )
+            ? this.$dayjs
+                .utc(this.run.runLog.run_log.end_time)
+                .local()
+                .format('YYYY-MM-DD HH:mm:ss')
             : '',
         },
         {

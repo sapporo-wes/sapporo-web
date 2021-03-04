@@ -38,7 +38,7 @@
               : $colors.grey.lighten1
           }`,
         }"
-        class="mx-4 mt-4 my-2 elevation-2 input-field-small"
+        class="mx-4 mt-4 mb-2 elevation-2 input-field-small"
       />
       <div
         class="mx-4 v-messages theme--light"
@@ -64,7 +64,7 @@
               : $colors.grey.lighten1
           }`,
         }"
-        class="mx-4 mt-4 my-2 elevation-2 input-field-small"
+        class="mx-4 mt-4 mb-2 elevation-2 input-field-small"
       />
       <div
         class="mx-4 v-messages theme--light"
@@ -127,6 +127,7 @@
             class="mr-4"
             :color="$colors.grey.darken2"
             outlined
+            width="160"
             @click.stop="incrementWorkflowAttachment"
           >
             <v-icon class="mr-2">mdi-text-box-plus-outline</v-icon>
@@ -135,6 +136,7 @@
           <v-btn
             :color="$colors.grey.darken2"
             outlined
+            width="160"
             @click.stop="decrementWorkflowAttachment"
           >
             <v-icon class="mr-2">mdi-text-box-minus-outline</v-icon>
@@ -167,7 +169,7 @@
               : $colors.grey.lighten1
           }`,
         }"
-        class="mx-4 mt-4 my-2 elevation-2 input-field-large"
+        class="mx-4 mt-4 mb-2 elevation-2 input-field-large"
       />
       <div
         class="mx-4 v-messages theme--light"
@@ -183,6 +185,7 @@
       <v-btn
         color="primary"
         outlined
+        width="140"
         :disabled="!formValid || service.state !== 'Available'"
         @click.stop="executeRun"
       >
@@ -205,7 +208,6 @@ import { Run } from '@/store/runs'
 import { Service, WorkflowEngine } from '@/store/services'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import { Workflow } from '@/store/workflows'
-import dayjs from 'dayjs'
 import Vue from 'vue'
 
 type Data = {
@@ -363,9 +365,12 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   },
 
   created() {
-    this.runName = `${this.workflow.name} ${dayjs(new Date()).format(
-      'YYYY-MM-DD hh:mm:ss'
-    )}`
+    this.runName = `${this.workflow.name} ${this.$dayjs()
+      .local()
+      .format('YYYY-MM-DD HH:mm:ss')}`
+    if (this.wfEngines.length === 1) {
+      this.wfEngine = this.wfEngines[0]
+    }
   },
 
   methods: {

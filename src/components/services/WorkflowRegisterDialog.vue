@@ -7,37 +7,33 @@
   >
     <v-card>
       <div class="card-header pl-6 pt-4" v-text="'Register Workflow'" />
-      <v-form
-        ref="form"
-        v-model="registerValid"
-        class="px-12 py-2"
-        lazy-validation
-      >
+      <div class="px-12 py-2">
         <v-text-field
-          v-model="inputtedName"
-          :rules="nameRules"
+          v-model="name"
+          :error-messages="nameError"
           clearable
           label="Name"
         />
         <v-select
-          v-model="inputtedType"
+          v-model="type"
+          :error-messages="typeError"
           :items="types"
-          :rules="[(v) => !!v || 'Type is required.']"
           clearable
           label="Type"
+          @change="changeType"
         />
         <v-select
-          v-model="inputtedVersion"
+          v-model="version"
           :items="versions"
-          :rules="[(v) => !!v || 'Version is required.']"
+          :error-messages="versionError"
           clearable
           label="Version"
         />
         <v-text-field
-          v-model="inputtedUrl"
-          :error-messages="urlErrorMessages"
+          v-model="url"
+          :error-messages="urlError"
           clearable
-          hint="Please enter the HTTP/HTTPS URL, or enter the content of the workflow in the text area below, or drag and drop a file into the text area below."
+          hint="Please enter the HTTP/HTTPS remote URL, or enter the content of the workflow in the text area below, or drag and drop a file into the text area below."
           label="URL"
           persistent-hint
           @blur="blurUrl"
@@ -64,7 +60,7 @@
         >
           <div
             class="mb-2 mx-4"
-            v-text="'Cannot edit because a Remote URL has been entered.'"
+            v-text="'Unable to edit because a remote URL has been entered.'"
           />
           <v-btn
             :color="$colors.grey.darken2"
@@ -74,7 +70,7 @@
             v-text="'Attach as File'"
           />
         </div>
-      </v-form>
+      </div>
       <div class="d-flex justify-end px-12 pb-6">
         <v-btn
           :disabled="!registerValid"
@@ -95,27 +91,25 @@ import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/mode/yaml/yaml.js'
 import { codemirror } from 'vue-codemirror'
 import { codeMirrorMode, validUrl, convertGitHubUrl } from '@/utils'
-import { Rule, FormComponent } from '@/types'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import { Workflow } from '@/store/workflows'
+import { WorkflowLanguages, Service } from '@/store/services'
+
 import Vue from 'vue'
-import { WorkflowLanguages } from '@/store/services'
 
 const boxInitialText =
-  '  Enter the content of the workflow or drag and drop a file here.'
+  '  Please enter the contents of the workflow in the text area, or drag and drop the file.'
 
 type Data = {
-  registerValid: boolean
-  inputtedName: string
-  nameRules: Rule[]
-  inputtedType: string
-  inputtedVersion: string
-  inputtedUrl: string
+  name: string
+  type: string
+  version: string
+  url: string
   wfContent: string
 }
 
 type Methods = {
-  blurUrl: () => void
+  changeType: () => void
+  blurUrl: () => Promise<void>
   fixCodemirrorCss: () => void
   submitWorkflow: () => Promise<void>
   setDragFileName: (e: DragEvent) => void
@@ -124,10 +118,15 @@ type Methods = {
 }
 
 type Computed = {
+  registerValid: boolean
+  wfNames: string[]
   languages: WorkflowLanguages
   types: string[]
   versions: string[]
-  urlErrorMessages: string | Array<boolean | string>
+  nameError: string
+  typeError: string
+  versionError: string
+  urlError: string
   isRemoteUrl: boolean
 }
 
@@ -161,27 +160,27 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
   data() {
     return {
-      registerValid: false,
-      inputtedName: '',
-      nameRules: [(v) => !!v || 'Name is required.'],
-      inputtedType: '',
-      inputtedVersion: '',
-      inputtedUrl: '',
+      name: '',
+      type: '',
+      version: '',
+      url: '',
       wfContent: boxInitialText,
     }
   },
 
-  created() {
-    // TODO
-    this.nameRules.push(
-      (v) =>
-        !this.$store.getters['workflows/workflows']
-          .map((workflow: Workflow) => workflow.name)
-          .includes(v) || `Workflow name ${v} already exists.`
-    )
-  },
-
   computed: {
+    wfNames() {
+      const service: Service | undefined = this.$store.getters[
+        'services/service'
+      ](this.serviceId)
+      if (service) {
+        return this.$store.getters['workflows/workflowsByIds'](
+          service.workflowIds
+        )
+      }
+      return []
+    },
+
     languages() {
       return this.$store.getters['services/workflowLanguages'](this.serviceId)
     },
@@ -193,36 +192,80 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     versions() {
       let versions: string[] = []
       for (const language of this.languages) {
-        if (language.name === this.inputtedType) {
+        if (language.name === this.type) {
           versions = language.versions
         }
       }
       return versions
     },
 
-    urlErrorMessages() {
-      if (!this.wfContent || this.wfContent === boxInitialText) {
-        if (!this.inputtedUrl) {
-          return 'Please enter the HTTP/HTTPS URL, or enter the content of the workflow in the text area below, or drag and drop a file into the text area below.'
-        } else {
+    registerValid() {
+      return (
+        !this.nameError &&
+        !this.typeError &&
+        !this.versionError &&
+        !this.urlError
+      )
+    },
+
+    nameError() {
+      if (!this.name) {
+        return 'Name is required.'
+      }
+      if (this.name in this.wfNames) {
+        return `Name: ${this.name} already exists.`
+      }
+      return ''
+    },
+
+    typeError() {
+      if (!this.type) {
+        return 'Type is required.'
+      }
+      return ''
+    },
+
+    versionError() {
+      if (!this.version) {
+        return 'Version is required'
+      }
+      return ''
+    },
+
+    urlError() {
+      if (this.url) {
+        if (!this.wfContent || this.wfContent === boxInitialText) {
           return 'Please enter the content of the workflow in the text area below, or drag and drop a file into the text area below.'
+        } else {
+          // do nothing
         }
-      } else if (!this.inputtedUrl) {
+      } else if (!this.wfContent || this.wfContent === boxInitialText) {
+        return 'Please enter the HTTP/HTTPS remote URL, or enter the content of the workflow in the text area below, or drag and drop a file into the text area below.'
+      } else {
         return 'Please enter the File name. (e.g. workflow.cwl)'
       }
       return ''
     },
 
     isRemoteUrl(): boolean {
-      return validUrl(this.inputtedUrl)
+      return validUrl(this.url)
     },
   },
 
   methods: {
-    async blurUrl(): Promise<void> {
+    changeType() {
+      if (this.type && this.versions.length === 1) {
+        this.version = this.versions[0]
+      }
+      if (!this.type) {
+        this.version = ''
+      }
+    },
+
+    async blurUrl() {
       if (this.isRemoteUrl) {
-        this.inputtedUrl = await convertGitHubUrl(this.$axios, this.inputtedUrl)
-        const res = await this.$axios.$get(this.inputtedUrl)
+        this.url = await convertGitHubUrl(this.$axios, this.url)
+        const res = await this.$axios.$get(this.url)
         if (typeof res === 'string') {
           this.wfContent = res
         } else {
@@ -231,7 +274,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
 
-    fixCodemirrorCss(): void {
+    fixCodemirrorCss() {
       if (this.wfContent === boxInitialText) {
         this.wfContent = ''
       }
@@ -240,25 +283,24 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     setDragFileName(e: DragEvent) {
       this.wfContent = ''
       if (e?.dataTransfer?.files?.[0]?.name) {
-        this.inputtedUrl = e?.dataTransfer?.files[0].name
+        this.url = e?.dataTransfer?.files[0].name
       }
     },
 
-    async submitWorkflow(): Promise<void> {
-      if (((this.$refs.form as unknown) as FormComponent).validate()) {
+    async submitWorkflow() {
+      if (this.registerValid) {
         await this.$store
           .dispatch('workflows/submitWorkflow', {
             serviceId: this.serviceId,
-            name: this.inputtedName,
-            type: this.inputtedType,
-            version: this.inputtedVersion,
-            url: this.inputtedUrl,
+            name: this.name,
+            type: this.type,
+            version: this.version,
+            url: this.url,
             content: this.wfContent,
             preRegistered: false,
           })
           .then((workflowId) => {
-            ;((this.$refs.form as unknown) as FormComponent).reset()
-            ;((this.$refs.form as unknown) as FormComponent).resetValidation()
+            this.$emit('close')
             this.$router.push({ path: '/workflows', query: { workflowId } })
           })
       }
@@ -266,15 +308,23 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     attachAsFile() {
       if (this.isRemoteUrl) {
-        const url = new URL(this.inputtedUrl)
-        const splitPath = url.pathname.split('/')
-        this.inputtedUrl = splitPath[splitPath.length - 1]
+        const url = new URL(this.url)
+        this.url = url.pathname.split('/').slice(-1)[0]
       }
     },
 
     codeMirrorMode(content) {
       return codeMirrorMode(content)
     },
+  },
+
+  mounted() {
+    if (this.types.length === 1) {
+      this.type = this.types[0]
+    }
+    if (this.versions.length === 1) {
+      this.version = this.versions[0]
+    }
   },
 }
 

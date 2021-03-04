@@ -23,7 +23,7 @@
         :color="$colors.grey.darken2"
         outlined
         small
-        @click.stop="reloadServiceState"
+        @click.stop="reloadService"
       >
         <v-icon>mdi-reload</v-icon>
       </v-btn>
@@ -88,7 +88,6 @@ import { codeMirrorMode, validUrl } from '@/utils'
 import { DataTableHeader } from 'vuetify/types'
 import { Service } from '@/store/services'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import dayjs from 'dayjs'
 import Vue from 'vue'
 
 type Data = {
@@ -97,7 +96,7 @@ type Data = {
 }
 
 type Methods = {
-  reloadServiceState: () => Promise<void>
+  reloadService: () => Promise<void>
   codeMirrorMode: (content: string) => ReturnType<typeof codeMirrorMode>
   validUrl: (val: string) => ReturnType<typeof validUrl>
 }
@@ -156,7 +155,9 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         },
         {
           key: 'Added Date',
-          value: dayjs(this.service.addedDate).format('YYYY-MM-DD hh:mm:ss'),
+          value: this.$dayjs(this.service.addedDate)
+            .local()
+            .format('YYYY-MM-DD HH:mm:ss'),
         },
         {
           key: 'Auth Instructions URL',
@@ -212,7 +213,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   },
 
   methods: {
-    async reloadServiceState(): Promise<void> {
+    async reloadService(): Promise<void> {
       await this.$store.dispatch('services/updateService', this.serviceId)
     },
 
