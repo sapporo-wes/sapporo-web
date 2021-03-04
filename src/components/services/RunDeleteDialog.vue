@@ -9,7 +9,7 @@
       <div class="card-header pl-6 pt-4" v-text="'Delete Runs'" />
       <div class="px-12 py-2" v-text="'These runs will be deleted.'" />
       <ul :style="{ paddingLeft: '96px', paddingRight: '96px' }">
-        <li v-for="(item, i) in selectedItems" :key="i" v-text="item.name" />
+        <li v-for="(item, i) in selectedItems" :key="i" v-text="item.runName" />
       </ul>
       <div
         :style="{
@@ -34,7 +34,7 @@
 </template>
 
 <script lang="ts">
-import { Run } from '@/store/runs'
+import { RunTableItem } from '@/store/runs'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import Vue from 'vue'
 
@@ -48,7 +48,7 @@ type Computed = Record<string, unknown>
 
 type Props = {
   dialogShow: boolean
-  selectedItems: Run[]
+  selectedItems: RunTableItem[]
 }
 
 const options: ThisTypedComponentOptionsWithRecordProps<
@@ -75,7 +75,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     async deleteSelectedItems(): Promise<void> {
       await this.$store.dispatch(
         'runs/deleteRuns',
-        this.selectedItems.map((run) => run.id)
+        this.selectedItems.map((run) => run.runId)
       )
       this.$emit('clearSelected')
       this.$emit('close')

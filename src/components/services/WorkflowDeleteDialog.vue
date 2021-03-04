@@ -9,7 +9,11 @@
       <div class="card-header pl-6 pt-4" v-text="'Delete Workflows'" />
       <div class="px-12 py-2" v-text="'These workflows will be deleted.'" />
       <ul :style="{ paddingLeft: '96px', paddingRight: '96px' }">
-        <li v-for="(item, i) in selectedItems" :key="i" v-text="item.name" />
+        <li
+          v-for="(item, i) in selectedItems"
+          :key="i"
+          v-text="item.workflowName"
+        />
       </ul>
       <div
         class="px-12 py-2"
@@ -38,7 +42,7 @@
 </template>
 
 <script lang="ts">
-import { Workflow } from '@/store/workflows'
+import { WorkflowTableItem } from '@/store/workflows'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import Vue from 'vue'
 
@@ -52,7 +56,7 @@ type Computed = Record<string, unknown>
 
 type Props = {
   dialogShow: boolean
-  selectedItems: Workflow[]
+  selectedItems: WorkflowTableItem[]
 }
 
 const options: ThisTypedComponentOptionsWithRecordProps<
@@ -78,8 +82,8 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   methods: {
     async deleteSelectedItems(): Promise<void> {
       await this.$store.dispatch('workflows/deleteWorkflows', {
-        workflowIds: (this.selectedItems as Workflow[]).map(
-          (workflow) => workflow.id
+        workflowIds: (this.selectedItems as WorkflowTableItem[]).map(
+          (workflow) => workflow.workflowId
         ),
       })
       this.$emit('clearSelected')
