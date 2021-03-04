@@ -1,6 +1,6 @@
 {
   "name": "sapporo-web",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Web base management system for GA4GH WES",
   "author": "ddbj",
   "private": true,
