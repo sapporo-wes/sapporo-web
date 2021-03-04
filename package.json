@@ -5,15 +5,14 @@
   "author": "ddbj",
   "private": true,
   "scripts": {
-    "dev": "nuxt-ts",
-    "build": "nuxt-ts build",
-    "start": "nuxt-ts start",
-    "generate": "nuxt-ts generate",
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate",
     "lint": "eslint --ext .ts,.js,.vue ./src",
     "deploy": "SAPPORO_URL_PREFIX=/SAPPORO-web/ yarn generate && push-dir --dir=dist --branch=gh-pages --cleanup"
   },
   "dependencies": {
-    "@nuxt/typescript-runtime": "^2.0.1",
     "nuxt": "^2.14.12"
   },
   "devDependencies": {
