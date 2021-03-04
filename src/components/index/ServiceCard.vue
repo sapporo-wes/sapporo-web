@@ -45,7 +45,7 @@
         {{ $dayjs(item.addedDate).local().format('YYYY-MM-DD HH:mm:ss') }}
       </template>
       <template #[`item.preRegistered`]="{ item }">
-        <v-icon v-if="item.preRegistered">mdi-check</v-icon>
+        <v-icon v-if="item.preRegistered" v-text="'mdi-check'" />
       </template>
       <template #[`item.state`]="{ item }">
         <v-chip
@@ -70,7 +70,8 @@
         width="140"
         @click.stop="registerDialogShow = true"
       >
-        <v-icon class="mr-2">mdi-sticker-plus-outline</v-icon>Register
+        <v-icon class="mr-2" v-text="'mdi-sticker-plus-outline'" />
+        <span v-text="'Register'" />
       </v-btn>
       <v-btn
         :disabled="!selectedServices.length"
@@ -79,7 +80,8 @@
         width="140"
         @click.stop="deleteDialogShow = true"
       >
-        <v-icon class="mr-2">mdi-trash-can-outline</v-icon>Delete
+        <v-icon class="mr-2" v-text="'mdi-trash-can-outline'" />
+        <span v-text="'Delete'" />
       </v-btn>
     </div>
 

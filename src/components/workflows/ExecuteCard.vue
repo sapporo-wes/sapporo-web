@@ -130,8 +130,8 @@
             width="160"
             @click.stop="incrementWorkflowAttachment"
           >
-            <v-icon class="mr-2">mdi-text-box-plus-outline</v-icon>
-            Increment
+            <v-icon class="mr-2" v-text="'mdi-text-box-plus-outline'" />
+            <span v-text="'Increment'" />
           </v-btn>
           <v-btn
             :color="$colors.grey.darken2"
@@ -139,8 +139,8 @@
             width="160"
             @click.stop="decrementWorkflowAttachment"
           >
-            <v-icon class="mr-2">mdi-text-box-minus-outline</v-icon>
-            Decrement
+            <v-icon class="mr-2" v-text="'mdi-text-box-minus-outline'" />
+            <span v-text="'Decrement'" />
           </v-btn>
         </div>
       </div>
@@ -189,7 +189,8 @@
         :disabled="!formValid || service.state !== 'Available'"
         @click.stop="executeRun"
       >
-        <v-icon class="mr-2">mdi-rocket-launch-outline</v-icon>Execute
+        <v-icon class="mr-2" v-text="'mdi-rocket-launch-outline'" />
+        <span v-text="'Execute'" />
       </v-btn>
     </div>
     <v-snackbar v-model="errorSnackbar" color="error" elevation="8" top>

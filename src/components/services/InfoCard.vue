@@ -25,7 +25,7 @@
         small
         @click.stop="reloadService"
       >
-        <v-icon>mdi-reload</v-icon>
+        <v-icon v-text="'mdi-reload'" />
       </v-btn>
     </div>
 

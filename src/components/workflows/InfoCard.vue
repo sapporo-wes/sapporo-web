@@ -50,7 +50,8 @@
         width="150"
         @click.stop="downloadWorkflowContent"
       >
-        <v-icon class="mr-2">mdi-download</v-icon>download
+        <v-icon class="mr-2" v-text="'mdi-download'" />
+        <span v-text="'Download'" />
       </v-btn>
       <v-btn
         :color="$colors.grey.darken2"
@@ -60,7 +61,8 @@
       >
         <template v-if="copy"> copied!</template>
         <template v-else>
-          <v-icon class="mr-2">mdi-clipboard-outline</v-icon>copy
+          <v-icon class="mr-2" v-text="'mdi-clipboard-outline'" />
+          <span v-text="'Copy'" />
         </template>
       </v-btn>
     </div>
@@ -182,10 +184,13 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     downloadWorkflowContent() {
       const blob = new Blob([this.workflow.content], { type: 'text/plane' })
+      const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
-      link.href = window.URL.createObjectURL(blob)
       link.download = this.workflow.url.split('/').slice(-1)[0]
+      link.href = url
       link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
     },
   },
 }

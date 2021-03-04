@@ -29,7 +29,8 @@
           outlined
           @click.stop="submitService"
         >
-          <v-icon class="mr-2">mdi-arrow-up</v-icon>Submit
+          <v-icon class="mr-2" v-text="'mdi-arrow-up'" />
+          <span v-text="'Submit'" />
         </v-btn>
       </div>
     </v-card>

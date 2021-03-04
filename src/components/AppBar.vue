@@ -7,8 +7,8 @@
     </v-toolbar-title>
     <v-spacer />
     <v-btn href="https://github.com/ddbj/SAPPORO-web" color="white" outlined>
-      GitHub
-      <v-icon class="ml-2" color="white"> mdi-github </v-icon>
+      <v-icon class="mr-2" color="white" v-text="'mdi-github'" />
+      <span v-text="'GitHub'" />
     </v-btn>
   </v-app-bar>
 </template>
