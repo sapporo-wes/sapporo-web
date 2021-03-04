@@ -10,6 +10,7 @@
     "moduleResolution": "node",
     "baseUrl": ".",
     "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
     "paths": {
       "~/*": ["src/*"],
       "@/*": ["src/*"]
