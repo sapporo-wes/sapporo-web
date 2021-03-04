@@ -123,7 +123,7 @@ export const actions: ActionTree<State, RootState> = {
   },
 
   submitWorkflow(
-    { commit },
+    { commit, dispatch },
     payload: {
       serviceId: string
       name: string
@@ -135,7 +135,7 @@ export const actions: ActionTree<State, RootState> = {
     }
   ) {
     const workflowId: string = uuidv4()
-    this.commit(
+    dispatch(
       'services/addWorkflowId',
       {
         serviceId: payload.serviceId,

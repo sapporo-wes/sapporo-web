@@ -24,8 +24,9 @@
         />
         <v-select
           v-model="version"
-          :items="versions"
+          :disabled="!type"
           :error-messages="versionError"
+          :items="versions"
           clearable
           label="Version"
         />
@@ -255,10 +256,13 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
   methods: {
     changeType() {
-      if (this.type && this.versions.length === 1) {
-        this.version = this.versions[0]
-      }
-      if (!this.type) {
+      if (this.type) {
+        if (this.versions.length === 1) {
+          this.version = this.versions[0]
+        } else {
+          this.version = ''
+        }
+      } else {
         this.version = ''
       }
     },

@@ -20,6 +20,10 @@
           clearable
           label="Endpoint"
           @blur="checkConnection"
+          @change="
+            checkConnectionMessage =
+              'Connection check is not completed. Please leave from this text field.'
+          "
         />
       </div>
       <div class="d-flex justify-end px-12 pb-6">
@@ -85,13 +89,16 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     return {
       name: '',
       endpoint: '',
-      checkConnectionMessage: '',
+      checkConnectionMessage:
+        'Connection check is not completed. Please leave from this text field.',
     }
   },
 
   computed: {
     registerValid() {
-      return !this.nameError && !this.endpointError
+      return (
+        !this.nameError && !this.endpointError && !this.checkConnectionMessage
+      )
     },
 
     serviceNames() {
