@@ -1,7 +1,7 @@
 version: '3.5'
 services:
   app:
-    image: suecharo/sapporo-web:1.0.3
+    image: ghcr.io/ddbj/sapporo-web:1.0.4
     container_name: sapporo-web
     environment:
       - NUXT_HOST=0.0.0.0
