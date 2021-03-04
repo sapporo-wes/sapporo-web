@@ -55,19 +55,22 @@
     <div class="d-flex justify-end pb-6 pr-6">
       <v-tooltip :value="tooltipShow" top color="primary" max-width="300">
         <template #activator="{}">
-          <v-btn
-            :disabled="registeredOnlyMode"
+          <div
             class="mr-4"
-            color="primary"
-            outlined
-            width="140"
-            @click.stop="registerDialogShow = true"
             @mouseover="overRegisterButton"
             @mouseleave="tooltipShow = false"
           >
-            <v-icon class="mr-2" v-text="'mdi-sticker-plus-outline'" />
-            <span v-text="'Register'" />
-          </v-btn>
+            <v-btn
+              :disabled="registeredOnlyMode"
+              color="primary"
+              outlined
+              width="140"
+              @click.stop="registerDialogShow = true"
+            >
+              <v-icon class="mr-2" v-text="'mdi-sticker-plus-outline'" />
+              <span v-text="'Register'" />
+            </v-btn>
+          </div>
         </template>
         <span
           v-text="
@@ -198,7 +201,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
   methods: {
     overRegisterButton() {
-      if (this.$store.getters['services/registeredOnlyMode'](this.serviceId)) {
+      if (this.registeredOnlyMode) {
         this.tooltipShow = true
       }
     },
