@@ -55,6 +55,16 @@
 
     <div class="d-flex justify-end pb-6 pr-6">
       <v-btn
+        class="mr-4"
+        color="primary"
+        outlined
+        width="140"
+        @click.stop="importDialogShow = true"
+      >
+        <v-icon class="mr-2" v-text="'mdi-sticker-plus-outline'" />
+        <span v-text="'Import'" />
+      </v-btn>
+      <v-btn
         color="error"
         :disabled="!selectedRuns.length"
         outlined
@@ -65,6 +75,12 @@
         <span v-text="'Delete'" />
       </v-btn>
     </div>
+
+    <run-import-dialog
+      :dialog-show="importDialogShow"
+      :service-id="serviceId"
+      @close="importDialogShow = false"
+    />
 
     <run-delete-dialog
       :dialog-show="deleteDialogShow"
@@ -81,11 +97,13 @@ import { RunTableItem } from '@/store/runs'
 import { Service } from '@/store/services'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import RunDeleteDialog from '@/components/services/RunDeleteDialog.vue'
+import RunImportDialog from '@/components/services/RunImportDialog.vue'
 import Vue from 'vue'
 
 type Data = {
   runHeaders: DataTableHeader[]
   selectedRuns: RunTableItem[]
+  importDialogShow: boolean
   deleteDialogShow: boolean
 }
 
@@ -111,6 +129,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 > = {
   components: {
     RunDeleteDialog,
+    RunImportDialog,
   },
 
   props: {
@@ -145,6 +164,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         },
       ],
       selectedRuns: [],
+      importDialogShow: false,
       deleteDialogShow: false,
     }
   },

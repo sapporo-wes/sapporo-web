@@ -256,12 +256,12 @@ export const actions: ActionTree<State, RootState> = {
     )
     const runLog = await getRunsId(this.$axios, payload.service.endpoint, runId)
 
-    await dispatch(
+    dispatch(
       'services/addRunId',
       { serviceId: payload.service.id, runId },
       { root: true }
     )
-    await dispatch(
+    dispatch(
       'workflows/addRunId',
       { workflowId: payload.workflow.id, runId },
       { root: true }
@@ -302,6 +302,39 @@ export const actions: ActionTree<State, RootState> = {
         commit('deleteRun', runId)
       }
     }
+  },
+
+  addRun(
+    { commit, dispatch },
+    payload: {
+      serviceId: string
+      workflowId: string
+      runId: string
+      runName: string
+      runLog: RunLog
+    }
+  ) {
+    dispatch(
+      'services/addRunId',
+      { serviceId: payload.serviceId, runId: payload.runId },
+      { root: true }
+    )
+    dispatch(
+      'workflows/addRunId',
+      { workflowId: payload.workflowId, runId: payload.runId },
+      { root: true }
+    )
+    const date = dayjs().utc().format()
+    commit('addRun', {
+      name: payload.runName,
+      state: payload.runLog.state,
+      addedDate: date,
+      updatedDate: date,
+      serviceId: payload.serviceId,
+      workflowId: payload.workflowId,
+      id: payload.runId,
+      runLog: payload.runLog,
+    })
   },
 
   async updateRun(
