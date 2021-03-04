@@ -28,7 +28,7 @@
       :items="runsTableItems"
       calculate-widths
       class="mx-6 my-2"
-      item-key="id"
+      item-key="runId"
       multi-sort
       show-select
     >
