@@ -10,7 +10,7 @@
         small
         @click.stop="reloadRunState"
       >
-        <v-icon>mdi-reload</v-icon>
+        <v-icon v-text="'mdi-reload'" />
       </v-btn>
     </div>
     <div v-if="!runs.length" class="my-2">
@@ -81,7 +81,8 @@
         width="140"
         @click.stop="deleteDialogShow = true"
       >
-        <v-icon class="mr-2">mdi-trash-can-outline</v-icon>Delete
+        <v-icon class="mr-2" v-text="'mdi-trash-can-outline'" />
+        <span v-text="'Delete'" />
       </v-btn>
     </div>
 

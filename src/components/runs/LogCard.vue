@@ -29,7 +29,40 @@
           v-text="tabItem.key"
         />
         <v-tab-item v-for="tabItem in tabItems" :key="tabItem.key">
+          <v-list
+            v-if="
+              tabItem.key === 'Outputs' &&
+              (JSON.parse(tabItem.value) !== null ||
+                JSON.parse(tabItem.value).length !== 0)
+            "
+            class="ml-6 mt-2 mb-6 mr-1"
+            dense
+            elevation="2"
+            flat
+            max-height="300"
+            rounded
+            :style="{
+              outline: `solid 1px ${$colors.grey.lighten1}`,
+              overflowY: 'auto',
+            }"
+          >
+            <v-list-item-group v-model="outputList" color="primary" disable>
+              <v-list-item
+                v-for="(file, ind) in JSON.parse(tabItem.value)"
+                :key="ind"
+                @click="downloadOutputFile(file)"
+              >
+                <v-list-item-icon>
+                  <v-icon v-text="'mdi-download'" />
+                </v-list-item-icon>
+                <v-list-item-content>
+                  <v-list-item-title v-text="file.file_name" />
+                </v-list-item-content>
+              </v-list-item>
+            </v-list-item-group>
+          </v-list>
           <codemirror
+            v-else
             :options="{
               lineNumbers: true,
               mode: codeMirrorMode(tabItem.value),
@@ -53,6 +86,7 @@
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/mode/yaml/yaml.js'
+import { AttachedFile } from '@/types/WES'
 import { codemirror } from 'vue-codemirror'
 import { codeMirrorMode } from '@/utils'
 import { DataTableHeader } from 'vuetify/types'
@@ -67,6 +101,7 @@ type Data = {
 
 type Methods = {
   codeMirrorMode: (content: string) => ReturnType<typeof codeMirrorMode>
+  downloadOutputFile: (file: AttachedFile) => void
 }
 
 type Computed = {
@@ -174,6 +209,14 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   methods: {
     codeMirrorMode(content) {
       return codeMirrorMode(content)
+    },
+
+    downloadOutputFile(file: AttachedFile) {
+      const link = document.createElement('a')
+      link.download = file.file_name.split('/').slice(-1)[0]
+      link.href = file.file_url
+      link.click()
+      link.remove()
     },
   },
 }

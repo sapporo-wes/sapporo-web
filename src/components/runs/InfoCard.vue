@@ -18,8 +18,8 @@
         class="mr-4"
         @click.stop="cancelRun"
       >
-        <v-icon class="mr-2">mdi-close</v-icon>
-        Cancel Run
+        <v-icon class="mr-2" v-text="'mdi-close'" />
+        <span v-text="'Cancel Run'" />
       </v-btn>
       <v-btn
         :color="$colors.grey.darken2"
@@ -27,7 +27,7 @@
         small
         @click.stop="reloadRunState"
       >
-        <v-icon>mdi-reload</v-icon>
+        <v-icon v-text="'mdi-reload'" />
       </v-btn>
     </div>
 
@@ -48,9 +48,11 @@
           <span>{{ item.value }}</span>
           <v-tooltip top :value="runIdTooltip" color="primary">
             <template #activator="{}">
-              <v-icon class="ml-2" @click.stop="copyRunId"
-                >mdi-clipboard-outline</v-icon
-              >
+              <v-icon
+                class="ml-2"
+                @click.stop="copyRunId"
+                v-text="'mdi-clipboard-outline'"
+              />
             </template>
             <span>Coppied!</span>
           </v-tooltip>

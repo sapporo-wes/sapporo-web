@@ -25,10 +25,12 @@
       />
       <div class="d-flex justify-end px-12 pt-4 pb-6">
         <v-btn color="error" outlined @click.stop="deleteSelectedItems">
-          <v-icon class="mr-2">mdi-trash-can-outline</v-icon>Delete
+          <v-icon class="mr-2" v-text="'mdi-trash-can-outline'" />
+          <span v-text="'Delete'" />
         </v-btn>
         <v-btn color="info" class="ml-4" outlined @click.stop="$emit('close')">
-          <v-icon class="mr-2">mdi-close</v-icon>Cancel
+          <v-icon class="mr-2" v-text="'mdi-close'" />
+          <span v-text="'Cancel'" />
         </v-btn>
       </div>
     </v-card>
