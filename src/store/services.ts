@@ -78,7 +78,7 @@ export const getters: GetterTree<State, RootState> = {
   getRuns: (_state, getters) => (serviceId: string): boolean | undefined => {
     const service: Service | undefined = getters.service(serviceId)
     if (service) {
-      return service.serviceInfo.tags.workflow_attachment !== false
+      return service.serviceInfo.tags.get_runs !== false
     }
     return true
   },
@@ -88,7 +88,7 @@ export const getters: GetterTree<State, RootState> = {
   ): boolean | undefined => {
     const service: Service | undefined = getters.service(serviceId)
     if (service) {
-      return service.serviceInfo.tags.get_runs !== false
+      return service.serviceInfo.tags.workflow_attachment !== false
     }
     return true
   },

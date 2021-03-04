@@ -32,8 +32,8 @@
           <v-list
             v-if="
               tabItem.key === 'Outputs' &&
-              (JSON.parse(tabItem.value) !== null ||
-                JSON.parse(tabItem.value).length !== 0)
+              JSON.parse(tabItem.value) !== null &&
+              JSON.parse(tabItem.value).length !== 0
             "
             class="ml-6 mt-2 mb-6 mr-1"
             dense
@@ -46,7 +46,7 @@
               overflowY: 'auto',
             }"
           >
-            <v-list-item-group v-model="outputList" color="primary" disable>
+            <v-list-item-group color="primary" disable>
               <v-list-item
                 v-for="(file, ind) in JSON.parse(tabItem.value)"
                 :key="ind"

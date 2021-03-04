@@ -76,26 +76,48 @@
         "
       />
       <div class="mt-4 mb-2 field-header" v-text="'Workflow Attachment'" />
+      <div
+        class="ml-6"
+        v-text="
+          serviceWorkflowAttachment
+            ? 'Workflow Attachment as JSON/YAML'
+            : 'Workflow Attachment as JSON/YAML (read-only)'
+        "
+      />
       <codemirror
-        v-if="workflow.preRegisteredWorkflowAttachment.length"
-        :value="`${JSON.stringify(
-          workflow.preRegisteredWorkflowAttachment,
-          null,
-          2
-        )}`"
+        v-model="wfAttachmentText"
         :options="{
           lineNumbers: true,
-          mode: 'application/json',
+          mode: codeMirrorMode(wfAttachmentText),
           tabSize: 2,
-          readOnly: true,
+          readOnly: !serviceWorkflowAttachment,
         }"
         :style="{
-          outline: `solid 1px $colors.grey.lighten1`,
+          outline: `solid 1px ${
+            !!wfAttachmentTextError
+              ? $vuetify.theme.themes.light.error
+              : $colors.grey.lighten1
+          }`,
         }"
-        class="mx-4 mt-4 mb-4 elevation-2 input-field-middle"
+        class="ml-14 mr-4 mt-4 mb-4 elevation-2 input-field-middle"
       />
+      <div
+        v-if="serviceWorkflowAttachment"
+        class="ml-14 v-messages theme--light"
+        :class="{ 'error--text': !!wfAttachmentTextError }"
+        v-text="
+          !!wfAttachmentTextError
+            ? wfAttachmentTextError
+            : 'Not required, JSON or YAML object, multiple lines, you can use file drag and drop.'
+        "
+      />
+      <div class="mt-4 ml-6 mb-2" v-text="'Workflow Attachment as File'" />
       <div v-if="serviceWorkflowAttachment" class="d-flex flex-column mx-4">
-        <div v-for="ind in workflowAttachment.length" :key="ind" class="d-flex">
+        <div
+          v-for="ind in workflowAttachment.length"
+          :key="ind"
+          class="d-flex ml-8"
+        >
           <v-file-input
             v-model="workflowAttachment[ind - 1]"
             :style="{
@@ -119,7 +141,7 @@
           />
         </div>
         <div
-          class="mx-4 v-messages theme--light"
+          class="ml-10 v-messages theme--light"
           v-text="'Not required, multiple files.'"
         />
         <div class="d-flex justify-end">
@@ -146,7 +168,7 @@
       </div>
       <div
         v-if="!serviceWorkflowAttachment"
-        class="mx-6 mb-4"
+        class="ml-14 mb-4"
         :style="{
           color: $vuetify.theme.themes.light.error,
           textDecorationLine: 'underline',
@@ -154,7 +176,6 @@
         v-text="'Worklfow attachment is not allowed in this service.'"
       />
       <div class="mt-4 field-header" v-text="'Workflow Parameters'" />
-
       <codemirror
         v-model="wfParams"
         :options="{
@@ -193,9 +214,6 @@
         <span v-text="'Execute'" />
       </v-btn>
     </div>
-    <v-snackbar v-model="errorSnackbar" color="error" elevation="8" top>
-      Error!! There's something problem with the values you inputted.
-    </v-snackbar>
   </v-card>
 </template>
 
@@ -204,7 +222,13 @@ import 'codemirror/lib/codemirror.css'
 import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/mode/yaml/yaml.js'
 import { codemirror } from 'vue-codemirror'
-import { codeMirrorMode, isJson, isYaml, yamlToJson } from '@/utils'
+import {
+  codeMirrorMode,
+  isJson,
+  isYaml,
+  yamlToJson,
+  parseJsonOrYaml,
+} from '@/utils'
 import { Run } from '@/store/runs'
 import { Service, WorkflowEngine } from '@/store/services'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
@@ -216,10 +240,10 @@ type Data = {
   wfEngine: string
   wfEngineParams: string
   tags: string
+  wfAttachmentText: string
   workflowAttachment: Array<File | null>
   fileNames: Array<string | null>
   wfParams: string
-  errorSnackbar: boolean
 }
 
 type Methods = {
@@ -242,6 +266,7 @@ type Computed = {
   wfEngineError: string
   wfEngineParamsError: string
   tagsError: string
+  wfAttachmentTextError: string
   wfParamsError: string
 }
 
@@ -273,10 +298,10 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       wfEngine: '',
       wfEngineParams: '{}',
       tags: '{}',
+      wfAttachmentText: '',
       workflowAttachment: [null],
       fileNames: [null],
       wfParams: '{}',
-      errorSnackbar: false,
     }
   },
 
@@ -356,6 +381,28 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
 
+    wfAttachmentTextError(): string {
+      if (isJson(this.wfAttachmentText) || isYaml(this.wfAttachmentText)) {
+        try {
+          const content = parseJsonOrYaml(this.wfAttachmentText)
+          if (!Array.isArray(content)) {
+            return 'Please nter in the type `Array<{file_name: string, file_url: string}>`.'
+          } else {
+            for (const item of content) {
+              if (!('file_name' in item) || !('file_url' in item)) {
+                return 'Please enter in the type `Array<{file_name: string, file_url: string}>`.'
+              }
+            }
+          }
+        } catch {
+          return 'Some kind of error is occurring.'
+        }
+      } else {
+        return 'Please enter the correct JSON or YAML.'
+      }
+      return ''
+    },
+
     wfParamsError(): string {
       if (isJson(this.wfParams) || isYaml(this.wfParams)) {
         return ''
@@ -372,6 +419,11 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     if (this.wfEngines.length === 1) {
       this.wfEngine = this.wfEngines[0]
     }
+    this.wfAttachmentText = JSON.stringify(
+      this.workflow.preRegisteredWorkflowAttachment,
+      null,
+      2
+    )
   },
 
   methods: {
@@ -387,6 +439,9 @@ const options: ThisTypedComponentOptionsWithRecordProps<
               ? yamlToJson(this.wfEngineParams)
               : this.wfEngineParams,
             tags: isYaml(this.tags) ? yamlToJson(this.tags) : this.tags,
+            wfAttachmentText: isYaml(this.wfAttachmentText)
+              ? yamlToJson(this.wfAttachmentText)
+              : this.wfAttachmentText,
             workflowAttachment: this.workflowAttachment,
             fileNames: this.fileNames,
             wfParams: isYaml(this.wfParams)
