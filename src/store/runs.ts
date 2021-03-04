@@ -8,6 +8,7 @@ import { RootState } from '@/store'
 import { Service } from '@/store/services'
 import { Workflow } from '@/store/workflows'
 import {
+  AttachedFile,
   RunListResponse,
   RunLog,
   RunStatus,
@@ -141,6 +142,7 @@ export const actions: ActionTree<State, RootState> = {
       wfEngineName: string
       wfEngineParams: string
       tags: string
+      wfAttachmentText: string
       workflowAttachment: Array<File | null>
       fileNames: Array<string | null>
       wfParams: string
@@ -163,6 +165,7 @@ export const actions: ActionTree<State, RootState> = {
     data.append('workflow_engine_name', payload.wfEngineName)
     data.append('workflow_engine_parameters', payload.wfEngineParams)
     data.append('workflow_params', payload.wfParams)
+    data.append('workflow_attachment', payload.wfAttachmentText)
 
     if (
       !validUrl(payload.workflow.url) &&
@@ -170,9 +173,9 @@ export const actions: ActionTree<State, RootState> = {
     ) {
       const wfFileName = payload.workflow.url.split('/').slice(-1)[0]
       const attachedFileNames = [
-        ...payload.workflow.preRegisteredWorkflowAttachment
-          .map((attachedFile) => attachedFile.file_name)
-          .map((fileName) => fileName.split('/').slice(-1)[0]),
+        ...JSON.parse(payload.wfAttachmentText)
+          .map((attachedFile: AttachedFile) => attachedFile.file_name)
+          .map((fileName: string) => fileName.split('/').slice(-1)[0]),
         ...(payload.fileNames.filter((fileName) => fileName) as string[]).map(
           (fileName: string) => fileName.split('/').slice(-1)[0]
         ),
