@@ -9,8 +9,7 @@
   >
     <div class="mx-auto my-auto">
       <span class="white--text" :style="{ fontSize: '12px' }">
-        Sapporo-web {{ version }} © Database Center for Life Science All Rights
-        Reserved
+        Sapporo-web {{ version }} © Bioinformation and DDBJ Center
       </span>
     </div>
   </v-footer>
