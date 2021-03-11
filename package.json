@@ -1,7 +1,7 @@
 {
   "name": "sapporo-web",
-  "version": "1.0.4",
-  "description": "Web base management system for GA4GH WES",
+  "version": "1.0.5",
+  "description": "A web application for managing and executing WES services.",
   "author": "ddbj",
   "private": true,
   "scripts": {

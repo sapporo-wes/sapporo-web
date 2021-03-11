@@ -4,7 +4,7 @@
 
 <img src="https://raw.githubusercontent.com/ddbj/SAPPORO/master/logo/SAPPORO-Web.svg" width="400" style="display: block; margin-left: auto; margin-right: auto; margin-top: 30px; margin-bottom: 30px;" alt="SAPPORO-web logo">
 
-Web application for managing and running the WES service. Multiple WES services can be registered.
+A web application for managing and executing WES services. Multiple WES services can be registered.
 
 **_[Sapporo-Web](https://ddbj.github.io/SAPPORO-web/) deployed to GitHub Pages_**
 
