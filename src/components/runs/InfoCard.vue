@@ -16,6 +16,7 @@
         outlined
         color="error"
         class="mr-4"
+        :disabled="!cancelButton"
         @click.stop="cancelRun"
       >
         <v-icon class="mr-2" v-text="'mdi-close'" />
@@ -127,6 +128,7 @@ type Data = {
   runInfoHeaders: DataTableHeader[]
   tab: number | null
   runIdTooltip: boolean
+  cancelButton: boolean
 }
 
 type Methods = {
@@ -181,6 +183,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       ],
       tab: 3,
       runIdTooltip: false,
+      cancelButton: true,
     }
   },
 
@@ -259,8 +262,10 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       if (
         ['QUEUED', 'INITIALIZING', 'RUNNING', 'PAUSED'].includes(this.run.state)
       ) {
+        this.cancelButton = false
         await this.$store.dispatch('runs/cancelRun', this.runId)
         await this.$store.dispatch('runs/updateRun', this.runId)
+        this.cancelButton = true
       }
     },
 

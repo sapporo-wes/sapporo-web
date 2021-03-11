@@ -207,7 +207,9 @@
         color="primary"
         outlined
         width="140"
-        :disabled="!formValid || service.state !== 'Available'"
+        :disabled="
+          !formValid || service.state !== 'Available' || !executeButton
+        "
         @click.stop="executeRun"
       >
         <v-icon class="mr-2" v-text="'mdi-rocket-launch-outline'" />
@@ -244,6 +246,7 @@ type Data = {
   workflowAttachment: Array<File | null>
   fileNames: Array<string | null>
   wfParams: string
+  executeButton: boolean
 }
 
 type Methods = {
@@ -302,6 +305,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       workflowAttachment: [null],
       fileNames: [null],
       wfParams: '{}',
+      executeButton: true,
     }
   },
 
@@ -429,6 +433,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   methods: {
     async executeRun(): Promise<void> {
       if (this.formValid) {
+        this.executeButton = false
         await this.$store
           .dispatch('runs/executeRun', {
             service: this.service,

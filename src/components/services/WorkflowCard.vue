@@ -2,26 +2,27 @@
   <v-card elevation="8" max-width="1200">
     <div class="card-header pl-6 pt-4" v-text="'Workflows'" />
     <div v-if="!workflowTableItems.length" class="my-2">
-      <p
-        :style="{
-          fontSize: '1rem',
-          paddingLeft: '60px',
-        }"
-      >
+      <div class="mx-12">
         <span
           :style="{
-            color: $vuetify.theme.themes.light.error,
-            textDecorationLine: 'underline',
+            fontSize: '1rem',
           }"
-          v-text="'Workflow is not registered.'"
-        />
-        Click
-        <span
-          :style="{ color: $vuetify.theme.themes.light.primary }"
-          v-text="'REGISTER'"
-        />
-        button.
-      </p>
+        >
+          <span
+            :style="{
+              color: $vuetify.theme.themes.light.error,
+              textDecorationLine: 'underline',
+            }"
+            v-text="'Workflow is not registered.'"
+          />
+          Click
+          <span
+            :style="{ color: $vuetify.theme.themes.light.primary }"
+            v-text="'REGISTER'"
+          />
+          button.
+        </span>
+      </div>
     </div>
     <v-data-table
       v-if="workflowTableItems.length"

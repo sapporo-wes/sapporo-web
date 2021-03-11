@@ -28,7 +28,7 @@
       </div>
       <div class="d-flex justify-end px-12 pb-6">
         <v-btn
-          :disabled="!registerValid"
+          :disabled="!registerValid || !registerButton"
           color="primary"
           outlined
           @click.stop="submitService"
@@ -52,6 +52,7 @@ type Data = {
   name: string
   endpoint: string
   checkConnectionMessage: string
+  registerButton: boolean
 }
 
 type Methods = {
@@ -91,6 +92,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       endpoint: '',
       checkConnectionMessage:
         'Connection check is not completed. Please leave from this text field.',
+      registerButton: true,
     }
   },
 
@@ -131,6 +133,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   methods: {
     async submitService(): Promise<void> {
       if (this.registerValid) {
+        this.registerButton = false
         await this.$store
           .dispatch('services/submitService', {
             name: this.name,
