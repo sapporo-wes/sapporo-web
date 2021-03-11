@@ -7,15 +7,22 @@
           <div class="d-flex flex-column px-6 py-4">
             <div class="d-flex mb-4">
               <v-btn
+                color="info"
+                outlined
+                @click.stop="dumpState"
+                v-text="'Dump State'"
+              />
+              <v-btn
+                class="ml-4"
                 color="error"
                 outlined
                 @click.stop="clearState"
                 v-text="'Clear State'"
               />
               <v-btn
+                class="ml-4"
                 color="error"
                 outlined
-                class="ml-4"
                 @click.stop="forceClearState"
                 v-text="'Force Clear State'"
               />
@@ -44,6 +51,7 @@ import Vue from 'vue'
 type Data = Record<string, unknown>
 
 type Methods = {
+  dumpState: () => void
   clearState: () => void
   forceClearState: () => void
 }
@@ -73,6 +81,19 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   },
 
   methods: {
+    dumpState() {
+      const blob = new Blob([this.stateContent], { type: 'application/json' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.download = `sapporo-web_state_${this.$dayjs()
+        .local()
+        .format('YYYY-MM-DD_HH:mm:ss')}.json`
+      link.href = url
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+    },
+
     clearState() {
       this.$store.dispatch('services/clearServices')
       this.$store.dispatch('workflows/clearWorkflows')
