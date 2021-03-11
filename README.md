@@ -6,7 +6,7 @@
 
 A web application for managing and executing WES services. Multiple WES services can be registered.
 
-**_[Sapporo-Web](https://ddbj.github.io/SAPPORO-web/) deployed to GitHub Pages_**
+**_[Sapporo-Web](https://ddbj.github.io/SAPPORO-web/) deployed to GitHub Pages (Recommend to use the Google Chrome browser)_**
 
 - **User manual**
   - [HackMD - Sapporo-Web Document](https://hackmd.io/@suecharo/sapporo-web-docs)
