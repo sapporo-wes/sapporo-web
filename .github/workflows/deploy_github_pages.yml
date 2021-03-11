@@ -16,7 +16,7 @@ jobs:
       - name: Install dependencies
         run: yarn install
       - name: Generate
-        run: yarn generate
+        run: SAPPORO_URL_PREFIX=/SAPPORO-web/ yarn generate
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
