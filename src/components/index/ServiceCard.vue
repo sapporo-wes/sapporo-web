@@ -2,26 +2,42 @@
   <v-card elevation="8" max-width="1200">
     <div class="card-header pl-6 pt-4" v-text="'WES Services'" />
     <div v-if="!services.length" class="my-2">
-      <p
-        :style="{
-          fontSize: '1rem',
-          paddingLeft: '60px',
-        }"
-      >
+      <div class="mx-12">
         <span
           :style="{
-            color: $vuetify.theme.themes.light.error,
-            textDecorationLine: 'underline',
+            fontSize: '1rem',
           }"
-          v-text="'WES service is not registered.'"
-        />
-        Click
-        <span
-          :style="{ color: $vuetify.theme.themes.light.primary }"
-          v-text="'REGISTER'"
-        />
-        button.
-      </p>
+        >
+          <span
+            :style="{
+              color: $vuetify.theme.themes.light.error,
+              textDecorationLine: 'underline',
+            }"
+            v-text="'WES service is not registered.'"
+          />
+          Click
+          <span
+            :style="{ color: $vuetify.theme.themes.light.primary }"
+            v-text="'REGISTER'"
+          />
+          button.
+        </span>
+        <br />
+        <div class="my-2">
+          <span
+            v-text="
+              'Sapporo-service is provided as a WES service of Sapporo project.'
+            "
+          />
+          <br />
+          <span>
+            Please refer to
+            <a href="https://github.com/ddbj/SAPPORO-service"
+              >Github - SAPPORO-service</a
+            >
+          </span>
+        </div>
+      </div>
     </div>
 
     <v-data-table

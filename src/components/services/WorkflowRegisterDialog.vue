@@ -74,7 +74,7 @@
       </div>
       <div class="d-flex justify-end px-12 pb-6">
         <v-btn
-          :disabled="!registerValid"
+          :disabled="!registerValid || !submitButton"
           color="primary"
           outlined
           @click.stop="submitWorkflow"
@@ -107,6 +107,7 @@ type Data = {
   version: string
   url: string
   wfContent: string
+  submitButton: boolean
 }
 
 type Methods = {
@@ -167,6 +168,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       version: '',
       url: '',
       wfContent: boxInitialText,
+      submitButton: true,
     }
   },
 
@@ -294,6 +296,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     async submitWorkflow() {
       if (this.registerValid) {
+        this.submitButton = false
         await this.$store
           .dispatch('workflows/submitWorkflow', {
             serviceId: this.serviceId,

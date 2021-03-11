@@ -17,6 +17,7 @@
 
 <script lang="ts">
 import { MyWindow } from '@/plugins/localStorage'
+import { Run } from '@/store/runs'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import AppBar from '@/components/AppBar.vue'
 import AppFooter from '@/components/AppFooter.vue'
@@ -32,6 +33,7 @@ type Methods = Record<string, unknown>
 type Computed = {
   runId: string
   existRunId: boolean
+  run: Run
 }
 
 type Props = Record<string, unknown>
@@ -74,6 +76,28 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     existRunId(): boolean {
       return this.$store.getters['runs/runIds'].includes(this.runId)
     },
+
+    run(): Run {
+      return this.$store.getters['runs/run'](this.runId)
+    },
+  },
+
+  created() {
+    setInterval(async () => {
+      if (document.visibilityState === 'visible') {
+        if (
+          [
+            'UNKNOWN',
+            'QUEUED',
+            'INITIALIZING',
+            'RUNNING',
+            'CANCELING',
+          ].includes(this.run.state)
+        ) {
+          await this.$store.dispatch('runs/updateRun', this.runId)
+        }
+      }
+    }, 5000)
   },
 }
 

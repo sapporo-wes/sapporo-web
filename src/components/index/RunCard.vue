@@ -14,10 +14,12 @@
       </v-btn>
     </div>
     <div v-if="!runsTableItems.length" class="my-2">
-      <p
-        :style="{ fontSize: '1rem', paddingLeft: '60px' }"
-        v-text="'The executed run does not exist.'"
-      />
+      <div class="mx-12">
+        <span
+          :style="{ fontSize: '1rem' }"
+          v-text="'The executed run does not exist.'"
+        />
+      </div>
     </div>
 
     <v-data-table
