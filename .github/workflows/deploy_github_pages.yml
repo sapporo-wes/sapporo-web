@@ -15,5 +15,11 @@ jobs:
           node-version: '15'
       - name: Install dependencies
         run: yarn install
-      - name: Build and publish
-        run: yarn deploy
+      - name: Generate
+        run: yarn generate
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
