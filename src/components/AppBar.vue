@@ -6,9 +6,26 @@
       </nuxt-link>
     </v-toolbar-title>
     <v-spacer />
-    <v-btn href="https://github.com/ddbj/SAPPORO-web" color="white" outlined>
+    <v-btn
+      v-if="$route.path !== '/state'"
+      class="mr-4"
+      color="white"
+      nuxt
+      outlined
+      to="state"
+    >
+      <v-icon class="mr-2" color="white" v-text="'mdi-database'" />
+      State
+    </v-btn>
+
+    <v-btn
+      class="text-capitalize"
+      color="white"
+      href="https://github.com/ddbj/SAPPORO-web"
+      outlined
+    >
       <v-icon class="mr-2" color="white" v-text="'mdi-github'" />
-      <span v-text="'GitHub'" />
+      GitHub
     </v-btn>
   </v-app-bar>
 </template>
