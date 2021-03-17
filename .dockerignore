@@ -1,14 +1,12 @@
-.dockerignore
-.git
-.gitignore
-.nuxt
-.vscode
-dist
-docker-compose*
-Dockerfile*
-LICENSE
-node_modules
-npm-debug.log*
-README.md
-yarn-debug.log*
-yarn-error.log*
+# Ignore everything
+**
+
+!.eslintrc.js
+!.prettierrc
+!LICENSE
+!nuxt.config.ts
+!package.json
+!README.md
+!src
+!tsconfig.json
+!yarn.lock
