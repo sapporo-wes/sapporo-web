@@ -16,17 +16,23 @@
         />
         <v-text-field
           v-model="endpoint"
-          :error-messages="endpointError || checkConnectionMessage"
+          :error-messages="endpointError"
           clearable
           label="Endpoint"
-          @blur="checkConnection"
-          @change="
-            checkConnectionMessage =
-              'Connection check is not completed. Please leave from this text field.'
-          "
+          @change="connection = false"
         />
       </div>
-      <div class="d-flex justify-end px-12 pb-6">
+      <div class="d-flex justify-end px-12 pb-6 pt-4">
+        <v-btn
+          :color="checkButtonColor"
+          :disabled="connection"
+          @click.stop="checkConnection"
+          class="mr-4"
+          outlined
+        >
+          <v-icon class="mr-4" v-text="'mdi-access-point-check'" />
+          <span v-text="checkButtonText" />
+        </v-btn>
         <v-btn
           :disabled="!registerValid || !registerButton"
           color="primary"
@@ -51,8 +57,10 @@ import { getServiceInfo } from '@/utils/WESRequest'
 type Data = {
   name: string
   endpoint: string
-  checkConnectionMessage: string
+  connection: boolean
   registerButton: boolean
+  checkButtonColor: string
+  checkButtonText: string
 }
 
 type Methods = {
@@ -90,17 +98,16 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     return {
       name: '',
       endpoint: '',
-      checkConnectionMessage:
-        'Connection check is not completed. Please leave from this text field.',
+      connection: false,
       registerButton: true,
+      checkButtonColor: 'primary',
+      checkButtonText: 'Connection Check',
     }
   },
 
   computed: {
     registerValid() {
-      return (
-        !this.nameError && !this.endpointError && !this.checkConnectionMessage
-      )
+      return !this.nameError && !this.endpointError && this.connection
     },
 
     serviceNames() {
@@ -126,6 +133,9 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       if (!validUrl(this.endpoint)) {
         return `Endpoint: ${this.endpoint} does not valid.`
       }
+      if (!this.connection) {
+        return 'Connection check is not completed. Please click Connection Check Button.'
+      }
       return ''
     },
   },
@@ -149,10 +159,18 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     async checkConnection(): Promise<void> {
       await getServiceInfo(this.$axios, this.endpoint)
         .then((_) => {
-          this.checkConnectionMessage = ''
+          this.connection = true
         })
         .catch((_) => {
-          this.checkConnectionMessage = `GET ${this.endpoint}/service_info is not working.`
+          this.connection = false
+          this.checkButtonColor = 'error'
+          this.checkButtonText = 'Error'
+          setTimeout(() => {
+            this.checkButtonColor = 'primary'
+          }, 1500)
+          setTimeout(() => {
+            this.checkButtonText = 'Check Connection'
+          }, 1500)
         })
     },
   },
