@@ -52,10 +52,21 @@
       show-select
     >
       <template #[`item.name`]="{ item }">
-        <nuxt-link
-          :to="{ path: '/services', query: { serviceId: item.id } }"
-          v-text="item.name"
-        />
+        <div class="d-flex align-center">
+          <nuxt-link
+            :to="{ path: '/services', query: { serviceId: item.id } }"
+            v-text="item.name"
+          />
+          <v-chip
+            v-text="'Pre-registered'"
+            :color="$colors.blueGrey.darken1"
+            label
+            small
+            text-color="white"
+            class="ml-4"
+            v-if="item.preRegistered"
+          />
+        </div>
       </template>
       <template #[`item.addedDate`]="{ item }">
         {{ $dayjs(item.addedDate).local().format('YYYY-MM-DD HH:mm:ss') }}
@@ -165,10 +176,6 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         {
           text: 'Added Date',
           value: 'addedDate',
-        },
-        {
-          text: 'Pre-registered',
-          value: 'preRegistered',
         },
         {
           text: 'State',

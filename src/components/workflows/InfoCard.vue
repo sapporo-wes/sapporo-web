@@ -1,6 +1,17 @@
 <template>
   <v-card v-if="workflow" elevation="8" max-width="1200">
-    <div class="card-header px-6 pt-4" v-text="workflow.name" />
+    <div class="d-flex align-center px-6 pt-4">
+      <div class="card-header" v-text="workflow.name" />
+      <v-chip
+        v-text="'Pre-registered'"
+        :color="$colors.blueGrey.darken1"
+        label
+        small
+        text-color="white"
+        class="ml-4"
+        v-if="workflow.preRegistered"
+      />
+    </div>
     <v-data-table
       :headers="workflowInfoHeaders"
       :items="workflowInfoContents"
