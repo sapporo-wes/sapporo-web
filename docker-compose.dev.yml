@@ -1,10 +1,11 @@
-version: '3'
+version: "3.5"
 services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: sapporo-web
+      dockerfile: Dockerfile-dev
+    image: sapporo-web-dev
+    container_name: sapporo-web-dev
     volumes:
       - ${PWD}:/app
       - /app/node_modules
@@ -16,4 +17,11 @@ services:
     ports:
       - 0.0.0.0:1121:1121
     restart: on-failure
-    command: ['sleep', 'infinity']
+    working_dir: /app
+    command: ["sleep", "infinity"]
+    networks:
+      - sapporo
+
+networks:
+  sapporo:
+    name: sapporo-network
