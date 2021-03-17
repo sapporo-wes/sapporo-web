@@ -37,13 +37,21 @@
       show-select
     >
       <template #[`item.workflowName`]="{ item }">
-        <nuxt-link
-          :to="{ path: '/workflows', query: { workflowId: item.workflowId } }"
-          v-text="item.workflowName"
-        />
-      </template>
-      <template #[`item.preRegistered`]="{ item }">
-        <v-icon v-if="item.preRegistered" v-text="'mdi-check'" />
+        <div class="d-flex align-center">
+          <nuxt-link
+            :to="{ path: '/workflows', query: { workflowId: item.workflowId } }"
+            v-text="item.workflowName"
+          />
+          <v-chip
+            v-text="'Pre-registered'"
+            :color="$colors.blueGrey.darken1"
+            label
+            small
+            text-color="white"
+            class="ml-4"
+            v-if="item.preRegistered"
+          />
+        </div>
       </template>
       <template #[`item.data-table-select`]="{ item, isSelected, select }">
         <v-simple-checkbox
@@ -171,10 +179,6 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         {
           text: 'Added / Updated Date',
           value: 'date',
-        },
-        {
-          text: 'Pre-registered',
-          value: 'preRegistered',
         },
       ],
       selectedWorkflows: [],

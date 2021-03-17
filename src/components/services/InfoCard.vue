@@ -3,13 +3,22 @@
     <div class="d-flex align-center px-6 pt-4">
       <div class="card-header" v-text="service.name" />
       <v-chip
-        v-for="(wes_version, i) in service.serviceInfo.supported_wes_versions"
-        :key="i"
-        :class="[i === 0 ? 'ml-4' : 'ml-2']"
-        :color="$colors.indigo.lighten1"
+        v-text="'Pre-registered'"
+        :color="$colors.blueGrey.darken1"
         label
         small
         text-color="white"
+        class="ml-4"
+        v-if="service.preRegistered"
+      />
+      <v-chip
+        :color="$colors.indigo.lighten1"
+        :key="i"
+        class="ml-4"
+        label
+        small
+        text-color="white"
+        v-for="(wes_version, i) in service.serviceInfo.supported_wes_versions"
         v-text="`WES ${wes_version}`"
       />
       <v-spacer />
