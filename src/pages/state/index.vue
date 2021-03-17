@@ -24,8 +24,10 @@
                 color="error"
                 outlined
                 @click.stop="forceClearState"
-                v-text="'Force Clear State'"
-              />
+              >
+                <v-icon class="mr-2" v-text="'mdi-bomb'" />
+                <span v-text="'Force Clear State'" />
+              </v-btn>
             </div>
             <div
               :style="{
