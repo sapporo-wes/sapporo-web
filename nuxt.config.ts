@@ -5,7 +5,7 @@ const config: NuxtConfig = {
   ssr: false,
   target: 'static',
   head: {
-    title: 'Sapporo-web',
+    title: 'sapporo-web',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },

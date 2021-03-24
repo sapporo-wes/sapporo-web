@@ -21,7 +21,7 @@
     <v-btn
       class="text-capitalize"
       color="white"
-      href="https://github.com/ddbj/SAPPORO-web"
+      href="https://github.com/ddbj/sapporo-web"
       outlined
     >
       <v-icon class="mr-2" color="white" v-text="'mdi-github'" />

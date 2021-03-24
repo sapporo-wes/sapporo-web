@@ -9,8 +9,8 @@ RUN yarn install
 FROM node@sha256:9eec4779831fa9b577b30aa55ae231d09ea3fecc01ac5f97510f7c785ea0e58f
 
 LABEL org.opencontainers.image.authors="DDBJ(DNA Data Bank of Japan) <t.ohta@nig.ac.jp>"
-LABEL org.opencontainers.image.url="https://github.com/ddbj/SAPPORO-web"
-LABEL org.opencontainers.image.source="https://github.com/ddbj/SAPPORO-web/blob/master/Dockerfile"
+LABEL org.opencontainers.image.url="https://github.com/ddbj/sapporo-web"
+LABEL org.opencontainers.image.source="https://github.com/ddbj/sapporo-web/blob/master/Dockerfile"
 LABEL org.opencontainers.image.version="1.0.6"
 LABEL org.opencontainers.image.description="A web application for managing and executing WES services."
 LABEL org.opencontainers.image.licenses="Apache2.0"
