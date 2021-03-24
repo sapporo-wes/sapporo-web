@@ -9,7 +9,7 @@
   >
     <div class="mx-auto my-auto">
       <span class="white--text" :style="{ fontSize: '12px' }">
-        Sapporo-web {{ version }} © Bioinformation and DDBJ Center
+        sapporo-web {{ version }} © Bioinformation and DDBJ Center
       </span>
     </div>
   </v-footer>

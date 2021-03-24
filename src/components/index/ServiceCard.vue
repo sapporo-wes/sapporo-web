@@ -26,14 +26,14 @@
         <div class="my-2">
           <span
             v-text="
-              'Sapporo-service is provided as a WES service of Sapporo project.'
+              'sapporo-service is provided as a WES service of sapporo project.'
             "
           />
           <br />
           <span>
             Please refer to
-            <a href="https://github.com/ddbj/SAPPORO-service"
-              >Github - SAPPORO-service</a
+            <a href="https://github.com/ddbj/sapporo-service"
+              >Github - sapporo-service</a
             >
           </span>
         </div>
