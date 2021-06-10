@@ -8,7 +8,7 @@
         <run-card class="mt-8 mx-auto mb-4" />
       </v-container>
     </v-main>
-    <app-footer />
+    <!-- <app-footer /> -->
   </v-app>
 </template>
 
@@ -16,7 +16,7 @@
 import { MyWindow } from '@/plugins/localStorage'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import AppBar from '@/components/AppBar.vue'
-import AppFooter from '@/components/AppFooter.vue'
+// import AppFooter from '@/components/AppFooter.vue'
 import Breadcrumbs from '@/components/Breadcrumbs.vue'
 import RunCard from '@/components/index/RunCard.vue'
 import ServiceCard from '@/components/index/ServiceCard.vue'
@@ -39,7 +39,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 > = {
   components: {
     AppBar,
-    AppFooter,
+    // AppFooter,
     Breadcrumbs,
     RunCard,
     ServiceCard,

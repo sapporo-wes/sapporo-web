@@ -40,14 +40,14 @@
         </v-card>
       </v-container>
     </v-main>
-    <app-footer />
+    <!-- <app-footer /> -->
   </v-app>
 </template>
 
 <script lang="ts">
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import AppBar from '@/components/AppBar.vue'
-import AppFooter from '@/components/AppFooter.vue'
+// import AppFooter from '@/components/AppFooter.vue'
 import Vue from 'vue'
 
 type Data = Record<string, unknown>
@@ -73,7 +73,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 > = {
   components: {
     AppBar,
-    AppFooter,
+    // AppFooter,
   },
 
   computed: {
