@@ -1,8 +1,9 @@
 <template>
-  <v-app-bar :color="$colors.indigo.darken2" app elevation="8" absolute>
+  <v-app-bar color="#E99523" app elevation="8" absolute>
     <v-toolbar-title>
       <nuxt-link class="white--text text-decoration-none" to="/">
-        <img src="~/assets/logo.svg" alt="logo" height="60" class="mt-1" />
+        <!-- <img src="~/assets/logo.svg" alt="logo" height="60" class="mt-1" /> -->
+        DDBJ Workflow Execution Service
       </nuxt-link>
     </v-toolbar-title>
     <v-spacer />

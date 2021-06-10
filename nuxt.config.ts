@@ -49,7 +49,7 @@ const config: NuxtConfig = {
     theme: {
       themes: {
         light: {
-          primary: colors.indigo.darken4,
+          primary: colors.grey.darken4,
           secondary: colors.teal.darken4,
           info: colors.grey.darken4,
           error: colors.red.darken4,

@@ -1,6 +1,6 @@
 <template>
   <v-footer
-    :color="$colors.indigo.darken2"
+    color="#E99523"
     absolute
     app
     elevation="8"
