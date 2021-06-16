@@ -3,7 +3,7 @@ FROM node@sha256:bbb082a223035cee9f7a6a60154ad4d98e15d417ba89f16f81e2ae15fb70ad4
 
 WORKDIR /app
 COPY package*.json yarn.lock ./
-RUN yarn install
+RUN yarn install --flozen-lock
 
 # FROM node:15.11.0-buster-slim
 FROM node@sha256:9eec4779831fa9b577b30aa55ae231d09ea3fecc01ac5f97510f7c785ea0e58f
