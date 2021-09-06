@@ -13,27 +13,16 @@
               color: $vuetify.theme.themes.light.error,
               textDecorationLine: 'underline',
             }"
-            v-text="'WES service is not registered.'"
-          />
-          Click
-          <span
-            :style="{ color: $vuetify.theme.themes.light.primary }"
-            v-text="'REGISTER'"
-          />
-          button.
+          >
+            Register a WES service to run a workflow.
+          </span>
         </span>
         <br />
         <div class="my-2">
-          <span
-            v-text="
-              'sapporo-service is provided as a WES service of sapporo project.'
-            "
-          />
-          <br />
           <span>
-            Please refer to
+            Use a public WES service or run your own using
             <a href="https://github.com/ddbj/sapporo-service"
-              >Github - sapporo-service</a
+              >Sapporo-service</a
             >
           </span>
         </div>
