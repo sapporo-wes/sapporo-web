@@ -6,7 +6,7 @@
     @click:outside="$emit('close')"
   >
     <v-card>
-      <div class="card-header pl-6 pt-4" v-text="'Register Workflow'" />
+      <div class="card-header pl-6 pt-4" v-text="'Add Workflow'" />
       <div class="px-12 py-2">
         <v-text-field
           v-model="name"
@@ -34,8 +34,8 @@
           v-model="url"
           :error-messages="urlError"
           clearable
-          hint="Please enter the HTTP/HTTPS remote URL, or enter the content of the workflow in the text area below, or drag and drop a file into the text area below."
-          label="URL"
+          hint="Enter remote URL or workflow name"
+          label="URL or filename"
           persistent-hint
           @blur="blurUrl"
         />
@@ -59,10 +59,10 @@
           v-if="isRemoteUrl"
           class="d-flex align-center justify-space-between py-2"
         >
-          <div
+          <!-- <div
             class="mb-2 mx-4"
             v-text="'Unable to edit because a remote URL has been entered.'"
-          />
+          /> -->
           <v-btn
             :color="$colors.grey.darken2"
             class="mr-4"
@@ -99,7 +99,7 @@ import { WorkflowLanguages, Service } from '@/store/services'
 import Vue from 'vue'
 
 const boxInitialText =
-  '  Please enter the contents of the workflow in the text area, or drag and drop the file.'
+  '  Type your workflow definition, or drag-and-drop a file here'
 
 type Data = {
   name: string
@@ -214,7 +214,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     nameError() {
       if (!this.name) {
-        return 'Name is required.'
+        return 'Required'
       }
       if (this.name in this.wfNames) {
         return `Name: ${this.name} already exists.`
@@ -224,14 +224,14 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     typeError() {
       if (!this.type) {
-        return 'Type is required.'
+        return 'Required'
       }
       return ''
     },
 
     versionError() {
       if (!this.version) {
-        return 'Version is required'
+        return 'Required'
       }
       return ''
     },
@@ -239,14 +239,14 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     urlError() {
       if (this.url) {
         if (!this.wfContent || this.wfContent === boxInitialText) {
-          return 'Please enter the content of the workflow in the text area below, or drag and drop a file into the text area below.'
+          return 'Below type your workflow definition, or drag-and-drop a file'
         } else {
           // do nothing
         }
       } else if (!this.wfContent || this.wfContent === boxInitialText) {
-        return 'Please enter the HTTP/HTTPS remote URL, or enter the content of the workflow in the text area below, or drag and drop a file into the text area below.'
+        return 'Enter remote URL or workflow file name'
       } else {
-        return 'Please enter the File name. (e.g. workflow.cwl)'
+        return 'Enter the file name (e.g. workflow.cwl)'
       }
       return ''
     },
