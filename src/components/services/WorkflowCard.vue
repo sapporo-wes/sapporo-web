@@ -13,14 +13,14 @@
               color: $vuetify.theme.themes.light.error,
               textDecorationLine: 'underline',
             }"
-            v-text="'Workflow is not registered.'"
+            v-text="'Add workflow to start composing a run.'"
           />
-          Click
+          <!-- Click
           <span
             :style="{ color: $vuetify.theme.themes.light.primary }"
             v-text="'REGISTER'"
           />
-          button.
+          button. -->
         </span>
       </div>
     </div>
@@ -77,13 +77,13 @@
               @click.stop="registerDialogShow = true"
             >
               <v-icon class="mr-2" v-text="'mdi-sticker-plus-outline'" />
-              <span v-text="'Register'" />
+              <span v-text="'Add'" />
             </v-btn>
           </div>
         </template>
         <span
           v-text="
-            'This service is running in a mode that executes only pre-registered workflows, so it is not possible to register workflows.'
+            'The WES service is running in pre-registered only mode: ask administrator to add a workflow.'
           "
         />
       </v-tooltip>
@@ -95,7 +95,7 @@
         @click.stop="deleteDialogShow = true"
       >
         <v-icon class="mr-2" v-text="'mdi-trash-can-outline'" />
-        <span v-text="'Delete'" />
+        <span v-text="'Remove'" />
       </v-btn>
     </div>
 

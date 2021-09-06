@@ -14,13 +14,13 @@
               textDecorationLine: 'underline',
             }"
           >
-            Register a WES service to run a workflow.
+            Register a WES service to run workflows.
           </span>
         </span>
         <br />
         <div class="my-2">
           <span>
-            Use a public WES service or run your own using
+            Use a public WES service, or run your own using
             <a href="https://github.com/ddbj/sapporo-service"
               >Sapporo-service</a
             >
@@ -97,7 +97,7 @@
         @click.stop="deleteDialogShow = true"
       >
         <v-icon class="mr-2" v-text="'mdi-trash-can-outline'" />
-        <span v-text="'Deregister'" />
+        <span v-text="'Remove'" />
       </v-btn>
     </div>
 
