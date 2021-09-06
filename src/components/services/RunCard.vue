@@ -74,7 +74,7 @@
         @click.stop="deleteDialogShow = true"
       >
         <v-icon class="mr-2" v-text="'mdi-trash-can-outline'" />
-        <span v-text="'Delete'" />
+        <span v-text="'Remove'" />
       </v-btn>
     </div>
 
