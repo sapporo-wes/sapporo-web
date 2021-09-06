@@ -15,7 +15,7 @@
           label="Run ID"
           @change="
             checkRunExistMessage =
-              'The check for the existence of Run has not been completed. Please leave from this text field.'
+              'Move to the next field to check if the run exists'
           "
           @blur="checkRunExist"
         />
@@ -165,7 +165,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     return {
       runId: '',
       checkRunExistMessage:
-        'The check for the existence of Run has not been completed. Please leave from this text field.',
+        'Move to the next field to check if the run exists',
       runLog: undefined,
       runName: '',
       workflowName: '',
@@ -203,7 +203,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     runIdError() {
       if (!this.runId) {
-        return 'Run ID is required.'
+        return 'Required'
       }
       if (this.runs.map((run) => run.id).includes(this.runId)) {
         return `Run ID: ${this.runId} already exists in this service.`
@@ -213,7 +213,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     runNameError() {
       if (!this.runName) {
-        return 'Run Name is required.'
+        return 'Required'
       }
       if (this.runs.map((run) => run.name).includes(this.runName)) {
         return `Run name: ${this.runName} already exists in this service.`
@@ -223,7 +223,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     workflowNameError() {
       if (!this.workflowName) {
-        return 'Workflow Name is required.'
+        return 'Required'
       }
       if (
         this.workflows
@@ -254,7 +254,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     workflowTypeError() {
       if (!this.workflowType) {
-        return 'Workflow Type is required.'
+        return 'Required'
       }
       if (!this.workflowTypes.includes(this.workflowType)) {
         return `Workflow type: ${this.workflowType} is not supported by this service.`
@@ -264,7 +264,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     workflowVersionError() {
       if (!this.workflowVersion) {
-        return 'Workflow Version is required.'
+        return 'Required'
       }
       if (!this.workflowVersions.includes(this.workflowVersion)) {
         return `Workflow version: ${this.workflowVersion} is not supported by this service.`
@@ -289,7 +289,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
           this.workflowType = runLog.request.workflow_type
           this.workflowVersion = runLog.request.workflow_type_version
           this.workflowUrl = runLog.request.workflow_url
-          this.workflowContent = 'Could not get workflow Content.'
+          this.workflowContent = 'Failed to retrieve workflow content'
           if (validUrl(this.workflowUrl)) {
             this.workflowUrl = await convertGitHubUrl(
               this.$axios,
@@ -318,7 +318,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
           }
         })
         .catch((_) => {
-          this.checkRunExistMessage = `GET runs/${this.runId}/status is not working.`
+          this.checkRunExistMessage = `Invalid Run ID: GET runs/${this.runId}/status not responding`
           this.runLog = undefined
         })
     },
