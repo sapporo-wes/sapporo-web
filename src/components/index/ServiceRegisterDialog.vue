@@ -6,7 +6,7 @@
     @click:outside="$emit('close')"
   >
     <v-card>
-      <div class="card-header pl-6 pt-4" v-text="'Register Service'" />
+      <div class="card-header pl-6 pt-4" v-text="'Register WES Service'" />
       <div class="px-12 pt-2">
         <v-text-field
           v-model="name"
@@ -118,23 +118,23 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     nameError() {
       if (!this.name) {
-        return 'Name is required.'
+        return 'Required'
       }
       if (this.serviceNames.includes(this.name)) {
-        return `Service name: ${this.name} already exists.`
+        return `Service name duplicated`
       }
       return ''
     },
 
     endpointError() {
       if (!this.endpoint) {
-        return 'Endpoint is required.'
+        return 'Required'
       }
       if (!validUrl(this.endpoint)) {
-        return `Endpoint: ${this.endpoint} does not valid.`
+        return `Invalid endpoint URL: ${this.endpoint}`
       }
       if (!this.connection) {
-        return 'Connection check is not completed. Please click Connection Check Button.'
+        return 'Check the connection to WES to submit'
       }
       return ''
     },
