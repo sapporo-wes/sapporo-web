@@ -1,6 +1,6 @@
 <template>
   <v-card elevation="8" max-width="1200">
-    <div class="card-header pl-6 pt-4" v-text="'Execute Run'" />
+    <div class="card-header pl-6 pt-4" v-text="'Compose Run'" />
     <div class="px-12 py-4">
       <div class="field-header" v-text="'Run Name'" />
       <v-text-field
@@ -8,7 +8,7 @@
         :error-messages="runNameError"
         class="pt-0 px-4 pb-4"
         clearable
-        hint="Required."
+        hint="Required"
         persistent-hint
         single-line
       />
@@ -19,7 +19,7 @@
         :items="wfEngines"
         class="pt-0 px-4 pb-4"
         clearable
-        hint="Required."
+        hint="Required"
         persistent-hint
         single-line
       />
@@ -46,7 +46,7 @@
         v-text="
           !!wfEngineParamsError
             ? wfEngineParamsError
-            : 'Not required, JSON or YAML object, multiple lines, you can use file drag and drop.'
+            : 'Optional: JSON or YAML object, type or drag-and-drop'
         "
       />
       <div class="mt-4 field-header" v-text="'Tags'" />
@@ -72,7 +72,7 @@
         v-text="
           !!tagsError
             ? tagsError
-            : 'Not required, JSON or YAML object, multiple lines, you can use file drag and drop.'
+            : 'Optional: JSON or YAML object, type or drag-and-drop'
         "
       />
       <div class="mt-4 mb-2 field-header" v-text="'Workflow Attachment'" />
@@ -108,7 +108,7 @@
         v-text="
           !!wfAttachmentTextError
             ? wfAttachmentTextError
-            : 'Not required, JSON or YAML object, multiple lines, you can use file drag and drop.'
+            : 'Optional: JSON or YAML object, type or drag-and-drop'
         "
       />
       <div class="mt-4 ml-6 mb-2" v-text="'Workflow Attachment as File'" />
@@ -142,7 +142,7 @@
         </div>
         <div
           class="ml-10 v-messages theme--light"
-          v-text="'Not required, multiple files.'"
+          v-text="'Optional: multiple files'"
         />
         <div class="d-flex justify-end">
           <v-btn
@@ -153,7 +153,7 @@
             @click.stop="incrementWorkflowAttachment"
           >
             <v-icon class="mr-2" v-text="'mdi-text-box-plus-outline'" />
-            <span v-text="'Increment'" />
+            <span v-text="'Add'" />
           </v-btn>
           <v-btn
             :color="$colors.grey.darken2"
@@ -162,7 +162,7 @@
             @click.stop="decrementWorkflowAttachment"
           >
             <v-icon class="mr-2" v-text="'mdi-text-box-minus-outline'" />
-            <span v-text="'Decrement'" />
+            <span v-text="'Remove'" />
           </v-btn>
         </div>
       </div>
@@ -198,7 +198,7 @@
         v-text="
           !!wfParamsError
             ? wfParamsError
-            : 'Not required, JSON or YAML object, multiple lines, you can use file drag and drop.'
+            : 'Optional: JSON or YAML object, type or drag-and-drop'
         "
       />
     </div>
@@ -350,7 +350,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     runNameError(): string {
       if (!this.runName) {
-        return 'Run name is require.'
+        return 'Required'
       }
       if (this.runNames.includes(this.runName)) {
         return `'Run name: ${this.runName} already exists.`
@@ -360,10 +360,10 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     wfEngineError(): string {
       if (!this.wfEngine) {
-        return 'Workflow engine is require.'
+        return 'Reguired'
       }
       if (!this.wfEngines.includes(this.wfEngine)) {
-        return `Workflow engine: ${this.wfEngine} is not an executable workflow engine.`
+        return `Workflow engine: ${this.wfEngine} is not a valid workflow engine.`
       }
 
       return ''
@@ -373,7 +373,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       if (isJson(this.wfEngineParams) || isYaml(this.wfEngineParams)) {
         return ''
       } else {
-        return 'Please enter the correct JSON or YAML.'
+        return 'Invalid format: valid format is JSON or YAML.'
       }
     },
 
@@ -381,7 +381,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       if (isJson(this.wfEngineParams) || isYaml(this.wfEngineParams)) {
         return ''
       } else {
-        return 'Please enter the correct JSON or YAML.'
+        return 'Invalid format: valid format is JSON or YAML.'
       }
     },
 
@@ -390,19 +390,19 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         try {
           const content = parseJsonOrYaml(this.wfAttachmentText)
           if (!Array.isArray(content)) {
-            return 'Please nter in the type `Array<{file_name: string, file_url: string}>`.'
+            return 'The type of tags should be `Array<{file_name: string, file_url: string}>`.'
           } else {
             for (const item of content) {
               if (!('file_name' in item) || !('file_url' in item)) {
-                return 'Please enter in the type `Array<{file_name: string, file_url: string}>`.'
+                return 'The type of tags should be `Array<{file_name: string, file_url: string}>`.'
               }
             }
           }
         } catch {
-          return 'Some kind of error is occurring.'
+          return 'Unknown error: workflow attachment'
         }
       } else {
-        return 'Please enter the correct JSON or YAML.'
+        return 'Invalid format: valid format is JSON or YAML.'
       }
       return ''
     },
@@ -411,7 +411,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       if (isJson(this.wfParams) || isYaml(this.wfParams)) {
         return ''
       } else {
-        return 'Please enter the correct JSON or YAML.'
+        return 'Invalid format: valid format is JSON or YAML.'
       }
     },
   },
