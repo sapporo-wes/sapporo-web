@@ -167,6 +167,8 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         {
           text: 'State',
           value: 'state',
+          align: 'center',
+          sortable: false,
         },
       ],
       selectedServices: [],
