@@ -9,13 +9,6 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:vue/recommended',
     'plugin:nuxt/recommended',
-    'plugin:prettier/recommended',
     'prettier',
   ],
-  rules: {
-    'no-console': 0,
-    'no-extra-semi': 'off',
-    '@typescript-eslint/no-extra-semi': ['off'],
-    'unicorn/number-literal-case': 'off',
-  },
 }

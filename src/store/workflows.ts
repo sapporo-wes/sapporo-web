@@ -1,13 +1,12 @@
+import { ActionTree, GetterTree, MutationTree } from 'vuex/types'
+import { v4 as uuidv4 } from 'uuid'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
-import { v4 as uuidv4 } from 'uuid'
 import Vue from 'vue'
-import { ActionTree, GetterTree, MutationTree } from 'vuex'
-
-import { RootState } from '@/store'
-import { Run } from '@/store/runs'
 import { AttachedFile, Workflow as WesWorkflow } from '@/types/WES'
 import { convertGitHubUrl, validUrl } from '@/utils'
+import { RootState } from '@/store'
+import { Run } from '@/store/runs'
 
 dayjs.extend(utc)
 
@@ -41,32 +40,36 @@ export interface State {
 export const state = (): State => ({})
 
 export const getters: GetterTree<State, RootState> = {
-  workflow: (state) => (workflowId: string): Workflow | undefined => {
-    return state[workflowId]
-  },
+  workflow:
+    (state) =>
+    (workflowId: string): Workflow | undefined => {
+      return state[workflowId]
+    },
 
   workflows(state): Workflow[] {
     return Object.values(state)
   },
 
-  workflowsByIds: (_state, getters) => (workflowIds: string[]): Workflow[] => {
-    return workflowIds
-      .map((workflowId) => getters.workflow(workflowId))
-      .filter((workflow: Workflow | undefined) => workflow)
-  },
+  workflowsByIds:
+    (_state, getters) =>
+    (workflowIds: string[]): Workflow[] => {
+      return workflowIds
+        .map((workflowId) => getters.workflow(workflowId))
+        .filter((workflow: Workflow | undefined) => workflow)
+    },
 
   workflowIds(state): string[] {
     return Object.keys(state)
   },
 
-  workflowFilteredByRunId: (_state, getters, _rootState, rootGetters) => (
-    runId: string
-  ): Workflow | undefined => {
-    const run: Run | undefined = rootGetters['runs/run'](runId)
-    if (run) {
-      return getters.workflow(run.workflowId)
-    }
-  },
+  workflowFilteredByRunId:
+    (_state, getters, _rootState, rootGetters) =>
+    (runId: string): Workflow | undefined => {
+      const run: Run | undefined = rootGetters['runs/run'](runId)
+      if (run) {
+        return getters.workflow(run.workflowId)
+      }
+    },
 
   tableItems: (_state, getters) => (workflowIds: string[]) => {
     const items: WorkflowTableItem[] = []

@@ -3,13 +3,13 @@
     <div class="d-flex align-center px-6 pt-4">
       <div class="card-header" v-text="workflow.name" />
       <v-chip
-        v-text="'Pre-registered'"
+        v-if="workflow.preRegistered"
         :color="$colors.blueGrey.darken1"
         label
         small
         text-color="white"
         class="ml-4"
-        v-if="workflow.preRegistered"
+        v-text="'Pre-registered'"
       />
     </div>
     <v-data-table
@@ -85,12 +85,12 @@ import 'codemirror/lib/codemirror.css'
 import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/mode/yaml/yaml.js'
 import { codemirror } from 'vue-codemirror'
-import { codeMirrorMode, validUrl } from '@/utils'
 import { DataTableHeader } from 'vuetify/types'
-import { Service } from '@/store/services'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import { Workflow } from '@/store/workflows'
 import Vue from 'vue'
+import { codeMirrorMode, validUrl } from '@/utils'
+import { Service } from '@/store/services'
+import { Workflow } from '@/store/workflows'
 
 type Data = {
   workflowInfoHeaders: DataTableHeader[]

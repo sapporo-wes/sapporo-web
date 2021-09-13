@@ -2,8 +2,7 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import Vue from 'vue'
 import colors from 'vuetify/lib/util/colors'
-import { ActionTree, GetterTree, MutationTree } from 'vuex'
-
+import { ActionTree, GetterTree, MutationTree } from 'vuex/types'
 import { RootState } from '@/store'
 import { Service } from '@/store/services'
 import { Workflow } from '@/store/workflows'
@@ -56,71 +55,77 @@ export interface State {
 export const state = (): State => ({})
 
 export const getters: GetterTree<State, RootState> = {
-  run: (state) => (runId: string): Run | undefined => {
-    return state[runId]
-  },
+  run:
+    (state) =>
+    (runId: string): Run | undefined => {
+      return state[runId]
+    },
 
   runs(state): Run[] {
     return Object.values(state)
   },
 
-  runsByIds: (_state, getters) => (runIds: string[]): Run[] => {
-    return runIds
-      .map((runId) => getters.run(runId))
-      .filter((run: Run | undefined) => run)
-  },
+  runsByIds:
+    (_state, getters) =>
+    (runIds: string[]): Run[] => {
+      return runIds
+        .map((runId) => getters.run(runId))
+        .filter((run: Run | undefined) => run)
+    },
 
   runIds(state): string[] {
     return Object.keys(state)
   },
 
-  tableItems: (_state, getters, _rootState, rootGetter) => (
-    runIds: string[]
-  ): RunTableItem[] => {
-    const items: RunTableItem[] = []
-    const runs: Run[] = getters.runsByIds(runIds)
-    for (const run of runs) {
-      const service: Service | undefined = rootGetter['services/service'](
-        run.serviceId
-      )
-      const workflow: Workflow | undefined = rootGetter['workflows/workflow'](
-        run.workflowId
-      )
-      items.push({
-        runId: run.id,
-        runName: run.name,
-        serviceId: run.serviceId,
-        serviceName: service ? service.name : '',
-        workflowId: run.workflowId,
-        workflowName: workflow ? workflow.name : '',
-        workflowTypeVersion: `${workflow ? workflow.type : ''} ${
-          workflow ? workflow.version : ''
-        }`,
-        addedDate: dayjs(run.addedDate).local().format('YYYY-MM-DD HH:mm:ss'),
-        state: run.state,
-        stateColor: getters.stateColor(run.id),
-      })
-    }
-    return items
-  },
+  tableItems:
+    (_state, getters, _rootState, rootGetter) =>
+    (runIds: string[]): RunTableItem[] => {
+      const items: RunTableItem[] = []
+      const runs: Run[] = getters.runsByIds(runIds)
+      for (const run of runs) {
+        const service: Service | undefined = rootGetter['services/service'](
+          run.serviceId
+        )
+        const workflow: Workflow | undefined = rootGetter['workflows/workflow'](
+          run.workflowId
+        )
+        items.push({
+          runId: run.id,
+          runName: run.name,
+          serviceId: run.serviceId,
+          serviceName: service ? service.name : '',
+          workflowId: run.workflowId,
+          workflowName: workflow ? workflow.name : '',
+          workflowTypeVersion: `${workflow ? workflow.type : ''} ${
+            workflow ? workflow.version : ''
+          }`,
+          addedDate: dayjs(run.addedDate).local().format('YYYY-MM-DD HH:mm:ss'),
+          state: run.state,
+          stateColor: getters.stateColor(run.id),
+        })
+      }
+      return items
+    },
 
-  stateColor: (_state, getters) => (runId: string): string => {
-    const run: Run | undefined = getters.run(runId)
-    if (run) {
-      const runState = run.state
-      if (runState === 'UNKNOWN') return colors.grey.darken1
-      else if (runState === 'QUEUED') return colors.lightBlue.darken1
-      else if (runState === 'INITIALIZING') return colors.lightBlue.darken1
-      else if (runState === 'RUNNING') return colors.indigo.darken1
-      else if (runState === 'PAUSED') return colors.lightBlue.darken1
-      else if (runState === 'COMPLETE') return colors.green.darken1
-      else if (runState === 'EXECUTOR_ERROR') return colors.red.darken1
-      else if (runState === 'SYSTEM_ERROR') return colors.red.darken1
-      else if (runState === 'CANCELED') return colors.amber.darken1
-      else if (runState === 'CANCELING') return colors.amber.darken1
-    }
-    return colors.grey.darken1
-  },
+  stateColor:
+    (_state, getters) =>
+    (runId: string): string => {
+      const run: Run | undefined = getters.run(runId)
+      if (run) {
+        const runState = run.state
+        if (runState === 'UNKNOWN') return colors.grey.darken1
+        else if (runState === 'QUEUED') return colors.lightBlue.darken1
+        else if (runState === 'INITIALIZING') return colors.lightBlue.darken1
+        else if (runState === 'RUNNING') return colors.indigo.darken1
+        else if (runState === 'PAUSED') return colors.lightBlue.darken1
+        else if (runState === 'COMPLETE') return colors.green.darken1
+        else if (runState === 'EXECUTOR_ERROR') return colors.red.darken1
+        else if (runState === 'SYSTEM_ERROR') return colors.red.darken1
+        else if (runState === 'CANCELED') return colors.amber.darken1
+        else if (runState === 'CANCELING') return colors.amber.darken1
+      }
+      return colors.grey.darken1
+    },
 }
 
 export const mutations: MutationTree<State> = {
@@ -367,9 +372,8 @@ export const actions: ActionTree<State, RootState> = {
     { commit, rootGetters },
     serviceId: string
   ) {
-    const service: Service | undefined = rootGetters['services/service'](
-      serviceId
-    )
+    const service: Service | undefined =
+      rootGetters['services/service'](serviceId)
     if (service) {
       const date = dayjs().utc().format()
       if (rootGetters['services/getRuns'](service.id)) {

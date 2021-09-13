@@ -3,22 +3,22 @@
     <div class="d-flex align-center px-6 pt-4">
       <div class="card-header" v-text="service.name" />
       <v-chip
-        v-text="'Pre-registered'"
+        v-if="service.preRegistered"
         :color="$colors.blueGrey.darken1"
         label
         small
         text-color="white"
         class="ml-4"
-        v-if="service.preRegistered"
+        v-text="'Pre-registered'"
       />
       <v-chip
-        :color="$colors.indigo.lighten1"
+        v-for="(wes_version, i) in service.serviceInfo.supported_wes_versions"
         :key="i"
+        :color="$colors.indigo.lighten1"
         class="ml-4"
         label
         small
         text-color="white"
-        v-for="(wes_version, i) in service.serviceInfo.supported_wes_versions"
         v-text="`WES ${wes_version}`"
       />
       <v-spacer />
@@ -93,11 +93,11 @@ import 'codemirror/lib/codemirror.css'
 import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/mode/yaml/yaml.js'
 import { codemirror } from 'vue-codemirror'
-import { codeMirrorMode, validUrl } from '@/utils'
 import { DataTableHeader } from 'vuetify/types'
-import { Service } from '@/store/services'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import Vue from 'vue'
+import { Service } from '@/store/services'
+import { codeMirrorMode, validUrl } from '@/utils'
 
 type Data = {
   serviceInfoHeaders: DataTableHeader[]

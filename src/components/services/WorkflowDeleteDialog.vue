@@ -7,7 +7,10 @@
   >
     <v-card>
       <div class="card-header px-6 pt-4" v-text="'Remove Workflows'" />
-      <div class="px-12 py-2" v-text="'The following workflows will be removed:'" />
+      <div
+        class="px-12 py-2"
+        v-text="'The following workflows will be removed:'"
+      />
       <ul :style="{ paddingLeft: '96px', paddingRight: '96px' }">
         <li
           v-for="(item, i) in selectedItems"
@@ -42,9 +45,9 @@
 </template>
 
 <script lang="ts">
-import { WorkflowTableItem } from '@/store/workflows'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import Vue from 'vue'
+import { WorkflowTableItem } from '@/store/workflows'
 
 type Data = Record<string, unknown>
 

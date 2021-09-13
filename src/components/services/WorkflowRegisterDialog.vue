@@ -92,11 +92,10 @@ import 'codemirror/lib/codemirror.css'
 import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/mode/yaml/yaml.js'
 import { codemirror } from 'vue-codemirror'
-import { codeMirrorMode, validUrl, convertGitHubUrl } from '@/utils'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import { WorkflowLanguages, Service } from '@/store/services'
-
 import Vue from 'vue'
+import { codeMirrorMode, validUrl, convertGitHubUrl } from '@/utils'
+import { WorkflowLanguages, Service } from '@/store/services'
 
 const boxInitialText =
   '  Type your workflow definition, or drag-and-drop a file here'

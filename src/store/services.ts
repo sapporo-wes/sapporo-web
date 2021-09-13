@@ -3,8 +3,7 @@ import utc from 'dayjs/plugin/utc'
 import { v4 as uuidv4 } from 'uuid'
 import Vue from 'vue'
 import colors from 'vuetify/lib/util/colors'
-import { ActionTree, GetterTree, MutationTree } from 'vuex'
-
+import { ActionTree, GetterTree, MutationTree } from 'vuex/types'
 import { RootState } from '@/store'
 import { Run } from '@/store/runs'
 import { Workflow } from '@/store/workflows'
@@ -53,9 +52,11 @@ export interface WorkflowLanguage {
 export type WorkflowLanguages = WorkflowLanguage[]
 
 export const getters: GetterTree<State, RootState> = {
-  service: (state) => (serviceId: string): Service | undefined => {
-    return state[serviceId]
-  },
+  service:
+    (state) =>
+    (serviceId: string): Service | undefined => {
+      return state[serviceId]
+    },
 
   services(state): Service[] {
     return Object.values(state)
@@ -65,109 +66,111 @@ export const getters: GetterTree<State, RootState> = {
     return Object.keys(state)
   },
 
-  registeredOnlyMode: (_state, getters) => (
-    serviceId: string
-  ): boolean | undefined => {
-    const service: Service | undefined = getters.service(serviceId)
-    if (service) {
-      return service.serviceInfo.tags.registered_only_mode === true
-    }
-    return false
-  },
-
-  getRuns: (_state, getters) => (serviceId: string): boolean | undefined => {
-    const service: Service | undefined = getters.service(serviceId)
-    if (service) {
-      return service.serviceInfo.tags.get_runs !== false
-    }
-    return true
-  },
-
-  workflowAttachment: (_state, getters) => (
-    serviceId: string
-  ): boolean | undefined => {
-    const service: Service | undefined = getters.service(serviceId)
-    if (service) {
-      return service.serviceInfo.tags.workflow_attachment !== false
-    }
-    return true
-  },
-
-  stateColor: (_state, getters) => (serviceId: string): string => {
-    const service: Service | undefined = getters.service(serviceId)
-    if (service) {
-      const serviceState = service.state
-      if (serviceState === 'Available') return colors.green.darken1
-      else if (serviceState === 'Disconnect') return colors.red.darken1
-      else if (serviceState === 'Unknown') return colors.grey.darken1
-    }
-    return colors.grey.darken1
-  },
-
-  serviceFilteredByWorkflowId: (_state, getters, _rootState, rootGetters) => (
-    workflowId: string
-  ): Service | undefined => {
-    const workflow: Workflow | undefined = rootGetters['workflows/workflow'](
-      workflowId
-    )
-    if (workflow) {
-      return getters.service(workflow.serviceId)
-    }
-  },
-
-  serviceFilteredByRunId: (_state, getters, _rootState, rootGetters) => (
-    runId: string
-  ): Service | undefined => {
-    const run: Run | undefined = rootGetters['runs/run'](runId)
-    if (run) {
-      return getters.service(run.serviceId)
-    }
-  },
-
-  workflowEngines: (_state, getters) => (
-    serviceId: string
-  ): WorkflowEngines => {
-    const service: Service | undefined = getters.service(serviceId)
-    if (service) {
-      return Object.entries(service.serviceInfo.workflow_engine_versions).map(
-        ([name, version]: [string, string]) => ({
-          name,
-          version,
-        })
-      )
-    }
-    return []
-  },
-
-  workflowLanguages: (_state, getters) => (
-    serviceId: string
-  ): WorkflowLanguages => {
-    const service: Service | undefined = getters.service(serviceId)
-    if (service) {
-      return Object.entries(service.serviceInfo.workflow_type_versions).map(
-        ([name, versions]: [string, WorkflowTypeVersion]) => ({
-          name,
-          versions: versions.workflow_type_version,
-        })
-      )
-    }
-    return []
-  },
-
-  workflowEngineVersion: (_state, getters) => (payload: {
-    serviceId: string
-    workflowEngine: string
-  }) => {
-    const workflowEngines: WorkflowEngines = getters.workflowEngines(
-      payload.serviceId
-    )
-    for (const workflowEngine of workflowEngines) {
-      if (workflowEngine.name === payload.workflowEngine) {
-        return workflowEngine.version
+  registeredOnlyMode:
+    (_state, getters) =>
+    (serviceId: string): boolean | undefined => {
+      const service: Service | undefined = getters.service(serviceId)
+      if (service) {
+        return service.serviceInfo.tags.registered_only_mode === true
       }
-    }
-    return ''
-  },
+      return false
+    },
+
+  getRuns:
+    (_state, getters) =>
+    (serviceId: string): boolean | undefined => {
+      const service: Service | undefined = getters.service(serviceId)
+      if (service) {
+        return service.serviceInfo.tags.get_runs !== false
+      }
+      return true
+    },
+
+  workflowAttachment:
+    (_state, getters) =>
+    (serviceId: string): boolean | undefined => {
+      const service: Service | undefined = getters.service(serviceId)
+      if (service) {
+        return service.serviceInfo.tags.workflow_attachment !== false
+      }
+      return true
+    },
+
+  stateColor:
+    (_state, getters) =>
+    (serviceId: string): string => {
+      const service: Service | undefined = getters.service(serviceId)
+      if (service) {
+        const serviceState = service.state
+        if (serviceState === 'Available') return colors.green.darken1
+        else if (serviceState === 'Disconnect') return colors.red.darken1
+        else if (serviceState === 'Unknown') return colors.grey.darken1
+      }
+      return colors.grey.darken1
+    },
+
+  serviceFilteredByWorkflowId:
+    (_state, getters, _rootState, rootGetters) =>
+    (workflowId: string): Service | undefined => {
+      const workflow: Workflow | undefined =
+        rootGetters['workflows/workflow'](workflowId)
+      if (workflow) {
+        return getters.service(workflow.serviceId)
+      }
+    },
+
+  serviceFilteredByRunId:
+    (_state, getters, _rootState, rootGetters) =>
+    (runId: string): Service | undefined => {
+      const run: Run | undefined = rootGetters['runs/run'](runId)
+      if (run) {
+        return getters.service(run.serviceId)
+      }
+    },
+
+  workflowEngines:
+    (_state, getters) =>
+    (serviceId: string): WorkflowEngines => {
+      const service: Service | undefined = getters.service(serviceId)
+      if (service) {
+        return Object.entries(service.serviceInfo.workflow_engine_versions).map(
+          ([name, version]: [string, string]) => ({
+            name,
+            version,
+          })
+        )
+      }
+      return []
+    },
+
+  workflowLanguages:
+    (_state, getters) =>
+    (serviceId: string): WorkflowLanguages => {
+      const service: Service | undefined = getters.service(serviceId)
+      if (service) {
+        return Object.entries(service.serviceInfo.workflow_type_versions).map(
+          ([name, versions]: [string, WorkflowTypeVersion]) => ({
+            name,
+            versions: versions.workflow_type_version,
+          })
+        )
+      }
+      return []
+    },
+
+  workflowEngineVersion:
+    (_state, getters) =>
+    (payload: { serviceId: string; workflowEngine: string }) => {
+      const workflowEngines: WorkflowEngines = getters.workflowEngines(
+        payload.serviceId
+      )
+      for (const workflowEngine of workflowEngines) {
+        if (workflowEngine.name === payload.workflowEngine) {
+          return workflowEngine.version
+        }
+      }
+      return ''
+    },
 }
 
 export const mutations: MutationTree<State> = {
@@ -329,9 +332,11 @@ export const actions: ActionTree<State, RootState> = {
               )
             )
             const registeredWfNames = new Set(
-              (rootGetters['workflows/workflowsByIds'](
-                service.workflowIds
-              ) as Workflow[])
+              (
+                rootGetters['workflows/workflowsByIds'](
+                  service.workflowIds
+                ) as Workflow[]
+              )
                 .filter((workflow: Workflow) => workflow.preRegistered)
                 .map((workflow: Workflow) => workflow.name)
             )
@@ -344,9 +349,11 @@ export const actions: ActionTree<State, RootState> = {
                   'workflows/updateWorkflow',
                   {
                     serviceId,
-                    workflowId: (rootGetters['workflows/workflowsByIds'](
-                      service.workflowIds
-                    ) as Workflow[]).filter(
+                    workflowId: (
+                      rootGetters['workflows/workflowsByIds'](
+                        service.workflowIds
+                      ) as Workflow[]
+                    ).filter(
                       (workflow: Workflow) => workflow.name === wfName
                     )[0].id,
                     workflow: serviceInfo.executable_workflows.filter(
@@ -381,9 +388,11 @@ export const actions: ActionTree<State, RootState> = {
                   'workflows/deleteWorkflows',
                   {
                     workflowIds: [
-                      (rootGetters['workflows/workflowsByIds'](
-                        service.workflowIds
-                      ) as Workflow[]).filter(
+                      (
+                        rootGetters['workflows/workflowsByIds'](
+                          service.workflowIds
+                        ) as Workflow[]
+                      ).filter(
                         (workflow: Workflow) => workflow.name === wfName
                       )[0].id,
                     ],

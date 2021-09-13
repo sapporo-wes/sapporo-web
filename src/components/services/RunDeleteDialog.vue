@@ -34,9 +34,9 @@
 </template>
 
 <script lang="ts">
-import { RunTableItem } from '@/store/runs'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import Vue from 'vue'
+import { RunTableItem } from '@/store/runs'
 
 type Data = Record<string, unknown>
 

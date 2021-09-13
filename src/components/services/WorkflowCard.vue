@@ -43,13 +43,13 @@
             v-text="item.workflowName"
           />
           <v-chip
-            v-text="'Pre-registered'"
+            v-if="item.preRegistered"
             :color="$colors.blueGrey.darken1"
             label
             small
             text-color="white"
             class="ml-4"
-            v-if="item.preRegistered"
+            v-text="'Pre-registered'"
           />
         </div>
       </template>
@@ -116,13 +116,12 @@
 
 <script lang="ts">
 import { DataTableHeader } from 'vuetify/types'
+import Vue from 'vue'
+import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import { Service } from '@/store/services'
 import { WorkflowTableItem } from '@/store/workflows'
-import Vue from 'vue'
 import WorkflowDeleteDialog from '@/components/services/WorkflowDeleteDialog.vue'
 import WorkflowRegisterDialog from '@/components/services/WorkflowRegisterDialog.vue'
-
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 
 type Data = {
   workflowHeaders: DataTableHeader[]

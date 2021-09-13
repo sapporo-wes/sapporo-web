@@ -7,11 +7,11 @@
 </template>
 
 <script lang="ts">
+import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
+import Vue from 'vue'
 import { Run } from '@/store/runs'
 import { Service } from '@/store/services'
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import { Workflow } from '@/store/workflows'
-import Vue from 'vue'
 
 type Data = {
   type: string

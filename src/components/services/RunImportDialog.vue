@@ -90,15 +90,14 @@ import 'codemirror/lib/codemirror.css'
 import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/mode/yaml/yaml.js'
 import { codemirror } from 'vue-codemirror'
-import { codeMirrorMode, validUrl, convertGitHubUrl } from '@/utils'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
+import Vue from 'vue'
+import { codeMirrorMode, validUrl, convertGitHubUrl } from '@/utils'
 import { Service } from '@/store/services'
 import { getRunsId } from '@/utils/WESRequest'
 import { RunLog } from '@/types/WES'
 import { Run } from '@/store/runs'
 import { Workflow } from '@/store/workflows'
-
-import Vue from 'vue'
 
 type Data = {
   runId: string
@@ -164,8 +163,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   data() {
     return {
       runId: '',
-      checkRunExistMessage:
-        'Move to the next field to check if the run exists',
+      checkRunExistMessage: 'Move to the next field to check if the run exists',
       runLog: undefined,
       runName: '',
       workflowName: '',
@@ -243,12 +241,14 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     workflowVersions() {
       return (
-        (this.$store.getters['services/workflowLanguages'](
-          this.serviceId
-        ).filter(
-          (lang: { name: string; versions: string[] }) =>
-            lang.name === this.workflowType
-        ) as { name: string; versions: string[] }[])?.[0]?.versions || []
+        (
+          this.$store.getters['services/workflowLanguages'](
+            this.serviceId
+          ).filter(
+            (lang: { name: string; versions: string[] }) =>
+              lang.name === this.workflowType
+          ) as { name: string; versions: string[] }[]
+        )?.[0]?.versions || []
       )
     },
 

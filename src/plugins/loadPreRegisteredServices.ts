@@ -1,6 +1,6 @@
+import { Context } from '@nuxt/types'
 import preRegisteredServices from '@/assets/preRegisteredServices.json'
 import { Service } from '@/store/services'
-import { Context } from '@nuxt/types'
 
 export interface MyWindow extends Window {
   onNuxtReady(obj: () => void): void

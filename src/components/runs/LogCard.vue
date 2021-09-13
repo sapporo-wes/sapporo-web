@@ -98,13 +98,13 @@
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/mode/yaml/yaml.js'
-import { AttachedFile } from '@/types/WES'
 import { codemirror } from 'vue-codemirror'
-import { codeMirrorMode } from '@/utils'
 import { DataTableHeader } from 'vuetify/types'
-import { Run } from '@/store/runs'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import Vue from 'vue'
+import { Run } from '@/store/runs'
+import { codeMirrorMode } from '@/utils'
+import { AttachedFile } from '@/types/WES'
 
 type Data = {
   logInfoHeaders: DataTableHeader[]

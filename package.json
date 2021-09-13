@@ -32,7 +32,6 @@
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-nuxt": "^2.0.0",
-    "eslint-plugin-prettier": "^4.0.0",
     "nuxt-clipboard2": "^0.2.1",
     "nuxt-webfontloader": "^1.1.0",
     "prettier": "^2.4.0",

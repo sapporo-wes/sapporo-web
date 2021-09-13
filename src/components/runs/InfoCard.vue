@@ -116,13 +116,13 @@ import 'codemirror/lib/codemirror.css'
 import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/mode/yaml/yaml.js'
 import { codemirror } from 'vue-codemirror'
-import { codeMirrorMode, validUrl } from '@/utils'
 import { DataTableHeader } from 'vuetify/types'
+import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
+import Vue from 'vue'
+import { codeMirrorMode, validUrl } from '@/utils'
 import { Run } from '@/store/runs'
 import { Service } from '@/store/services'
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import { Workflow } from '@/store/workflows'
-import Vue from 'vue'
 
 type Data = {
   runInfoHeaders: DataTableHeader[]

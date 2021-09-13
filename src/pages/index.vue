@@ -12,13 +12,13 @@
 </template>
 
 <script lang="ts">
-import { MyWindow } from '@/plugins/localStorage'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
+import Vue from 'vue'
+import { MyWindow } from '@/plugins/localStorage'
 import AppBar from '@/components/AppBar.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import Breadcrumbs from '@/components/Breadcrumbs.vue'
 import ServiceCard from '@/components/index/ServiceCard.vue'
-import Vue from 'vue'
 
 type Data = Record<string, unknown>
 
@@ -43,10 +43,8 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   },
 
   middleware({ store }) {
-    ;((window as unknown) as MyWindow).onNuxtReady(async () => {
-      const queue = [
-        store.dispatch('services/updateAllServices'),
-      ]
+    ;(window as unknown as MyWindow).onNuxtReady(async () => {
+      const queue = [store.dispatch('services/updateAllServices')]
       await Promise.all(queue)
     })
   },

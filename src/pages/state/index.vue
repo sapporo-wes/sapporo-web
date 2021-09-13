@@ -46,9 +46,9 @@
 
 <script lang="ts">
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
+import Vue from 'vue'
 import AppBar from '@/components/AppBar.vue'
 import AppFooter from '@/components/AppFooter.vue'
-import Vue from 'vue'
 
 type Data = Record<string, unknown>
 

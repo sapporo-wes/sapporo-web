@@ -1,11 +1,5 @@
 <template>
-  <v-footer
-    :color="$colors.blue.darken1"
-    absolute
-    app
-    height="24"
-    padless
-  >
+  <v-footer :color="$colors.blue.darken1" absolute app height="24" padless>
     <div class="mx-auto my-auto">
       <span class="white--text" :style="{ fontSize: '12px' }">
         sapporo-web {{ version }} © Bioinformation and DDBJ Center

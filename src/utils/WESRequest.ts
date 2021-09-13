@@ -1,3 +1,4 @@
+import { NuxtAxiosInstance } from '@nuxtjs/axios'
 import {
   RunId,
   RunListResponse,
@@ -5,7 +6,6 @@ import {
   RunStatus,
   ServiceInfo,
 } from '@/types/WES'
-import { NuxtAxiosInstance } from '@nuxtjs/axios'
 
 export const getServiceInfo = async (
   axios: NuxtAxiosInstance,

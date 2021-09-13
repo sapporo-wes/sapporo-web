@@ -27,16 +27,16 @@
 </template>
 
 <script lang="ts">
+import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
+import Vue from 'vue'
 import { MyWindow } from '@/plugins/localStorage'
 import { Service } from '@/store/services'
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import { Workflow } from '@/store/workflows'
 import AppBar from '@/components/AppBar.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import Breadcrumbs from '@/components/Breadcrumbs.vue'
 import ExecuteCard from '@/components/workflows/ExecuteCard.vue'
 import InfoCard from '@/components/workflows/InfoCard.vue'
-import Vue from 'vue'
 
 type Data = Record<string, unknown>
 
@@ -71,7 +71,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     if (Array.isArray(workflowId)) {
       workflowId = workflowId[0] || ''
     }
-    ;((window as unknown) as MyWindow).onNuxtReady(async () => {
+    ;(window as unknown as MyWindow).onNuxtReady(async () => {
       await store.dispatch(
         'services/updateService',
         store.getters['workflows/workflow'](workflowId).serviceId

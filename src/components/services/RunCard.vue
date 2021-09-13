@@ -95,12 +95,12 @@
 
 <script lang="ts">
 import { DataTableHeader } from 'vuetify/types'
+import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
+import Vue from 'vue'
 import { RunTableItem } from '@/store/runs'
 import { Service } from '@/store/services'
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import RunDeleteDialog from '@/components/services/RunDeleteDialog.vue'
 import RunImportDialog from '@/components/services/RunImportDialog.vue'
-import Vue from 'vue'
 
 type Data = {
   runHeaders: DataTableHeader[]
