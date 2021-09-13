@@ -1,6 +1,6 @@
 <template>
-  <v-card elevation="8" max-width="1200">
-    <div class="card-header pl-6 pt-4" v-text="'WES Services'" />
+  <v-card max-width="1200">
+    <div class="card-header px-6 pt-4" v-text="'WES Services'" />
     <div v-if="!services.length" class="my-2">
       <div class="mx-12">
         <span

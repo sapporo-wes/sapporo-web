@@ -3,7 +3,7 @@
     <app-bar />
     <v-main class="background">
       <v-container fluid>
-        <v-card elevation="8" max-width="1200" class="mx-auto">
+        <v-card max-width="1200" class="mx-auto">
           <div class="d-flex flex-column px-6 py-4">
             <div class="d-flex mb-4">
               <v-btn

@@ -4,7 +4,7 @@
     <v-main class="background">
       <v-container fluid>
         <breadcrumbs />
-        <v-card elevation="8" max-width="1200" class="mx-auto">
+        <v-card max-width="1200" class="mx-auto">
           <div class="d-flex flex-column px-6 pt-4">
             <div
               class="card-header"

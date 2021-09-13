@@ -10,7 +10,6 @@
             max-width="1200"
             class="mx-auto mt-8"
             type="error"
-            elevation="8"
             :value="service.state !== 'Available'"
             >{{
               `Workflow cannot be executed because the status of service ${service.name} is not available.`

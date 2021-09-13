@@ -6,7 +6,7 @@
     @click:outside="$emit('close')"
   >
     <v-card>
-      <div class="card-header pl-6 pt-4" v-text="'Register WES Service'" />
+      <div class="card-header px-6 pt-4" v-text="'Register WES Service'" />
       <div class="px-12 pt-2">
         <v-text-field
           v-model="name"

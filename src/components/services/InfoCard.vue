@@ -1,5 +1,5 @@
 <template>
-  <v-card v-if="service" ref="card" elevation="8" max-width="1200">
+  <v-card v-if="service" ref="card" max-width="1200">
     <div class="d-flex align-center px-6 pt-4">
       <div class="card-header" v-text="service.name" />
       <v-chip

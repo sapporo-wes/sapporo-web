@@ -3,7 +3,6 @@
     :color="$colors.indigo.darken2"
     absolute
     app
-    elevation="8"
     height="32"
     padless
   >

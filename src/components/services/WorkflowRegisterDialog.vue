@@ -6,7 +6,7 @@
     @click:outside="$emit('close')"
   >
     <v-card>
-      <div class="card-header pl-6 pt-4" v-text="'Add Workflow'" />
+      <div class="card-header px-6 pt-4" v-text="'Add Workflow'" />
       <div class="px-12 py-2">
         <v-text-field
           v-model="name"

@@ -6,7 +6,7 @@
     @click:outside="$emit('close')"
   >
     <v-card>
-      <div class="card-header pl-6 pt-4" v-text="'Delete Runs'" />
+      <div class="card-header px-6 pt-4" v-text="'Delete Runs'" />
       <div class="px-12 py-2" v-text="'These runs will be deleted.'" />
       <ul :style="{ paddingLeft: '96px', paddingRight: '96px' }">
         <li v-for="(item, i) in selectedItems" :key="i" v-text="item.runName" />

@@ -1,6 +1,6 @@
 <template>
-  <v-card elevation="8" max-width="1200">
-    <div class="card-header pl-6 pt-4" v-text="'Compose Run'" />
+  <v-card max-width="1200">
+    <div class="card-header px-6 pt-4" v-text="'Compose Run'" />
     <div class="px-12 py-4">
       <div class="field-header" v-text="'Run Name'" />
       <v-text-field
