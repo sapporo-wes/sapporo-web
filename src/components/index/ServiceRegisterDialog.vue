@@ -9,28 +9,26 @@
       <div class="card-header px-6 pt-4" v-text="'Register WES Service'" />
       <div class="px-12 pt-2">
         <v-text-field
+          v-model="name"
           :rules="nameRules"
-          clearable
           hint="Name of the WES service (free text, e.g., 'Test service,' etc.)"
           label="Name"
           placeholder="Type a name"
           type="text"
-          v-model="name"
         />
         <v-text-field
+          v-model="endpoint"
           :rules="endpointRules"
-          clearable
           hint="Endpoint of the WES service (e.g., 'http://localhost:1122' etc.)"
           label="Endpoint"
           placeholder="Type a endpoint"
           type="text"
-          v-model="endpoint"
           @input="connection = true"
         />
       </div>
       <div class="d-flex justify-end px-12 pb-6 pt-4">
         <v-btn
-          :disabled="!registerValid && !registerButton"
+          :disabled="!(registerValid && registerButton)"
           color="primary"
           outlined
           @click.stop="submitService"
@@ -44,11 +42,11 @@
 </template>
 
 <script lang="ts">
+import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
+import Vue from 'vue'
 import { getServiceInfo } from '@/utils/WESRequest'
 import { Service } from '@/store/services'
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import { validUrl } from '@/utils'
-import Vue from 'vue'
 
 type Data = {
   name: string

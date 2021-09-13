@@ -33,10 +33,10 @@
       v-if="services.length"
       v-model="selectedServices"
       :headers="serviceHeaders"
-      :items-per-page="Number(5)"
+      :items-per-page="Number(-1)"
       :items="services"
-      calculate-widths
-      class="mx-6 my-2"
+      class="mx-6 mt-2 mb-6"
+      hide-default-footer
       item-key="id"
       show-select
     >
@@ -47,27 +47,24 @@
             v-text="item.name"
           />
           <v-chip
-            v-text="'Pre-registered'"
+            v-if="item.preRegistered"
             :color="$colors.blueGrey.darken1"
             label
             small
             text-color="white"
             class="ml-4"
-            v-if="item.preRegistered"
+            v-text="'Pre-registered'"
           />
         </div>
       </template>
       <template #[`item.addedDate`]="{ item }">
         {{ $dayjs(item.addedDate).local().format('YYYY-MM-DD HH:mm:ss') }}
       </template>
-      <template #[`item.preRegistered`]="{ item }">
-        <v-icon v-if="item.preRegistered" v-text="'mdi-check'" />
-      </template>
       <template #[`item.state`]="{ item }">
         <v-chip
           :color="$store.getters['services/stateColor'](item.id)"
           text-color="white"
-          v-text="item.state || ''"
+          v-text="item.state"
         />
       </template>
       <template #[`item.data-table-select`]="{ item, isSelected, select }">
@@ -110,17 +107,18 @@
       :dialog-show="deleteDialogShow"
       :selected-items="selectedServices"
       @close="deleteDialogShow = false"
+      @clearSelected="selectedServices = []"
     />
   </v-card>
 </template>
 
 <script lang="ts">
 import { DataTableHeader } from 'vuetify/types'
-import { Service } from '@/store/services'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
+import Vue from 'vue'
+import { Service } from '@/store/services'
 import ServiceDeleteDialog from '@/components/index/ServiceDeleteDialog.vue'
 import ServiceRegisterDialog from '@/components/index/ServiceRegisterDialog.vue'
-import Vue from 'vue'
 
 type Data = {
   serviceHeaders: DataTableHeader[]
