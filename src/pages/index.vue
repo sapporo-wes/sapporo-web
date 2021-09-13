@@ -4,8 +4,7 @@
     <v-main class="background">
       <v-container fluid>
         <breadcrumbs />
-        <service-card class="mx-auto" />
-        <run-card class="mt-8 mx-auto mb-4" />
+        <service-card class="mx-auto mb-4" />
       </v-container>
     </v-main>
     <app-footer />
@@ -18,7 +17,6 @@ import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import AppBar from '@/components/AppBar.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import Breadcrumbs from '@/components/Breadcrumbs.vue'
-import RunCard from '@/components/index/RunCard.vue'
 import ServiceCard from '@/components/index/ServiceCard.vue'
 import Vue from 'vue'
 
@@ -41,7 +39,6 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     AppBar,
     AppFooter,
     Breadcrumbs,
-    RunCard,
     ServiceCard,
   },
 
@@ -49,7 +46,6 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     ;((window as unknown) as MyWindow).onNuxtReady(async () => {
       const queue = [
         store.dispatch('services/updateAllServices'),
-        store.dispatch('runs/updateAllRunsState'),
       ]
       await Promise.all(queue)
     })

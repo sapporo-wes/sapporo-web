@@ -363,15 +363,6 @@ export const actions: ActionTree<State, RootState> = {
     }
   },
 
-  async updateAllRunsState({ rootGetters, dispatch }) {
-    const services: Service[] = rootGetters['services/services']
-    const queue = []
-    for (const service of services) {
-      queue.push(await dispatch('updateAllRunsStateByService', service.id))
-    }
-    Promise.all(queue)
-  },
-
   async updateAllRunsStateByService(
     { commit, rootGetters },
     serviceId: string
