@@ -1,9 +1,9 @@
 <template>
   <v-footer
-    :color="$colors.indigo.darken2"
+    :color="$colors.blue.darken1"
     absolute
     app
-    height="32"
+    height="24"
     padless
   >
     <div class="mx-auto my-auto">

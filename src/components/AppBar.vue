@@ -1,8 +1,8 @@
 <template>
-  <v-app-bar :color="$colors.indigo.darken2" app absolute>
+  <v-app-bar :color="$colors.blue.darken1" app absolute dense>
     <v-toolbar-title>
       <nuxt-link class="white--text text-decoration-none" to="/">
-        <img src="~/assets/logo.svg" alt="logo" height="60" class="mt-1" />
+        <img src="~/assets/logo.svg" alt="logo" height="48" class="mt-2" />
       </nuxt-link>
     </v-toolbar-title>
     <v-spacer />
