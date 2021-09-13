@@ -11,7 +11,6 @@ module.exports = {
     'plugin:nuxt/recommended',
     'plugin:prettier/recommended',
     'prettier',
-    'prettier/vue',
   ],
   rules: {
     'no-console': 0,
