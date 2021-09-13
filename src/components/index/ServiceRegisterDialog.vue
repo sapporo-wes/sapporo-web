@@ -9,32 +9,28 @@
       <div class="card-header px-6 pt-4" v-text="'Register WES Service'" />
       <div class="px-12 pt-2">
         <v-text-field
-          v-model="name"
-          :error-messages="nameError"
+          :rules="nameRules"
           clearable
+          hint="Name of the WES service (free text, e.g., 'Test service,' etc.)"
           label="Name"
+          placeholder="Type a name"
+          type="text"
+          v-model="name"
         />
         <v-text-field
-          v-model="endpoint"
-          :error-messages="endpointError"
+          :rules="endpointRules"
           clearable
+          hint="Endpoint of the WES service (e.g., 'http://localhost:1122' etc.)"
           label="Endpoint"
-          @change="connection = false"
+          placeholder="Type a endpoint"
+          type="text"
+          v-model="endpoint"
+          @input="connection = true"
         />
       </div>
       <div class="d-flex justify-end px-12 pb-6 pt-4">
         <v-btn
-          :color="checkButtonColor"
-          :disabled="connection"
-          @click.stop="checkConnection"
-          class="mr-4"
-          outlined
-        >
-          <v-icon class="mr-4" v-text="'mdi-access-point-check'" />
-          <span v-text="checkButtonText" />
-        </v-btn>
-        <v-btn
-          :disabled="!registerValid || !registerButton"
+          :disabled="!registerValid && !registerButton"
           color="primary"
           outlined
           @click.stop="submitService"
@@ -48,31 +44,28 @@
 </template>
 
 <script lang="ts">
+import { getServiceInfo } from '@/utils/WESRequest'
 import { Service } from '@/store/services'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import { validUrl } from '@/utils'
 import Vue from 'vue'
-import { getServiceInfo } from '@/utils/WESRequest'
 
 type Data = {
   name: string
   endpoint: string
   connection: boolean
   registerButton: boolean
-  checkButtonColor: string
-  checkButtonText: string
 }
 
 type Methods = {
   submitService: () => Promise<void>
-  checkConnection: () => Promise<void>
 }
 
 type Computed = {
   registerValid: boolean
   serviceNames: string[]
-  nameError: string
-  endpointError: string
+  nameRules: string[]
+  endpointRules: string[]
 }
 
 type Props = {
@@ -98,16 +91,16 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     return {
       name: '',
       endpoint: '',
-      connection: false,
+      connection: true,
       registerButton: true,
-      checkButtonColor: 'primary',
-      checkButtonText: 'Connection Check',
     }
   },
 
   computed: {
     registerValid() {
-      return !this.nameError && !this.endpointError && this.connection
+      return (
+        !this.nameRules.length && !this.endpointRules.length && this.connection
+      )
     },
 
     serviceNames() {
@@ -116,61 +109,47 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       )
     },
 
-    nameError() {
+    nameRules() {
       if (!this.name) {
-        return 'Required'
+        return ['Required.']
       }
       if (this.serviceNames.includes(this.name)) {
-        return `Service name duplicated`
+        return ['Typed name already exists.']
       }
-      return ''
+      return []
     },
 
-    endpointError() {
+    endpointRules() {
       if (!this.endpoint) {
-        return 'Required'
+        return ['Required.']
       }
       if (!validUrl(this.endpoint)) {
-        return `Invalid endpoint URL: ${this.endpoint}`
+        return ['Invalid endpoint URL.']
       }
       if (!this.connection) {
-        return 'Check the connection to WES to submit'
+        return ['Connection failed.']
       }
-      return ''
+      return []
     },
   },
 
   methods: {
     async submitService(): Promise<void> {
-      if (this.registerValid) {
-        this.registerButton = false
-        await this.$store
-          .dispatch('services/submitService', {
-            name: this.name,
-            endpoint: this.endpoint,
-            preRegistered: false,
-          })
-          .then((serviceId) => {
-            this.$router.push({ path: '/services', query: { serviceId } })
-          })
-      }
-    },
-
-    async checkConnection(): Promise<void> {
       await getServiceInfo(this.$axios, this.endpoint)
-        .then((_) => {
-          this.connection = true
+        .then(async (_) => {
+          this.registerButton = false
+          await this.$store
+            .dispatch('services/submitService', {
+              name: this.name,
+              endpoint: this.endpoint,
+              preRegistered: false,
+            })
+            .then((serviceId) => {
+              this.$router.push({ path: '/services', query: { serviceId } })
+            })
         })
         .catch((_) => {
           this.connection = false
-          this.checkButtonColor = 'error'
-          this.checkButtonText = 'Error'
-          setTimeout(() => {
-            this.checkButtonColor = 'primary'
-          }, 1500)
-          setTimeout(() => {
-            this.checkButtonText = 'Check Connection'
-          }, 1500)
         })
     },
   },
