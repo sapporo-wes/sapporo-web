@@ -7,25 +7,13 @@
     </v-toolbar-title>
     <v-spacer />
     <v-btn
-      v-if="$route.path !== '/state'"
-      class="mr-4"
-      color="white"
-      nuxt
-      outlined
-      to="state"
-    >
-      <v-icon class="mr-2" color="white" v-text="'mdi-database'" />
-      State
-    </v-btn>
-
-    <v-btn
       class="text-capitalize"
       color="white"
-      href="https://github.com/ddbj/sapporo-web"
+      href="https://hackmd.io/@suecharo/sapporo-web-docs"
       outlined
     >
-      <v-icon class="mr-2" color="white" v-text="'mdi-github'" />
-      GitHub
+      <v-icon class="mr-2" color="white" v-text="'mdi-book-open-outline'" />
+      Docs
     </v-btn>
   </v-app-bar>
 </template>
@@ -52,9 +40,3 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
 export default Vue.extend(options)
 </script>
-
-<style scoped>
-.v-list-item__icon:first-child {
-  margin-right: 16px;
-}
-</style>
