@@ -3,6 +3,12 @@
     <template #divider>
       <v-icon v-text="'mdi-chevron-right'" />
     </template>
+    <template #item="{ item }">
+      <v-breadcrumbs-item :nuxt="item.nuxt" :to="item.to">
+        <v-icon :color="$colors.grey.darken2" class="mr-2" v-text="item.icon" />
+        <span v-text="item.text" />
+      </v-breadcrumbs-item>
+    </template>
   </v-breadcrumbs>
 </template>
 
@@ -51,6 +57,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
           text: 'Home',
           nuxt: true,
           to: '/',
+          icon: 'mdi-home-outline',
         },
       ]
       if (this.type === 'service') {
@@ -62,6 +69,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
             text: service.name,
             nuxt: true,
             to: `/services?serviceId=${service.id}`,
+            icon: 'mdi-dns-outline',
           })
         }
       } else if (this.type === 'workflow') {
@@ -77,12 +85,14 @@ const options: ThisTypedComponentOptionsWithRecordProps<
               text: service.name,
               nuxt: true,
               to: `/services?serviceId=${service.id}`,
+              icon: 'mdi-dns-outline',
             })
           }
           items.push({
             text: workflow.name,
             nuxt: true,
             to: `/workflows?workflowId=${workflow.id}`,
+            icon: 'mdi-graph-outline',
           })
         }
       } else if (this.type === 'run') {
@@ -100,18 +110,21 @@ const options: ThisTypedComponentOptionsWithRecordProps<
                 text: service.name,
                 nuxt: true,
                 to: `/services?serviceId=${service.id}`,
+                icon: 'mdi-dns-outline',
               })
             }
             items.push({
               text: workflow.name,
               nuxt: true,
               to: `/workflows?workflowId=${workflow.id}`,
+              icon: 'mdi-graph-outline',
             })
           }
           items.push({
             text: run.name,
             nuxt: true,
             to: `/runs?runId=${run.id}`,
+            icon: 'mdi-chart-box-outline',
           })
         }
       }

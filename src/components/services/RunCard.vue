@@ -1,6 +1,7 @@
 <template>
   <v-card max-width="1200">
     <div class="d-flex align-center px-6 pt-4">
+      <v-icon color="black" class="mr-2"> mdi-chart-box-outline </v-icon>
       <div class="card-header" v-text="'Runs'" />
       <v-spacer />
       <v-btn

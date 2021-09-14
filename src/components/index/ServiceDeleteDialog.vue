@@ -9,14 +9,14 @@
       <div class="card-header px-6 pt-4" v-text="'Remove WES Services'" />
       <div
         class="px-12 py-2"
-        v-text="'Following WES services will be removed:'"
+        v-text="'Following WES service will be removed:'"
       />
       <ul :style="{ paddingLeft: '96px', paddingRight: '96px' }">
         <li v-for="(item, i) in selectedItems" :key="i" v-text="item.name" />
       </ul>
       <div class="px-12 py-2">
-        Workflows and runs associated with these services will also be removed.
-        You can re-register the services, but changes on workflows and runs will
+        Workflows and runs associated with this service will also be removed.
+        You can re-register the service, but changes on workflows and runs will
         NOT be recovered.
       </div>
       <div class="d-flex justify-end px-12 pt-4 pb-6">
@@ -77,7 +77,6 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         'services/deleteServices',
         this.selectedItems.map((service) => service.id)
       )
-      this.$emit('clearSelected')
       this.$emit('close')
     },
   },

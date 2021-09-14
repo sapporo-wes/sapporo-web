@@ -1,6 +1,7 @@
 <template>
   <v-card v-if="service" ref="card" max-width="1200">
     <div class="d-flex align-center px-6 pt-4">
+      <v-icon color="black" class="mr-2" v-text="'mdi-dns-outline '" />
       <div class="card-header" v-text="service.name" />
       <v-chip
         v-if="service.preRegistered"
@@ -10,16 +11,6 @@
         text-color="white"
         class="ml-4"
         v-text="'Pre-registered'"
-      />
-      <v-chip
-        v-for="(wes_version, i) in service.serviceInfo.supported_wes_versions"
-        :key="i"
-        :color="$colors.indigo.lighten1"
-        class="ml-4"
-        label
-        small
-        text-color="white"
-        v-text="`WES ${wes_version}`"
       />
       <v-spacer />
       <v-chip
@@ -37,12 +28,11 @@
         <v-icon v-text="'mdi-reload'" />
       </v-btn>
     </div>
-
     <v-data-table
       :headers="serviceInfoHeaders"
       :items="serviceInfoContents"
       calculate-widths
-      class="mx-12 pt-2 info-table"
+      class="mx-12 mt-2 info-table"
       disable-filtering
       disable-pagination
       disable-sort
@@ -51,12 +41,11 @@
       item-key="key"
     >
       <template #[`item.value`]="{ item }">
-        <a v-if="validUrl(item.value)" :href="item.value">{{ item.value }}</a>
-        <div v-else v-text="item.value" />
+        <span v-text="item.value" />
       </template>
     </v-data-table>
     <div class="mx-12">
-      <v-tabs v-model="tab" vertical height="332">
+      <v-tabs v-model="tab" vertical height="282">
         <v-tab
           v-for="tabItem in tabItems"
           :key="tabItem.key"
@@ -168,14 +157,6 @@ const options: ThisTypedComponentOptionsWithRecordProps<
             .local()
             .format('YYYY-MM-DD HH:mm:ss'),
         },
-        {
-          key: 'Auth Instructions URL',
-          value: this.service.serviceInfo?.auth_instructions_url || '',
-        },
-        {
-          key: 'Contact Info URL',
-          value: this.service.serviceInfo?.contact_info_url || '',
-        },
       ]
     },
 
@@ -247,7 +228,7 @@ export default Vue.extend(options)
 
 <style scoped>
 .content-viewer >>> .CodeMirror {
-  height: 300px !important;
+  height: 250px !important;
   font-size: 0.9rem !important;
 }
 .content-viewer >>> .CodeMirror-lines {
@@ -256,5 +237,8 @@ export default Vue.extend(options)
 .info-table >>> td:nth-child(1) {
   width: 270px;
   font-weight: 500;
+}
+.info-table >>> tr:not(:last-child) td {
+  border-bottom: none !important;
 }
 </style>

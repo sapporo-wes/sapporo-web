@@ -1,29 +1,27 @@
 <template>
   <v-card max-width="1200">
-    <div class="card-header px-6 pt-4" v-text="'WES Services'" />
+    <div class="d-flex px-6 pt-4">
+      <v-icon color="black" class="mr-2" v-text="'mdi-dns-outline'" />
+      <div class="card-header" v-text="'WES Services'" />
+    </div>
+
     <div v-if="!services.length" class="my-2">
       <div class="mx-12">
         <span
           :style="{
+            color: $vuetify.theme.themes.light.error,
+            textDecorationLine: 'underline',
             fontSize: '1rem',
           }"
-        >
-          <span
-            :style="{
-              color: $vuetify.theme.themes.light.error,
-              textDecorationLine: 'underline',
-            }"
-          >
-            Register a WES service to run workflows.
-          </span>
-        </span>
+          v-text="'Register a WES service to run workflows.'"
+        />
         <br />
         <div class="my-2">
           <span>
             Use a public WES service, or run your own using
-            <a href="https://github.com/ddbj/sapporo-service"
-              >Sapporo-service</a
-            >
+            <a href="https://github.com/ddbj/sapporo-service">
+              Sapporo-service
+            </a>
           </span>
         </div>
       </div>
@@ -35,26 +33,30 @@
       :headers="serviceHeaders"
       :items-per-page="Number(-1)"
       :items="services"
-      class="mx-6 mt-2 mb-6"
+      class="mx-12 mt-2 mb-6"
       hide-default-footer
       item-key="id"
-      show-select
     >
       <template #[`item.name`]="{ item }">
-        <div class="d-flex align-center">
+        <div class="d-flex">
           <nuxt-link
             :to="{ path: '/services', query: { serviceId: item.id } }"
             v-text="item.name"
           />
-          <v-chip
-            v-if="item.preRegistered"
-            :color="$colors.blueGrey.darken1"
-            label
-            small
-            text-color="white"
-            class="ml-4"
-            v-text="'Pre-registered'"
-          />
+          <v-tooltip top>
+            <template #activator="{ on, attrs }">
+              <v-icon
+                v-if="item.preRegistered"
+                :color="$colors.indigo.darken1"
+                class="ml-2"
+                small
+                v-bind="attrs"
+                v-on="on"
+                v-text="'mdi-account-check-outline'"
+              />
+            </template>
+            <span v-text="'Pre-registered WES service'" />
+          </v-tooltip>
         </div>
       </template>
       <template #[`item.addedDate`]="{ item }">
@@ -67,34 +69,37 @@
           v-text="item.state"
         />
       </template>
-      <template #[`item.data-table-select`]="{ item, isSelected, select }">
-        <v-simple-checkbox
-          :disabled="item.preRegistered"
-          :value="isSelected"
-          @input="select"
-        />
+      <template #[`item.delete`]="{ item }">
+        <v-tooltip top>
+          <template #activator="{ on, attrs }">
+            <div v-bind="attrs" v-on="item.preRegistered && on">
+              <v-icon
+                :disabled="item.preRegistered"
+                :color="$colors.grey.darken2"
+                @click.stop="
+                  selectedServices = [item]
+                  deleteDialogShow = true
+                "
+                v-text="'mdi-trash-can-outline'"
+              />
+            </div>
+          </template>
+          <span
+            v-text="'This service is pre-registered and cannot be removed.'"
+          />
+        </v-tooltip>
       </template>
     </v-data-table>
-    <div class="d-flex justify-end pb-6 pr-6">
+
+    <div class="d-flex justify-end pb-6 pr-12">
       <v-btn
         color="primary"
-        class="mr-4"
         outlined
         width="140"
         @click.stop="registerDialogShow = true"
       >
         <v-icon class="mr-2" v-text="'mdi-sticker-plus-outline'" />
         <span v-text="'Register'" />
-      </v-btn>
-      <v-btn
-        :disabled="!selectedServices.length"
-        color="error"
-        outlined
-        width="140"
-        @click.stop="deleteDialogShow = true"
-      >
-        <v-icon class="mr-2" v-text="'mdi-trash-can-outline'" />
-        <span v-text="'Remove'" />
       </v-btn>
     </div>
 
@@ -106,8 +111,10 @@
     <service-delete-dialog
       :dialog-show="deleteDialogShow"
       :selected-items="selectedServices"
-      @close="deleteDialogShow = false"
-      @clearSelected="selectedServices = []"
+      @close="
+        deleteDialogShow = false
+        selectedServices = []
+      "
     />
   </v-card>
 </template>
@@ -155,20 +162,31 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         {
           text: 'Name',
           value: 'name',
+          sortable: true,
         },
         {
           text: 'Endpoint',
           value: 'endpoint',
+          sortable: false,
         },
         {
           text: 'Added Date',
           value: 'addedDate',
+          sortable: true,
         },
         {
-          text: 'State',
+          text: '',
           value: 'state',
           align: 'center',
           sortable: false,
+          width: '80px',
+        },
+        {
+          text: '',
+          value: 'delete',
+          sortable: false,
+          align: 'center',
+          width: '64px',
         },
       ],
       selectedServices: [],

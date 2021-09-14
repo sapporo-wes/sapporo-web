@@ -1,74 +1,126 @@
 <template>
   <v-card max-width="1200">
-    <div class="card-header px-6 pt-4" v-text="'Workflows'" />
+    <div class="d-flex px-6 pt-4">
+      <v-icon color="black" class="mr-2" v-text="'mdi-graph-outline'" />
+      <div class="card-header" v-text="'Workflows'" />
+    </div>
+
     <div v-if="!workflowTableItems.length" class="my-2">
       <div class="mx-12">
         <span
           :style="{
+            color: $vuetify.theme.themes.light.error,
+            textDecorationLine: 'underline',
             fontSize: '1rem',
           }"
-        >
-          <span
-            :style="{
-              color: $vuetify.theme.themes.light.error,
-              textDecorationLine: 'underline',
-            }"
-            v-text="'Add workflow to start composing a run.'"
-          />
-          <!-- Click
-          <span
-            :style="{ color: $vuetify.theme.themes.light.primary }"
-            v-text="'REGISTER'"
-          />
-          button. -->
-        </span>
+          v-text="'Add workflow to start composing a run.'"
+        />
       </div>
     </div>
+
     <v-data-table
       v-if="workflowTableItems.length"
-      v-model="selectedWorkflows"
       :headers="workflowHeaders"
       :items-per-page="Number(10)"
       :items="workflowTableItems"
-      calculate-widths
-      class="mx-6 my-2"
+      class="mx-12 my-2 workflow-table"
       item-key="workflowId"
-      multi-sort
-      show-select
     >
+      <template #[`item.workflowType`]="{ item }">
+        <v-tooltip top max-width="400">
+          <template #activator="{ on, attrs }">
+            <img
+              v-if="item.workflowType.toLowerCase() === 'cwl'"
+              src="~/assets/icon/cwl-icon.png"
+              class="pt-2"
+              height="40"
+              v-bind="attrs"
+              v-on="on"
+            />
+            <img
+              v-else-if="item.workflowType.toLowerCase() === 'wdl'"
+              src="~/assets/icon/wdl-icon.png"
+              class="pt-2"
+              height="40"
+              v-bind="attrs"
+              v-on="on"
+            />
+            <img
+              v-else-if="item.workflowType.toLowerCase() === 'nextflow'"
+              src="~/assets/icon/nextflow-icon.png"
+              class="pt-2"
+              height="40"
+              v-bind="attrs"
+              v-on="on"
+            />
+            <img
+              v-else-if="item.workflowType.toLowerCase() === 'snakemake'"
+              src="~/assets/icon/snakemake-icon.png"
+              class="pt-2"
+              height="40"
+              v-bind="attrs"
+              v-on="on"
+            />
+            <template v-else>
+              <v-icon
+                v-bind="attrs"
+                class="py-2 pr-2"
+                v-on="on"
+                v-text="'mdi-beaker-question-outline'"
+              />
+            </template>
+          </template>
+          <span v-text="`${item.workflowType} ${item.workflowVersion}`" />
+        </v-tooltip>
+      </template>
       <template #[`item.workflowName`]="{ item }">
-        <div class="d-flex align-center">
+        <div class="d-flex">
           <nuxt-link
             :to="{ path: '/workflows', query: { workflowId: item.workflowId } }"
             v-text="item.workflowName"
           />
-          <v-chip
-            v-if="item.preRegistered"
-            :color="$colors.blueGrey.darken1"
-            label
-            small
-            text-color="white"
-            class="ml-4"
-            v-text="'Pre-registered'"
-          />
+          <v-tooltip top>
+            <template #activator="{ on, attrs }">
+              <v-icon
+                v-if="item.preRegistered"
+                :color="$colors.indigo.darken1"
+                class="ml-2"
+                small
+                v-bind="attrs"
+                v-on="on"
+                v-text="'mdi-account-check-outline'"
+              />
+            </template>
+            <span v-text="'Pre-registered workflow'" />
+          </v-tooltip>
         </div>
       </template>
-      <template #[`item.data-table-select`]="{ item, isSelected, select }">
-        <v-simple-checkbox
-          :disabled="item.preRegistered"
-          :value="isSelected"
-          @input="select"
-        />
+      <template #[`item.delete`]="{ item }">
+        <v-tooltip top>
+          <template #activator="{ on, attrs }">
+            <div v-bind="attrs" v-on="item.preRegistered && on">
+              <v-icon
+                :disabled="item.preRegistered"
+                :color="$colors.grey.darken2"
+                @click.stop="
+                  selectedWorkflows = [item]
+                  deleteDialogShow = true
+                "
+                v-text="'mdi-trash-can-outline'"
+              />
+            </div>
+          </template>
+          <span
+            v-text="'This workflow is pre-registered and cannot be removed.'"
+          />
+        </v-tooltip>
       </template>
     </v-data-table>
-    <div class="d-flex justify-end pb-6 pr-6">
-      <v-tooltip :value="tooltipShow" top color="primary" max-width="300">
-        <template #activator="{}">
-          <div
-            class="mr-4"
-            @mouseover="overRegisterButton"
-            @mouseleave="tooltipShow = false"
-          >
+
+    <div class="d-flex justify-end pb-6 pr-12">
+      <v-tooltip top max-width="400">
+        <template #activator="{ on, attrs }">
+          <div v-bind="attrs" v-on="registeredOnlyMode && on">
             <v-btn
               :disabled="registeredOnlyMode"
               color="primary"
@@ -83,20 +135,10 @@
         </template>
         <span
           v-text="
-            'The WES service is running in pre-registered only mode: ask administrator to add a workflow.'
+            'This WES service operates in the mode of pre-registering workflows. Would you please ask your administrator to add workflows?'
           "
         />
       </v-tooltip>
-      <v-btn
-        :disabled="!selectedWorkflows.length"
-        color="error"
-        outlined
-        width="140"
-        @click.stop="deleteDialogShow = true"
-      >
-        <v-icon class="mr-2" v-text="'mdi-trash-can-outline'" />
-        <span v-text="'Remove'" />
-      </v-btn>
     </div>
 
     <workflow-register-dialog
@@ -108,8 +150,10 @@
     <workflow-delete-dialog
       :dialog-show="deleteDialogShow"
       :selected-items="selectedWorkflows"
-      @clear-selected="selectedWorkflows = []"
-      @close="deleteDialogShow = false"
+      @close="
+        deleteDialogShow = false
+        selectedWorkflow = []
+      "
     />
   </v-card>
 </template>
@@ -128,12 +172,9 @@ type Data = {
   selectedWorkflows: WorkflowTableItem[]
   registerDialogShow: boolean
   deleteDialogShow: boolean
-  tooltipShow: boolean
 }
 
-type Methods = {
-  overRegisterButton: () => void
-}
+type Methods = Record<string, unknown>
 
 type Computed = {
   service: Service
@@ -168,22 +209,32 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     return {
       workflowHeaders: [
         {
-          text: 'Name',
-          value: 'workflowName',
+          text: '',
+          value: 'workflowType',
+          sortable: false,
+          width: '40px',
         },
         {
-          text: 'Type Version',
-          value: 'workflowTypeVersion',
+          text: 'Name',
+          value: 'workflowName',
+          sortable: true,
         },
         {
           text: 'Added / Updated Date',
           value: 'date',
+          sortable: true,
+        },
+        {
+          text: '',
+          value: 'delete',
+          sortable: false,
+          align: 'center',
+          width: '64px',
         },
       ],
       selectedWorkflows: [],
       registerDialogShow: false,
       deleteDialogShow: false,
-      tooltipShow: false,
     }
   },
 
@@ -202,15 +253,13 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return this.$store.getters['services/registeredOnlyMode'](this.serviceId)
     },
   },
-
-  methods: {
-    overRegisterButton() {
-      if (this.registeredOnlyMode) {
-        this.tooltipShow = true
-      }
-    },
-  },
 }
 
 export default Vue.extend(options)
 </script>
+
+<style scoped>
+.workflow-table >>> td:first-child {
+  padding-right: 0px;
+}
+</style>

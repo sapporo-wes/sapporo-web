@@ -6,10 +6,10 @@
     @click:outside="$emit('close')"
   >
     <v-card>
-      <div class="card-header px-6 pt-4" v-text="'Remove Workflows'" />
+      <div class="card-header px-6 pt-4" v-text="'Remove Workflow'" />
       <div
         class="px-12 py-2"
-        v-text="'The following workflows will be removed:'"
+        v-text="'The following workflow will be removed:'"
       />
       <ul :style="{ paddingLeft: '96px', paddingRight: '96px' }">
         <li
@@ -20,16 +20,8 @@
       </ul>
       <div
         class="px-12 py-2"
-        v-text="'Runs associated with these workflows will also be removed.'"
+        v-text="'Runs associated with this workflow will also be removed.'"
       />
-      <!-- <div
-        :style="{
-          fontSize: '1.4rem',
-          color: $vuetify.theme.themes.light.error,
-        }"
-        class="text-center"
-        v-text="'Are you sure to delete these?'"
-      /> -->
       <div class="d-flex justify-end px-12 pt-4 pb-6">
         <v-btn color="error" outlined @click.stop="deleteSelectedItems">
           <v-icon class="mr-2" v-text="'mdi-trash-can-outline'" />
@@ -89,7 +81,6 @@ const options: ThisTypedComponentOptionsWithRecordProps<
           (workflow) => workflow.workflowId
         ),
       })
-      this.$emit('clearSelected')
       this.$emit('close')
     },
   },

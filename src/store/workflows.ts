@@ -28,7 +28,8 @@ export interface Workflow {
 export interface WorkflowTableItem {
   workflowId: string
   workflowName: string
-  workflowTypeVersion: string
+  workflowType: string
+  workflowVersion: string
   date: string
   preRegistered: boolean
 }
@@ -78,7 +79,8 @@ export const getters: GetterTree<State, RootState> = {
       items.push({
         workflowId: workflow.id,
         workflowName: workflow.name,
-        workflowTypeVersion: `${workflow.type} ${workflow.version}`,
+        workflowType: workflow.type,
+        workflowVersion: workflow.version,
         date: workflow.preRegistered
           ? dayjs(workflow.updatedDate).local().format('YYYY-MM-DD HH:mm:ss')
           : dayjs(workflow.addedDate).local().format('YYYY-MM-DD HH:mm:ss'),
