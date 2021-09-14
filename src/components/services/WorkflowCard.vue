@@ -3,6 +3,32 @@
     <div class="d-flex px-6 pt-4">
       <v-icon color="black" class="mr-2" v-text="'mdi-graph-outline'" />
       <div class="card-header" v-text="'Workflows'" />
+      <v-spacer />
+      <v-select
+        v-if="workflowTypes.length"
+        v-model="filterType"
+        :items="workflowTypes"
+        :prepend-inner-icon="'mdi-filter-outline'"
+        :style="{ maxWidth: '160px', minWidth: '160px' }"
+        class="mt-2 mr-6"
+        clearable
+        dense
+        hide-details
+        label="Type"
+        single-line
+      />
+      <v-text-field
+        v-if="workflowTypes.length"
+        v-model="filterName"
+        :prepend-inner-icon="'mdi-magnify'"
+        :style="{ maxWidth: '200px', minWidth: '200px' }"
+        class="mt-2 mr-6"
+        clearable
+        dense
+        hide-details
+        label="Name"
+        single-line
+      />
     </div>
 
     <div v-if="!workflowTableItems.length" class="my-2">
@@ -22,7 +48,7 @@
       v-if="workflowTableItems.length"
       :headers="workflowHeaders"
       :items-per-page="Number(10)"
-      :items="workflowTableItems"
+      :items="filteredItems"
       class="mx-12 my-2 workflow-table"
       item-key="workflowId"
     >
@@ -172,6 +198,8 @@ type Data = {
   selectedWorkflows: WorkflowTableItem[]
   registerDialogShow: boolean
   deleteDialogShow: boolean
+  filterType: string
+  filterName: string
 }
 
 type Methods = Record<string, unknown>
@@ -179,7 +207,9 @@ type Methods = Record<string, unknown>
 type Computed = {
   service: Service
   workflowTableItems: WorkflowTableItem[]
+  filteredItems: WorkflowTableItem[]
   registeredOnlyMode: boolean
+  workflowTypes: string[]
 }
 
 type Props = {
@@ -235,6 +265,8 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       selectedWorkflows: [],
       registerDialogShow: false,
       deleteDialogShow: false,
+      filterType: '',
+      filterName: '',
     }
   },
 
@@ -249,8 +281,26 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       )
     },
 
+    filteredItems() {
+      return this.workflowTableItems.filter((item: WorkflowTableItem) => {
+        if (this.filterType && item.workflowType !== this.filterType) {
+          return false
+        }
+        if (this.filterName && !item.workflowName.includes(this.filterName)) {
+          return false
+        }
+        return true
+      })
+    },
+
     registeredOnlyMode() {
       return this.$store.getters['services/registeredOnlyMode'](this.serviceId)
+    },
+
+    workflowTypes() {
+      return Array.from(
+        new Set(this.workflowTableItems.map((item) => item.workflowType))
+      )
     },
   },
 }
