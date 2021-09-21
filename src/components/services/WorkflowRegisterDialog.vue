@@ -6,80 +6,151 @@
     @click:outside="$emit('close')"
   >
     <v-card>
-      <div class="card-header px-6 pt-4" v-text="'Add Workflow'" />
-      <div class="px-12 py-2">
+      <div class="card-header mx-6 pt-4" v-text="'Add Workflow'" />
+      <div class="mx-12 my-2">
         <v-text-field
           v-model="name"
-          :error-messages="nameError"
-          clearable
+          :persistent-hint="!name.length"
+          :rules="nameRules"
+          hint="Name of the workflow (free text, e.g., 'Test workflow,' etc.)"
           label="Name"
+          placeholder="Type a name"
         />
         <v-select
           v-model="type"
-          :error-messages="typeError"
           :items="types"
-          clearable
+          :persistent-hint="!type.length"
+          :rule="typeRules"
+          hint="Select a workflow langauge type"
           label="Type"
           @change="changeType"
         />
         <v-select
           v-model="version"
           :disabled="!type"
-          :error-messages="versionError"
           :items="versions"
-          clearable
+          :persistent-hint="!type.length"
+          :rules="versionRules"
+          hint="Select a workflow langauge version"
           label="Version"
         />
-        <v-text-field
-          v-model="url"
-          :error-messages="urlError"
-          clearable
-          hint="Enter remote URL or workflow name"
-          label="URL or filename"
-          persistent-hint
-          @blur="blurUrl"
-        />
-        <div @drop="setDragFileName">
+      </div>
+      <div class="mx-12 mt-2">
+        <div class="d-flex align-center">
+          <span
+            :style="{ color: `${$colors.grey.darken2}` }"
+            v-text="'Document'"
+          />
+          <v-chip-group
+            v-model="locationMode"
+            class="ml-6"
+            color="primary"
+            mandatory
+          >
+            <v-chip :value="'download'" label outlined>
+              <v-icon left v-text="'mdi-download-outline'" />
+              <span v-text="'Download'" />
+            </v-chip>
+            <v-chip :value="'upload'" label outlined>
+              <v-icon left v-text="'mdi-upload-outline'" />
+              <span v-text="'Upload'" />
+            </v-chip>
+          </v-chip-group>
+        </div>
+        <div v-if="locationMode === 'download'" class="ml-4 d-flex flex-column">
+          <v-text-field
+            v-model="url"
+            :persistent-hint="!url.length"
+            :rules="urlRules"
+            class="ma-0"
+            hint="Network reachable location of the workflow document"
+            label="URL"
+            placeholder="Type a URL"
+            @input="changeUrl"
+          />
           <codemirror
-            v-model="wfContent"
+            v-if="wfContentDownload.length"
+            v-model="wfContentDownload"
             :options="{
               lineNumbers: true,
               tabSize: 2,
-              mode: codeMirrorMode(wfContent),
-              readOnly: isRemoteUrl,
+              mode: codeMirrorMode(wfContentDownload),
+              readOnly: 'nocursor',
             }"
             :style="{
               outline: `solid 1px ${$colors.grey.lighten1}`,
             }"
-            class="mt-4 mx-4 mb-2 elevation-2 content-viewer"
-            @focus="fixCodemirrorCss"
+            class="elevation-2 content-viewer"
           />
         </div>
         <div
-          v-if="isRemoteUrl"
-          class="d-flex align-center justify-space-between py-2"
+          v-else-if="locationMode === 'upload'"
+          class="ml-4 d-flex flex-column"
         >
-          <!-- <div
-            class="mb-2 mx-4"
-            v-text="'Unable to edit because a remote URL has been entered.'"
-          /> -->
-          <v-btn
-            :color="$colors.grey.darken2"
-            class="mr-4"
-            outlined
-            @click.stop="attachAsFile"
-            v-text="'Attach as File'"
+          <div v-if="!wfContentUpload.length" class="mb-2">
+            <span
+              :style="{ color: `${$colors.grey.darken2}`, fontSize: '0.9rem' }"
+              v-text="
+                'Drag-and-Drop or Copy-and-Paste the document into the box below.'
+              "
+            />
+          </div>
+          <v-text-field
+            v-if="wfContentUpload.length"
+            v-model="fileName"
+            :persistent-hint="!fileName.length"
+            :rules="fileNameRules"
+            class="ma-0"
+            hint="The name of workflow document when it is placed in the execution directory and passed to the workflow runner"
+            label="File Name"
+            placeholder="Type a file name"
           />
+          <div @drop="setDragFileName">
+            <codemirror
+              v-model="wfContentUpload"
+              :options="{
+                lineNumbers: true,
+                tabSize: 2,
+                mode: codeMirrorMode(wfContentUpload),
+                readOnly: false,
+              }"
+              :style="{
+                outline: `solid 1px ${$colors.grey.lighten1}`,
+              }"
+              class="elevation-2 content-viewer"
+            />
+          </div>
         </div>
       </div>
-      <div class="d-flex justify-end px-12 pb-6">
+      <div class="d-flex justify-end align-center mx-12 pb-6 mt-4">
+        <v-tooltip
+          v-if="locationMode === 'download' && wfContentDownload.length"
+          top
+          max-width="400"
+        >
+          <template #activator="{ on }">
+            <div class="mr-6" v-on="on">
+              <v-checkbox
+                v-model="attachAsFile"
+                hide-details
+                :label="'Attach as File'"
+                class="ma-0 pa-0"
+              />
+            </div>
+          </template>
+          <span
+            v-text="
+              'Check this box if you want to place the workflow document in the execution directory and pass it as a local path, instead of passing the remote URL directly to the workflow runner.'
+            "
+          />
+        </v-tooltip>
         <v-btn
-          :disabled="!registerValid || !submitButton"
+          :disabled="!(registerValid && submitButton)"
           color="primary"
           outlined
           @click.stop="submitWorkflow"
         >
-          <v-icon class="mr-2" v-text="'mdi-arrow-up'" />
+          <v-icon left v-text="'mdi-arrow-up'" />
           <span v-text="'Submit'" />
         </v-btn>
       </div>
@@ -96,40 +167,44 @@ import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import Vue from 'vue'
 import { codeMirrorMode, validUrl, convertGitHubUrl } from '@/utils'
 import { WorkflowLanguages, Service } from '@/store/services'
+import { Workflow } from '@/store/workflows'
 
-const boxInitialText =
-  '  Type your workflow definition, or drag-and-drop a file here'
+const changeQueue: Array<NodeJS.Timeout> = []
 
 type Data = {
   name: string
   type: string
   version: string
+  locationMode: string
   url: string
-  wfContent: string
+  fetchFailed: boolean
+  wfContentDownload: string
+  attachAsFile: boolean
+  wfContentUpload: string
+  fileName: string
   submitButton: boolean
 }
 
 type Methods = {
   changeType: () => void
-  blurUrl: () => Promise<void>
-  fixCodemirrorCss: () => void
-  submitWorkflow: () => Promise<void>
+  changeUrl: () => void
+  fetchWfContent: (url: string) => void
   setDragFileName: (e: DragEvent) => void
-  attachAsFile: () => void
+  submitWorkflow: () => void
   codeMirrorMode: (content: string) => ReturnType<typeof codeMirrorMode>
 }
 
 type Computed = {
-  registerValid: boolean
+  service: Service
   wfNames: string[]
-  languages: WorkflowLanguages
   types: string[]
   versions: string[]
-  nameError: string
-  typeError: string
-  versionError: string
-  urlError: string
-  isRemoteUrl: boolean
+  registerValid: boolean
+  nameRules: string[]
+  typeRules: string[]
+  versionRules: string[]
+  urlRules: string[]
+  fileNameRules: string[]
 }
 
 type Props = {
@@ -165,93 +240,116 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       name: '',
       type: '',
       version: '',
+      locationMode: 'download',
       url: '',
-      wfContent: boxInitialText,
+      fetchFailed: false,
+      wfContentDownload: '',
+      attachAsFile: false,
+      wfContentUpload: '',
+      fileName: '',
       submitButton: true,
     }
   },
 
   computed: {
+    service() {
+      return this.$store.getters['services/service'](this.serviceId)
+    },
+
     wfNames() {
-      const service: Service | undefined = this.$store.getters[
-        'services/service'
+      return this.$store.getters['workflows/workflowsByIds'](
+        this.service.workflowIds
+      ).map((workflow: Workflow) => workflow.name)
+    },
+
+    types() {
+      const languages: WorkflowLanguages = this.$store.getters[
+        'services/workflowLanguages'
       ](this.serviceId)
-      if (service) {
-        return this.$store.getters['workflows/workflowsByIds'](
-          service.workflowIds
-        )
+      const types = languages.map((language) => language.name)
+      if (types.length === 1) {
+        this.type = types[0]
+      }
+      return languages.map((language) => language.name)
+    },
+
+    versions() {
+      const languages: WorkflowLanguages = this.$store.getters[
+        'services/workflowLanguages'
+      ](this.serviceId)
+      for (const language of languages) {
+        if (language.name === this.type) {
+          const versions = language.versions
+          if (versions.length === 1) {
+            this.version = versions[0]
+          }
+          return versions
+        }
       }
       return []
     },
 
-    languages() {
-      return this.$store.getters['services/workflowLanguages'](this.serviceId)
-    },
-
-    types() {
-      return this.languages.map((language) => language.name)
-    },
-
-    versions() {
-      let versions: string[] = []
-      for (const language of this.languages) {
-        if (language.name === this.type) {
-          versions = language.versions
-        }
-      }
-      return versions
-    },
-
     registerValid() {
+      const content =
+        this.locationMode === 'download'
+          ? !!this.wfContentDownload.length
+          : !!this.wfContentUpload.length
       return (
-        !this.nameError &&
-        !this.typeError &&
-        !this.versionError &&
-        !this.urlError
+        !this.nameRules.length &&
+        !this.typeRules.length &&
+        !this.versionRules.length &&
+        !this.urlRules.length &&
+        !this.fileNameRules.length &&
+        content
       )
     },
 
-    nameError() {
+    nameRules() {
       if (!this.name) {
-        return 'Required'
+        return ['Required']
       }
-      if (this.name in this.wfNames) {
-        return `Name: ${this.name} already exists.`
+      if (this.wfNames.includes(this.name)) {
+        return ['Typed name already exists']
       }
-      return ''
+      return []
     },
 
-    typeError() {
+    typeRules() {
       if (!this.type) {
-        return 'Required'
+        return ['Required']
       }
-      return ''
+      return []
     },
 
-    versionError() {
+    versionRules() {
       if (!this.version) {
-        return 'Required'
+        return ['Required']
       }
-      return ''
+      return []
     },
 
-    urlError() {
-      if (this.url) {
-        if (!this.wfContent || this.wfContent === boxInitialText) {
-          return 'Below type your workflow definition, or drag-and-drop a file'
-        } else {
-          // do nothing
+    urlRules() {
+      if (this.locationMode === 'download') {
+        if (!this.url) {
+          return ['Required']
         }
-      } else if (!this.wfContent || this.wfContent === boxInitialText) {
-        return 'Enter remote URL or workflow file name'
-      } else {
-        return 'Enter the file name (e.g. workflow.cwl)'
+        if (!validUrl(this.url)) {
+          return ['Invalid URL']
+        }
+        if (this.fetchFailed) {
+          return ['Failed to get the workflow content from the entered URL']
+        }
       }
-      return ''
+      return []
     },
 
-    isRemoteUrl(): boolean {
-      return validUrl(this.url)
+    fileNameRules() {
+      if (this.locationMode === 'upload') {
+        if (!this.fileName) {
+          return ['Required']
+        }
+      }
+      return []
     },
   },
 
@@ -268,42 +366,78 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
 
-    async blurUrl() {
-      if (this.isRemoteUrl) {
-        this.url = await convertGitHubUrl(this.$axios, this.url)
-        const res = await this.$axios.$get(this.url)
-        if (typeof res === 'string') {
-          this.wfContent = res
-        } else {
-          this.wfContent = JSON.stringify(res, null, 2)
+    changeUrl() {
+      while (changeQueue.length) {
+        const timeoutId = changeQueue.shift()
+        if (timeoutId) {
+          clearTimeout(timeoutId)
         }
       }
+      const eventId = setTimeout(
+        (url) => {
+          this.fetchWfContent(url)
+        },
+        1000,
+        this.url
+      )
+      changeQueue.push(eventId)
     },
 
-    fixCodemirrorCss() {
-      if (this.wfContent === boxInitialText) {
-        this.wfContent = ''
+    fetchWfContent(url: string) {
+      if (validUrl(url)) {
+        convertGitHubUrl(this.$axios, this.url).then((url) => {
+          this.url = url
+          this.$axios
+            .$get(this.url)
+            .then((res) => {
+              this.fetchFailed = false
+              if (typeof res === 'string') {
+                this.wfContentDownload = res
+              } else {
+                this.wfContentDownload = JSON.stringify(res, null, 2)
+              }
+            })
+            .catch((_) => {
+              this.fetchFailed = true
+              this.wfContentDownload = ''
+            })
+        })
+      } else {
+        this.wfContentDownload = ''
       }
     },
 
     setDragFileName(e: DragEvent) {
-      this.wfContent = ''
       if (e?.dataTransfer?.files?.[0]?.name) {
-        this.url = e?.dataTransfer?.files[0].name
+        this.fileName = e?.dataTransfer?.files[0].name
       }
     },
 
-    async submitWorkflow() {
+    submitWorkflow() {
       if (this.registerValid) {
         this.submitButton = false
-        await this.$store
+        let url = ''
+        if (this.locationMode === 'download') {
+          if (this.attachAsFile) {
+            const tmpUrl = new URL(this.url)
+            url = tmpUrl.pathname.split('/').slice(-1)[0]
+          } else {
+            url = this.url
+          }
+        } else {
+          url = this.fileName
+        }
+        this.$store
           .dispatch('workflows/submitWorkflow', {
             serviceId: this.serviceId,
             name: this.name,
             type: this.type,
             version: this.version,
-            url: this.url,
-            content: this.wfContent,
+            url,
+            content:
+              this.locationMode === 'download'
+                ? this.wfContentDownload
+                : this.wfContentUpload,
             preRegistered: false,
           })
           .then((workflowId) => {
@@ -313,25 +447,9 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
 
-    attachAsFile() {
-      if (this.isRemoteUrl) {
-        const url = new URL(this.url)
-        this.url = url.pathname.split('/').slice(-1)[0]
-      }
-    },
-
     codeMirrorMode(content) {
       return codeMirrorMode(content)
     },
-  },
-
-  mounted() {
-    if (this.types.length === 1) {
-      this.type = this.types[0]
-    }
-    if (this.versions.length === 1) {
-      this.version = this.versions[0]
-    }
   },
 }
 
@@ -345,5 +463,8 @@ export default Vue.extend(options)
 }
 .content-viewer >>> .CodeMirror-lines {
   font-family: 'Fira Code', monospace, sans-serif !important;
+}
+.content-viewer >>> .CodeMirror-gutter-wrapper {
+  left: -30px !important;
 }
 </style>

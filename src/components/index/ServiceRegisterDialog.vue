@@ -6,34 +6,34 @@
     @click:outside="$emit('close')"
   >
     <v-card>
-      <div class="card-header px-6 pt-4" v-text="'Register WES Service'" />
-      <div class="px-12 pt-2">
+      <div class="card-header mx-6 pt-4" v-text="'Register WES Service'" />
+      <div class="mx-12 my-2">
         <v-text-field
           v-model="name"
+          :persistent-hint="!name.length"
           :rules="nameRules"
           hint="Name of the WES service (free text, e.g., 'Test service,' etc.)"
           label="Name"
           placeholder="Type a name"
-          type="text"
         />
         <v-text-field
           v-model="endpoint"
+          :persistent-hint="!endpoint.length"
           :rules="endpointRules"
           hint="Endpoint of the WES service (e.g., 'http://localhost:1122' etc.)"
           label="Endpoint"
           placeholder="Type a endpoint"
-          type="text"
           @input="connection = true"
         />
       </div>
-      <div class="d-flex justify-end px-12 pb-6 pt-4">
+      <div class="d-flex justify-end mx-12 pb-6 mt-4">
         <v-btn
           :disabled="!(registerValid && registerButton)"
           color="primary"
           outlined
           @click.stop="submitService"
         >
-          <v-icon class="mr-2" v-text="'mdi-arrow-up'" />
+          <v-icon left v-text="'mdi-arrow-up'" />
           <span v-text="'Submit'" />
         </v-btn>
       </div>
@@ -109,23 +109,23 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     nameRules() {
       if (!this.name) {
-        return ['Required.']
+        return ['Required']
       }
       if (this.serviceNames.includes(this.name)) {
-        return ['Typed name already exists.']
+        return ['Typed name already exists']
       }
       return []
     },
 
     endpointRules() {
       if (!this.endpoint) {
-        return ['Required.']
+        return ['Required']
       }
       if (!validUrl(this.endpoint)) {
-        return ['Invalid endpoint URL.']
+        return ['Invalid URL']
       }
       if (!this.connection) {
-        return ['Connection failed.']
+        return ['Connection failed']
       }
       return []
     },

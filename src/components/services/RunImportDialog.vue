@@ -6,8 +6,8 @@
     @click:outside="$emit('close')"
   >
     <v-card>
-      <div class="card-header px-6 pt-4" v-text="'Import Run'" />
-      <div class="px-12 py-2">
+      <div class="card-header mx-6 pt-4" v-text="'Import Run'" />
+      <div class="mx-12 my-2">
         <v-text-field
           v-model="runId"
           :error-messages="runIdError || checkRunExistMessage"
@@ -70,14 +70,14 @@
           class="mt-4 mx-4 mb-2 elevation-2 content-viewer"
         />
       </div>
-      <div class="d-flex justify-end px-12 pb-6">
+      <div class="d-flex justify-end mx-12 pb-6">
         <v-btn
           :disabled="!formValid"
           color="primary"
           outlined
           @click.stop="importRun"
         >
-          <v-icon class="mr-2" v-text="'mdi-sticker-plus-outline'" />
+          <v-icon left v-text="'mdi-sticker-plus-outline'" />
           <span v-text="'import'" />
         </v-btn>
       </div>

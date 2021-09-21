@@ -4,7 +4,7 @@
     <v-main class="background">
       <v-container fluid>
         <v-card max-width="1200" class="mx-auto">
-          <div class="d-flex flex-column px-6 py-4">
+          <div class="d-flex flex-column mx-6 my-4">
             <div class="d-flex mb-4">
               <v-btn
                 color="info"
@@ -25,7 +25,7 @@
                 outlined
                 @click.stop="forceClearState"
               >
-                <v-icon class="mr-2" v-text="'mdi-bomb'" />
+                <v-icon left v-text="'mdi-bomb'" />
                 <span v-text="'Force Clear State'" />
               </v-btn>
             </div>

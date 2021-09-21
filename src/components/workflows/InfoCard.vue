@@ -1,6 +1,6 @@
 <template>
   <v-card v-if="workflow" max-width="1200">
-    <div class="d-flex align-center px-6 pt-4">
+    <div class="d-flex align-center mx-6 pt-4">
       <div class="card-header" v-text="workflow.name" />
       <v-chip
         v-if="workflow.preRegistered"
@@ -16,7 +16,7 @@
       :headers="workflowInfoHeaders"
       :items="workflowInfoContents"
       calculate-widths
-      class="mx-12 pt-2 info-table"
+      class="mx-12 mt-2 info-table"
       disable-filtering
       disable-pagination
       disable-sort
@@ -61,7 +61,7 @@
         width="150"
         @click.stop="downloadWorkflowContent"
       >
-        <v-icon class="mr-2" v-text="'mdi-download'" />
+        <v-icon left v-text="'mdi-download'" />
         <span v-text="'Download'" />
       </v-btn>
       <v-btn
@@ -70,9 +70,9 @@
         width="150"
         @click.stop="copyWorkflowContent"
       >
-        <template v-if="copy"> copied!</template>
+        <template v-if="copy">copied!</template>
         <template v-else>
-          <v-icon class="mr-2" v-text="'mdi-clipboard-outline'" />
+          <v-icon left v-text="'mdi-clipboard-outline'" />
           <span v-text="'Copy'" />
         </template>
       </v-btn>

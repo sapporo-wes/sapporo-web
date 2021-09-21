@@ -1,7 +1,7 @@
 <template>
   <v-card max-width="1200">
-    <div class="d-flex px-6 pt-4">
-      <v-icon color="black" class="mr-2" v-text="'mdi-dns-outline'" />
+    <div class="d-flex mx-6 pt-4">
+      <v-icon color="black" left v-text="'mdi-dns-outline'" />
       <div class="card-header" v-text="'WES Services'" />
     </div>
 
@@ -33,7 +33,7 @@
       :headers="serviceHeaders"
       :items-per-page="Number(-1)"
       :items="services"
-      class="mx-12 mt-2 mb-6"
+      class="mx-12 my-2"
       hide-default-footer
       item-key="id"
     >
@@ -41,16 +41,15 @@
         <div class="d-flex">
           <nuxt-link
             :to="{ path: '/services', query: { serviceId: item.id } }"
+            :style="{ textDecoration: 'none' }"
             v-text="item.name"
           />
-          <v-tooltip top>
-            <template #activator="{ on, attrs }">
+          <v-tooltip v-if="item.preRegistered" top>
+            <template #activator="{ on }">
               <v-icon
-                v-if="item.preRegistered"
                 :color="$colors.indigo.darken1"
                 class="ml-2"
                 small
-                v-bind="attrs"
                 v-on="on"
                 v-text="'mdi-account-check-outline'"
               />
@@ -60,7 +59,9 @@
         </div>
       </template>
       <template #[`item.addedDate`]="{ item }">
-        {{ $dayjs(item.addedDate).local().format('YYYY-MM-DD HH:mm:ss') }}
+        <span
+          v-text="$dayjs(item.addedDate).local().format('YYYY-MM-DD HH:mm:ss')"
+        />
       </template>
       <template #[`item.state`]="{ item }">
         <v-chip
@@ -71,18 +72,17 @@
       </template>
       <template #[`item.delete`]="{ item }">
         <v-tooltip top>
-          <template #activator="{ on, attrs }">
-            <div v-bind="attrs" v-on="item.preRegistered && on">
-              <v-icon
-                :disabled="item.preRegistered"
-                :color="$colors.grey.darken2"
-                @click.stop="
-                  selectedServices = [item]
-                  deleteDialogShow = true
-                "
-                v-text="'mdi-trash-can-outline'"
-              />
-            </div>
+          <template #activator="{ on }">
+            <v-icon
+              :disabled="item.preRegistered"
+              :color="$colors.grey.darken2"
+              v-on="item.preRegistered && on"
+              @click.stop="
+                selectedServices = [item]
+                deleteDialogShow = true
+              "
+              v-text="'mdi-trash-can-outline'"
+            />
           </template>
           <span
             v-text="'This service is pre-registered and cannot be removed.'"
@@ -91,14 +91,14 @@
       </template>
     </v-data-table>
 
-    <div class="d-flex justify-end pb-6 pr-12">
+    <div class="d-flex justify-end pb-6 mr-12 mt-4">
       <v-btn
         color="primary"
         outlined
         width="140"
         @click.stop="registerDialogShow = true"
       >
-        <v-icon class="mr-2" v-text="'mdi-sticker-plus-outline'" />
+        <v-icon left v-text="'mdi-sticker-plus-outline'" />
         <span v-text="'Register'" />
       </v-btn>
     </div>

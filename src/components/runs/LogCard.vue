@@ -1,6 +1,6 @@
 <template>
   <v-card max-width="1200">
-    <div class="d-flex align-center px-6 pt-4">
+    <div class="d-flex align-center mx-6 pt-4">
       <div class="card-header" v-text="'Run Log'" />
       <v-spacer />
       <v-btn
@@ -9,7 +9,7 @@
         class="mr-4"
         @click.stop="downloadRunLog"
       >
-        <v-icon class="mr-2" v-text="'mdi-download'" />
+        <v-icon left v-text="'mdi-download'" />
         <span v-text="'Download Run Log'" />
       </v-btn>
     </div>
@@ -17,7 +17,7 @@
       :headers="logInfoHeaders"
       :items="logInfoContents"
       calculate-widths
-      class="mx-12 pt-2 info-table"
+      class="mx-12 mt-2 info-table"
       disable-filtering
       disable-pagination
       disable-sort

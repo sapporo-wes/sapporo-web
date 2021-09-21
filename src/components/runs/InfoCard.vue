@@ -1,6 +1,6 @@
 <template>
   <v-card max-width="1200">
-    <div class="d-flex align-center px-6 pt-4">
+    <div class="d-flex align-center mx-6 pt-4">
       <div class="card-header" v-text="run.name" />
       <v-spacer />
       <v-chip
@@ -19,7 +19,7 @@
         :disabled="!cancelButton"
         @click.stop="cancelRun"
       >
-        <v-icon class="mr-2" v-text="'mdi-close'" />
+        <v-icon left v-text="'mdi-close'" />
         <span v-text="'Cancel Run'" />
       </v-btn>
       <v-btn
@@ -36,7 +36,7 @@
       :headers="runInfoHeaders"
       :items="runInfoContents"
       calculate-widths
-      class="mx-12 pt-2 info-table"
+      class="mx-12 mt-2 info-table"
       disable-filtering
       disable-pagination
       disable-sort

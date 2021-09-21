@@ -5,7 +5,7 @@
     </template>
     <template #item="{ item }">
       <v-breadcrumbs-item :nuxt="item.nuxt" :to="item.to">
-        <v-icon :color="$colors.grey.darken2" class="mr-2" v-text="item.icon" />
+        <v-icon :color="$colors.grey.darken2" left v-text="item.icon" />
         <span v-text="item.text" />
       </v-breadcrumbs-item>
     </template>

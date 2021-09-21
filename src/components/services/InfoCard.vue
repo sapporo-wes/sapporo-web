@@ -1,17 +1,19 @@
 <template>
   <v-card v-if="service" ref="card" max-width="1200">
-    <div class="d-flex align-center px-6 pt-4">
-      <v-icon color="black" class="mr-2" v-text="'mdi-dns-outline '" />
+    <div class="d-flex align-center mx-6 pt-4">
+      <v-icon color="black" left v-text="'mdi-dns-outline '" />
       <div class="card-header" v-text="service.name" />
-      <v-chip
-        v-if="service.preRegistered"
-        :color="$colors.blueGrey.darken1"
-        label
-        small
-        text-color="white"
-        class="ml-4"
-        v-text="'Pre-registered'"
-      />
+      <v-tooltip v-if="service.preRegistered" top>
+        <template #activator="{ on }">
+          <v-icon
+            :color="$colors.indigo.darken1"
+            class="ml-2 mt-1"
+            v-on="on"
+            v-text="'mdi-account-check-outline'"
+          />
+        </template>
+        <span v-text="'Pre-registered WES service'" />
+      </v-tooltip>
       <v-spacer />
       <v-chip
         :color="$store.getters['services/stateColor'](service.id)"

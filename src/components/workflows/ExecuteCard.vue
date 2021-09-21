@@ -1,12 +1,12 @@
 <template>
   <v-card max-width="1200">
-    <div class="card-header px-6 pt-4" v-text="'Compose Run'" />
-    <div class="px-12 py-4">
+    <div class="card-header mx-6 pt-4" v-text="'Compose Run'" />
+    <div class="mx-12 my-4">
       <div class="field-header" v-text="'Run Name'" />
       <v-text-field
         v-model="runName"
         :error-messages="runNameError"
-        class="pt-0 px-4 pb-4"
+        class="mt-0 mx-4 mb-4"
         clearable
         hint="Required"
         persistent-hint
@@ -17,7 +17,7 @@
         v-model="wfEngine"
         :error-messages="wfEngineError"
         :items="wfEngines"
-        class="pt-0 px-4 pb-4"
+        class="mt-0 mx-4 mb-4"
         clearable
         hint="Required"
         persistent-hint
@@ -124,7 +124,7 @@
               maxWidth: '50%',
               minWidth: '50%',
             }"
-            class="mr-8 pt-0"
+            class="mr-8 mt-0"
             clearable
             label="File"
             show-size
@@ -133,7 +133,7 @@
           />
           <v-text-field
             v-model="fileNames[ind - 1]"
-            class="pt-0"
+            class="mt-0"
             clearable
             label="File name"
             single-line
@@ -152,7 +152,7 @@
             width="160"
             @click.stop="incrementWorkflowAttachment"
           >
-            <v-icon class="mr-2" v-text="'mdi-text-box-plus-outline'" />
+            <v-icon left v-text="'mdi-text-box-plus-outline'" />
             <span v-text="'Add'" />
           </v-btn>
           <v-btn
@@ -161,7 +161,7 @@
             width="160"
             @click.stop="decrementWorkflowAttachment"
           >
-            <v-icon class="mr-2" v-text="'mdi-text-box-minus-outline'" />
+            <v-icon left v-text="'mdi-text-box-minus-outline'" />
             <span v-text="'Remove'" />
           </v-btn>
         </div>
@@ -212,7 +212,7 @@
         "
         @click.stop="executeRun"
       >
-        <v-icon class="mr-2" v-text="'mdi-rocket-launch-outline'" />
+        <v-icon left v-text="'mdi-rocket-launch-outline'" />
         <span v-text="'Execute'" />
       </v-btn>
     </div>

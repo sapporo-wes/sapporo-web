@@ -1,11 +1,11 @@
 <template>
   <v-card max-width="1200">
-    <div class="d-flex px-6 pt-4">
-      <v-icon color="black" class="mr-2" v-text="'mdi-graph-outline'" />
+    <div class="d-flex mx-6 pt-4">
+      <v-icon color="black" left v-text="'mdi-graph-outline'" />
       <div class="card-header" v-text="'Workflows'" />
       <v-spacer />
       <v-select
-        v-if="workflowTypes.length"
+        v-if="workflowTableItems.length"
         v-model="filterType"
         :items="workflowTypes"
         :prepend-inner-icon="'mdi-filter-outline'"
@@ -18,7 +18,7 @@
         single-line
       />
       <v-text-field
-        v-if="workflowTypes.length"
+        v-if="workflowTableItems.length"
         v-model="filterName"
         :prepend-inner-icon="'mdi-magnify'"
         :style="{ maxWidth: '200px', minWidth: '200px' }"
@@ -31,17 +31,15 @@
       />
     </div>
 
-    <div v-if="!workflowTableItems.length" class="my-2">
-      <div class="mx-12">
-        <span
-          :style="{
-            color: $vuetify.theme.themes.light.error,
-            textDecorationLine: 'underline',
-            fontSize: '1rem',
-          }"
-          v-text="'Add workflow to start composing a run.'"
-        />
-      </div>
+    <div v-if="!workflowTableItems.length" class="mx-12 my-2">
+      <span
+        :style="{
+          color: $vuetify.theme.themes.light.error,
+          textDecorationLine: 'underline',
+          fontSize: '1rem',
+        }"
+        v-text="'Add workflow to start composing a run.'"
+      />
     </div>
 
     <v-data-table
@@ -53,48 +51,42 @@
       item-key="workflowId"
     >
       <template #[`item.workflowType`]="{ item }">
-        <v-tooltip top max-width="400">
-          <template #activator="{ on, attrs }">
+        <v-tooltip top>
+          <template #activator="{ on }">
             <img
               v-if="item.workflowType.toLowerCase() === 'cwl'"
               src="~/assets/icon/cwl-icon.png"
-              class="pt-2"
-              height="40"
-              v-bind="attrs"
+              class="mt-1"
+              height="26"
               v-on="on"
             />
             <img
               v-else-if="item.workflowType.toLowerCase() === 'wdl'"
               src="~/assets/icon/wdl-icon.png"
-              class="pt-2"
-              height="40"
-              v-bind="attrs"
+              class="mt-1"
+              height="26"
               v-on="on"
             />
             <img
               v-else-if="item.workflowType.toLowerCase() === 'nextflow'"
               src="~/assets/icon/nextflow-icon.png"
-              class="pt-2"
-              height="40"
-              v-bind="attrs"
+              class="mt-1"
+              height="26"
               v-on="on"
             />
             <img
               v-else-if="item.workflowType.toLowerCase() === 'snakemake'"
               src="~/assets/icon/snakemake-icon.png"
-              class="pt-2"
-              height="40"
-              v-bind="attrs"
+              class="mt-1"
+              height="26"
               v-on="on"
             />
-            <template v-else>
-              <v-icon
-                v-bind="attrs"
-                class="py-2 pr-2"
-                v-on="on"
-                v-text="'mdi-beaker-question-outline'"
-              />
-            </template>
+            <v-icon
+              v-else
+              class="my-2 mr-2"
+              v-on="on"
+              v-text="'mdi-beaker-question-outline'"
+            />
           </template>
           <span v-text="`${item.workflowType} ${item.workflowVersion}`" />
         </v-tooltip>
@@ -103,16 +95,16 @@
         <div class="d-flex">
           <nuxt-link
             :to="{ path: '/workflows', query: { workflowId: item.workflowId } }"
+            :style="{ textDecoration: 'none' }"
             v-text="item.workflowName"
           />
           <v-tooltip top>
-            <template #activator="{ on, attrs }">
+            <template #activator="{ on }">
               <v-icon
                 v-if="item.preRegistered"
                 :color="$colors.indigo.darken1"
                 class="ml-2"
                 small
-                v-bind="attrs"
                 v-on="on"
                 v-text="'mdi-account-check-outline'"
               />
@@ -123,8 +115,8 @@
       </template>
       <template #[`item.delete`]="{ item }">
         <v-tooltip top>
-          <template #activator="{ on, attrs }">
-            <div v-bind="attrs" v-on="item.preRegistered && on">
+          <template #activator="{ on }">
+            <div v-on="item.preRegistered && on">
               <v-icon
                 :disabled="item.preRegistered"
                 :color="$colors.grey.darken2"
@@ -142,22 +134,20 @@
         </v-tooltip>
       </template>
     </v-data-table>
-
-    <div class="d-flex justify-end pb-6 pr-12">
+    <div class="d-flex justify-end pb-6 mr-12 mt-4">
       <v-tooltip top max-width="400">
-        <template #activator="{ on, attrs }">
-          <div v-bind="attrs" v-on="registeredOnlyMode && on">
-            <v-btn
-              :disabled="registeredOnlyMode"
-              color="primary"
-              outlined
-              width="140"
-              @click.stop="registerDialogShow = true"
-            >
-              <v-icon class="mr-2" v-text="'mdi-sticker-plus-outline'" />
-              <span v-text="'Add'" />
-            </v-btn>
-          </div>
+        <template #activator="{ on }">
+          <v-btn
+            :disabled="registeredOnlyMode"
+            color="primary"
+            outlined
+            width="140"
+            v-on="registeredOnlyMode && on"
+            @click.stop="registerDialogShow = true"
+          >
+            <v-icon left v-text="'mdi-sticker-plus-outline'" />
+            <span v-text="'Add'" />
+          </v-btn>
         </template>
         <span
           v-text="

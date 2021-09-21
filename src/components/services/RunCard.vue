@@ -1,7 +1,7 @@
 <template>
   <v-card max-width="1200">
-    <div class="d-flex align-center px-6 pt-4">
-      <v-icon color="black" class="mr-2"> mdi-chart-box-outline </v-icon>
+    <div class="d-flex align-center mx-6 pt-4">
+      <v-icon color="black" left> mdi-chart-box-outline </v-icon>
       <div class="card-header" v-text="'Runs'" />
       <v-spacer />
       <v-btn
@@ -56,7 +56,7 @@
       </template>
     </v-data-table>
 
-    <div class="d-flex justify-end pb-6 pr-6">
+    <div class="d-flex justify-end pb-6 mr-6">
       <v-btn
         class="mr-4"
         color="primary"
@@ -64,7 +64,7 @@
         width="140"
         @click.stop="importDialogShow = true"
       >
-        <v-icon class="mr-2" v-text="'mdi-sticker-plus-outline'" />
+        <v-icon left v-text="'mdi-sticker-plus-outline'" />
         <span v-text="'Import'" />
       </v-btn>
       <v-btn
@@ -74,7 +74,7 @@
         width="140"
         @click.stop="deleteDialogShow = true"
       >
-        <v-icon class="mr-2" v-text="'mdi-trash-can-outline'" />
+        <v-icon left v-text="'mdi-trash-can-outline'" />
         <span v-text="'Remove'" />
       </v-btn>
     </div>
