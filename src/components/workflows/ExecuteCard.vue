@@ -1,208 +1,362 @@
 <template>
   <v-card max-width="1200">
-    <div class="card-header mx-6 pt-4" v-text="'Compose Run'" />
-    <div class="mx-12 my-4">
-      <div class="field-header" v-text="'Run Name'" />
+    <div class="d-flex align-center mx-6 pt-4">
+      <v-icon color="black" left v-text="'mdi-pencil-outline '" />
+      <div class="card-header" v-text="'Compose Run'" />
+    </div>
+
+    <div class="mx-12 mt-4">
+      <!-- Name -->
       <v-text-field
         v-model="runName"
-        :error-messages="runNameError"
-        class="mt-0 mx-4 mb-4"
-        clearable
-        hint="Required"
-        persistent-hint
-        single-line
+        :persistent-hint="!runName.length"
+        :rules="runNameRules"
+        hint="Name of the run (free text, e.g., 'Test run' etc.)"
+        label="Run Name"
+        placeholder="Type a name"
       />
-      <div class="field-header" v-text="'Workflow Engine'" />
+
+      <!-- Workflow Engine  -->
       <v-select
         v-model="wfEngine"
-        :error-messages="wfEngineError"
         :items="wfEngines"
-        class="mt-0 mx-4 mb-4"
-        clearable
-        hint="Required"
-        persistent-hint
-        single-line
+        :persistent-hint="!wfEngine.length"
+        :rules="wfEngineRules"
+        hint="Select the workflow engine"
+        label="Workflow Engine (Required)"
       />
-      <div class="mt-4 field-header" v-text="'Workflow Engine Parameters'" />
-      <codemirror
-        v-model="wfEngineParams"
-        :options="{
-          lineNumbers: true,
-          mode: codeMirrorMode(wfEngineParams),
-          tabSize: 2,
-        }"
-        :style="{
-          outline: `solid 1px ${
-            !!wfEngineParamsError
-              ? $vuetify.theme.themes.light.error
-              : $colors.grey.lighten1
-          }`,
-        }"
-        class="mx-4 mt-4 mb-2 elevation-2 input-field-small"
-      />
-      <div
-        class="mx-4 v-messages theme--light"
-        :class="{ 'error--text': !!wfEngineParamsError }"
-        v-text="
-          !!wfEngineParamsError
-            ? wfEngineParamsError
-            : 'Optional: JSON or YAML object, type or drag-and-drop'
-        "
-      />
-      <div class="mt-4 field-header" v-text="'Tags'" />
-      <codemirror
-        v-model="tags"
-        :options="{
-          lineNumbers: true,
-          mode: codeMirrorMode(tags),
-          tabSize: 2,
-        }"
-        :style="{
-          outline: `solid 1px ${
-            !!tagsError
-              ? $vuetify.theme.themes.light.error
-              : $colors.grey.lighten1
-          }`,
-        }"
-        class="mx-4 mt-4 mb-2 elevation-2 input-field-small"
-      />
-      <div
-        class="mx-4 v-messages theme--light"
-        :class="{ 'error--text': !!tagsError }"
-        v-text="
-          !!tagsError
-            ? tagsError
-            : 'Optional: JSON or YAML object, type or drag-and-drop'
-        "
-      />
-      <div class="mt-4 mb-2 field-header" v-text="'Workflow Attachment'" />
-      <div
-        class="ml-6"
-        v-text="
-          serviceWorkflowAttachment
-            ? 'Workflow Attachment as JSON/YAML'
-            : 'Workflow Attachment as JSON/YAML (read-only)'
-        "
-      />
-      <codemirror
-        v-model="wfAttachmentText"
-        :options="{
-          lineNumbers: true,
-          mode: codeMirrorMode(wfAttachmentText),
-          tabSize: 2,
-          readOnly: !serviceWorkflowAttachment,
-        }"
-        :style="{
-          outline: `solid 1px ${
-            !!wfAttachmentTextError
-              ? $vuetify.theme.themes.light.error
-              : $colors.grey.lighten1
-          }`,
-        }"
-        class="ml-14 mr-4 mt-4 mb-4 elevation-2 input-field-middle"
-      />
-      <div
-        v-if="serviceWorkflowAttachment"
-        class="ml-14 v-messages theme--light"
-        :class="{ 'error--text': !!wfAttachmentTextError }"
-        v-text="
-          !!wfAttachmentTextError
-            ? wfAttachmentTextError
-            : 'Optional: JSON or YAML object, type or drag-and-drop'
-        "
-      />
-      <div class="mt-4 ml-6 mb-2" v-text="'Workflow Attachment as File'" />
-      <div v-if="serviceWorkflowAttachment" class="d-flex flex-column mx-4">
+
+      <!-- Workflow Attachment -->
+      <div class="d-flex align-center">
+        <span
+          :style="{ color: `${$colors.grey.darken2}` }"
+          v-text="'Workflow Attachment'"
+        />
+        <v-tooltip top max-width="400">
+          <template #activator="{ on }">
+            <v-icon right small v-on="on" v-text="'mdi-help-circle-outline'" />
+          </template>
+          <span
+            v-text="
+              '[Optional] A set of files to be downloaded/uploaded to the execution directory. You can create a directory structure by writing like `dirname/filename` in the file name field.'
+            "
+          />
+        </v-tooltip>
+        <v-chip-group
+          v-if="serviceWorkflowAttachment"
+          v-model="attachmentMode"
+          class="ml-6"
+          color="primary"
+        >
+          <v-chip :value="'download'" class="my-0 py-0" label outlined>
+            <v-icon left v-text="'mdi-download-outline'" />
+            <span v-text="'Download'" />
+          </v-chip>
+          <v-chip
+            :disabled="!serviceWorkflowAttachment"
+            :value="'upload'"
+            class="my-0 py-0"
+            label
+            outlined
+          >
+            <v-icon left v-text="'mdi-upload-outline'" />
+            <span v-text="'Upload'" />
+          </v-chip>
+        </v-chip-group>
+        <v-chip-group
+          v-else-if="!serviceWorkflowAttachment"
+          v-model="attachmentMode"
+          class="ml-6"
+          color="primary"
+        >
+          <v-tooltip top>
+            <template #activator="{ on }">
+              <div v-on="on">
+                <v-chip
+                  :disabled="!serviceWorkflowAttachment"
+                  :value="'download'"
+                  class="my-0 py-0"
+                  label
+                  outlined
+                >
+                  <v-icon left v-text="'mdi-download-outline'" />
+                  <span v-text="'Download'" />
+                </v-chip>
+              </div>
+            </template>
+            <span
+              v-text="'The WES service does not allow workflow attachment.'"
+            />
+          </v-tooltip>
+          <v-tooltip top>
+            <template #activator="{ on }">
+              <div v-on="on">
+                <v-chip
+                  :disabled="!serviceWorkflowAttachment"
+                  :value="'upload'"
+                  class="my-0 py-0"
+                  label
+                  outlined
+                >
+                  <v-icon left v-text="'mdi-upload-outline'" />
+                  <span v-text="'Upload'" />
+                </v-chip>
+              </div>
+            </template>
+            <span
+              v-text="'The WES service does not allow workflow attachment.'"
+            />
+          </v-tooltip>
+        </v-chip-group>
+        <v-spacer />
+        <v-btn
+          v-if="!!attachmentMode && !!serviceWorkflowAttachment"
+          :color="$colors.grey.darken2"
+          class="mr-4"
+          outlined
+          small
+          width="120"
+          @click.stop="addWfAttachment"
+        >
+          <v-icon left v-text="'mdi-text-box-plus-outline'" />
+          <span v-text="'Add'" />
+        </v-btn>
+        <v-btn
+          v-if="!!attachmentMode && !!serviceWorkflowAttachment"
+          :color="$colors.grey.darken2"
+          outlined
+          small
+          width="120"
+          @click.stop="removeWfAttachment"
+        >
+          <v-icon left v-text="'mdi-text-box-minus-outline'" />
+          <span v-text="'Remove'" />
+        </v-btn>
+      </div>
+      <div v-if="attachmentMode === 'download'" class="d-flex flex-column">
         <div
-          v-for="ind in workflowAttachment.length"
+          v-for="ind in wfAttachment[attachmentMode].names.length"
+          :key="ind"
+          class="d-flex ml-8"
+        >
+          <v-text-field
+            v-model="wfAttachment[attachmentMode].urls[ind - 1]"
+            :disabled="!serviceWorkflowAttachment"
+            :persistent-hint="!wfAttachment[attachmentMode].urls[ind - 1]"
+            :rules="wfAttachmentRules[attachmentMode].urls[ind - 1]"
+            :style="{ maxWidth: '47%', minWidth: '47%' }"
+            class="my-0 mr-auto"
+            clearable
+            hint="Network reachable location of the workflow attachment"
+            label="URL"
+            placeholder="Type a URL"
+            @input="updateWfAttachementUrl($event, ind - 1)"
+          />
+          <v-text-field
+            v-model="wfAttachment[attachmentMode].names[ind - 1]"
+            :disabled="!serviceWorkflowAttachment"
+            :persistent-hint="!wfAttachment[attachmentMode].names[ind - 1]"
+            :rules="wfAttachmentRules[attachmentMode].names[ind - 1]"
+            :style="{ maxWidth: '47%', minWidth: '47%' }"
+            class="my-0"
+            clearable
+            hint="The name of the workflow attachment when it is placed in the execution directory"
+            label="File Name"
+            placeholder="Type a file name"
+            @input="updateWfAttachmentName($event, ind - 1)"
+          />
+        </div>
+      </div>
+      <div v-if="attachmentMode === 'upload'" class="d-flex flex-column">
+        <div
+          v-for="ind in wfAttachment[attachmentMode].names.length"
           :key="ind"
           class="d-flex ml-8"
         >
           <v-file-input
-            v-model="workflowAttachment[ind - 1]"
-            :style="{
-              maxWidth: '50%',
-              minWidth: '50%',
-            }"
-            class="mr-8 mt-0"
+            v-model="wfAttachment[attachmentMode].files[ind - 1]"
+            :disabled="!serviceWorkflowAttachment"
+            :persistent-hint="!wfAttachment[attachmentMode].files[ind - 1]"
+            :prepend-icon="null"
+            :rules="wfAttachmentRules[attachmentMode].files[ind - 1]"
+            :style="{ maxWidth: '47%', minWidth: '47%' }"
+            class="my-0 mr-auto"
             clearable
+            hint="The file to be attached"
             label="File"
+            placeholder="Select a file"
+            prepend-inner-icon="mdi-paperclip"
             show-size
-            single-line
-            @change="updateWorkflowAttachment($event, ind - 1)"
+            @change="updateWfAttachementFile($event, ind - 1)"
           />
           <v-text-field
-            v-model="fileNames[ind - 1]"
-            class="mt-0"
+            v-model="wfAttachment[attachmentMode].names[ind - 1]"
+            :disabled="!serviceWorkflowAttachment"
+            :persistent-hint="!wfAttachment[attachmentMode].names[ind - 1]"
+            :rules="wfAttachmentRules[attachmentMode].names[ind - 1]"
+            :style="{ maxWidth: '47%', minWidth: '47%' }"
+            class="my-0"
             clearable
-            label="File name"
-            single-line
-            @change="updateFileName($event, ind - 1)"
+            hint="The name of the workflow attachment when it is placed in the execution directory"
+            label="File Name"
+            placeholder="Type a file name"
+            @input="updateWfAttachmentName($event, ind - 1)"
           />
         </div>
-        <div
-          class="ml-10 v-messages theme--light"
-          v-text="'Optional: multiple files'"
-        />
-        <div class="d-flex justify-end">
-          <v-btn
-            class="mr-4"
-            :color="$colors.grey.darken2"
-            outlined
-            width="160"
-            @click.stop="incrementWorkflowAttachment"
-          >
-            <v-icon left v-text="'mdi-text-box-plus-outline'" />
-            <span v-text="'Add'" />
-          </v-btn>
-          <v-btn
-            :color="$colors.grey.darken2"
-            outlined
-            width="160"
-            @click.stop="decrementWorkflowAttachment"
-          >
-            <v-icon left v-text="'mdi-text-box-minus-outline'" />
-            <span v-text="'Remove'" />
-          </v-btn>
-        </div>
       </div>
-      <div
-        v-if="!serviceWorkflowAttachment"
-        class="ml-14 mb-4"
-        :style="{
-          color: $vuetify.theme.themes.light.error,
-          textDecorationLine: 'underline',
-        }"
-        v-text="'Worklfow attachment is not allowed in this service.'"
-      />
-      <div class="mt-4 field-header" v-text="'Workflow Parameters'" />
-      <codemirror
-        v-model="wfParams"
-        :options="{
-          lineNumbers: true,
-          mode: codeMirrorMode(wfParams),
-          tabSize: 2,
-        }"
-        :style="{
-          outline: `solid 1px ${
+
+      <!-- Workflow Parameters -->
+      <div class="d-flex align-center mt-4">
+        <span
+          :style="{ color: `${$colors.grey.darken2}` }"
+          v-text="'Workflow Parameters'"
+        />
+        <v-tooltip top max-width="400">
+          <template #activator="{ on }">
+            <v-icon right small v-on="on" v-text="'mdi-help-circle-outline'" />
+          </template>
+          <span
+            v-text="
+              '[Optional] A JSON object for workflow parameters, which will be placed in the execution directory with the filename `workflow_params.json`. If you want to use a parameter file in a format other than JSON/YAML, use the Workflow Attachment field.'
+            "
+          />
+        </v-tooltip>
+      </div>
+      <div class="d-flex flex-column ml-8 mt-4">
+        <codemirror
+          v-model="wfParams"
+          :options="{
+            lineNumbers: true,
+            mode: codeMirrorMode(wfParams),
+            tabSize: 2,
+          }"
+          :style="{
+            outline: `solid 1px ${
+              !!wfParamsError
+                ? $vuetify.theme.themes.light.error
+                : $colors.grey.lighten1
+            }`,
+          }"
+          class="elevation-2 input-field-middle"
+        />
+        <div
+          class="mt-2 v-messages theme--light"
+          :class="{ 'error--text': !!wfParamsError }"
+          v-text="
             !!wfParamsError
-              ? $vuetify.theme.themes.light.error
-              : $colors.grey.lighten1
-          }`,
-        }"
-        class="mx-4 mt-4 mb-2 elevation-2 input-field-large"
-      />
-      <div
-        class="mx-4 v-messages theme--light"
-        :class="{ 'error--text': !!wfParamsError }"
-        v-text="
-          !!wfParamsError
-            ? wfParamsError
-            : 'Optional: JSON or YAML object, type or drag-and-drop'
-        "
-      />
+              ? wfParamsError
+              : 'Drag-and-Drop or Copy-and-Paste parameters in JSON/YAML format into this box'
+          "
+        />
+      </div>
+
+      <!-- Workflow Engine Parameters -->
+      <div class="d-flex align-center mt-4">
+        <span
+          :style="{ color: `${$colors.grey.darken2}` }"
+          v-text="'Workflow Engine Parameters'"
+        />
+        <v-tooltip top max-width="400">
+          <template #activator="{ on }">
+            <v-icon right small v-on="on" v-text="'mdi-help-circle-outline'" />
+          </template>
+          <span
+            v-text="
+              '[Optional] A JSON object to pass additional arguments to the workflow engine, where key and value will be joined.'
+            "
+          />
+        </v-tooltip>
+        <v-icon
+          right
+          @click="wfEngineParamsExpand = !wfEngineParamsExpand"
+          v-text="
+            !wfEngineParamsExpand
+              ? 'mdi-arrow-expand-vertical'
+              : 'mdi-arrow-collapse-vertical'
+          "
+        />
+      </div>
+      <div v-if="wfEngineParamsExpand" class="d-flex flex-column ml-8 mt-4">
+        <codemirror
+          v-model="wfEngineParams"
+          :options="{
+            lineNumbers: true,
+            mode: codeMirrorMode(wfEngineParams),
+            tabSize: 2,
+          }"
+          :style="{
+            outline: `solid 1px ${
+              !!wfEngineParamsError
+                ? $vuetify.theme.themes.light.error
+                : $colors.grey.lighten1
+            }`,
+          }"
+          class="elevation-2 input-field-small"
+        />
+        <div
+          class="mt-2 v-messages theme--light"
+          :class="{ 'error--text': !!wfParamsError }"
+          v-text="
+            !!wfParamsError
+              ? wfParamsError
+              : 'Drag-and-Drop or Copy-and-Paste parameters in JSON/YAML format into this box'
+          "
+        />
+      </div>
+
+      <!-- Tags -->
+      <div class="d-flex align-center mt-4">
+        <span :style="{ color: `${$colors.grey.darken2}` }" v-text="'Tags'" />
+        <v-tooltip top max-width="400">
+          <template #activator="{ on }">
+            <v-icon right small v-on="on" v-text="'mdi-help-circle-outline'" />
+          </template>
+          <span
+            v-text="
+              '[Optional] A JSON object for adding metadata and changing the behavior of the WES itself.'
+            "
+          />
+        </v-tooltip>
+        <v-icon
+          right
+          @click="tagsExpand = !tagsExpand"
+          v-text="
+            !tagsExpand
+              ? 'mdi-arrow-expand-vertical'
+              : 'mdi-arrow-collapse-vertical'
+          "
+        />
+      </div>
+      <div v-if="tagsExpand" class="d-flex flex-column ml-8 mt-4">
+        <codemirror
+          v-model="tags"
+          :options="{
+            lineNumbers: true,
+            mode: codeMirrorMode(tags),
+            tabSize: 2,
+          }"
+          :style="{
+            outline: `solid 1px ${
+              !!tagsError
+                ? $vuetify.theme.themes.light.error
+                : $colors.grey.lighten1
+            }`,
+          }"
+          class="elevation-2 input-field-small"
+        />
+        <div
+          class="mt-2 v-messages theme--light"
+          :class="{ 'error--text': !!tagsError }"
+          v-text="
+            !!tagsError
+              ? tagsError
+              : 'Drag-and-Drop or Copy-and-Paste parameters in JSON/YAML format into this box'
+          "
+        />
+      </div>
     </div>
-    <div class="d-flex justify-end pb-6 mr-12">
+
+    <div class="d-flex justify-end pb-6 mx-12 mt-4">
       <v-btn
         color="primary"
         outlined
@@ -226,35 +380,55 @@ import 'codemirror/mode/yaml/yaml.js'
 import { codemirror } from 'vue-codemirror'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import Vue from 'vue'
-import {
-  codeMirrorMode,
-  isJson,
-  isYaml,
-  yamlToJson,
-  parseJsonOrYaml,
-} from '@/utils'
+import { codeMirrorMode, isJson, isYaml, yamlToJson } from '@/utils'
 import { Run } from '@/store/runs'
 import { Service, WorkflowEngine } from '@/store/services'
 import { Workflow } from '@/store/workflows'
+import { AttachedFile } from '@/types/WES'
+
+type StringAttachments = Array<string | null>
+type FileAttachments = Array<File | null>
+type WfAttachment = {
+  download: {
+    urls: StringAttachments
+    names: StringAttachments
+  }
+  upload: {
+    files: FileAttachments
+    names: StringAttachments
+  }
+}
+type WfAttachmentRules = {
+  download: {
+    urls: Array<Array<string>>
+    names: Array<Array<string>>
+  }
+  upload: {
+    files: Array<Array<string>>
+    names: Array<Array<string>>
+  }
+}
 
 type Data = {
   runName: string
   wfEngine: string
-  wfEngineParams: string
-  tags: string
-  wfAttachmentText: string
-  workflowAttachment: Array<File | null>
-  fileNames: Array<string | null>
+  attachmentMode: string | undefined
+  wfAttachment: WfAttachment
   wfParams: string
+  wfEngineParams: string
+  wfEngineParamsExpand: boolean
+  tags: string
+  tagsExpand: boolean
   executeButton: boolean
 }
 
 type Methods = {
-  executeRun: () => Promise<void>
-  updateWorkflowAttachment: (file: File | null, ind: number) => void
-  updateFileName: (fileName: string | null, ind: number) => void
-  incrementWorkflowAttachment: () => void
-  decrementWorkflowAttachment: () => void
+  executeRun: () => void
+  updateWfAttachementUrl: (url: string | null, ind: number) => void
+  updateWfAttachmentName: (name: string | null, ind: number) => void
+  updateWfAttachementFile: (file: File | null, ind: number) => void
+  addWfAttachment: () => void
+  removeWfAttachment: () => void
   codeMirrorMode: (content: string) => ReturnType<typeof codeMirrorMode>
 }
 
@@ -263,14 +437,14 @@ type Computed = {
   serviceWorkflowAttachment: boolean
   workflow: Workflow
   runNames: string[]
+  runNameRules: string[]
   wfEngines: string[]
-  formValid: boolean
-  runNameError: string
-  wfEngineError: string
+  wfEngineRules: string[]
+  wfAttachmentRules: WfAttachmentRules
+  wfParamsError: string
   wfEngineParamsError: string
   tagsError: string
-  wfAttachmentTextError: string
-  wfParamsError: string
+  formValid: boolean
 }
 
 type Props = {
@@ -299,12 +473,22 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     return {
       runName: '',
       wfEngine: '',
-      wfEngineParams: '{}',
-      tags: '{}',
-      wfAttachmentText: '',
-      workflowAttachment: [null],
-      fileNames: [null],
+      attachmentMode: undefined,
+      wfAttachment: {
+        download: {
+          urls: [null],
+          names: [null],
+        },
+        upload: {
+          files: [null],
+          names: [null],
+        },
+      },
       wfParams: '{}',
+      wfEngineParams: '{}',
+      wfEngineParamsExpand: false,
+      tags: '{}',
+      tagsExpand: false,
       executeButton: true,
     }
   },
@@ -330,6 +514,16 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       )
     },
 
+    runNameRules() {
+      if (!this.runName) {
+        return ['Required']
+      }
+      if (this.runNames.includes(this.runName)) {
+        return ['Typed name already exists']
+      }
+      return []
+    },
+
     wfEngines(): string[] {
       return this.$store.getters['services/workflowEngines'](
         this.service.id
@@ -338,81 +532,109 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       )
     },
 
-    formValid(): boolean {
-      return (
-        !this.runNameError &&
-        !this.wfEngineError &&
-        !this.wfEngineParamsError &&
-        !this.tagsError &&
-        !this.wfParamsError
-      )
-    },
-
-    runNameError(): string {
-      if (!this.runName) {
-        return 'Required'
-      }
-      if (this.runNames.includes(this.runName)) {
-        return `'Run name: ${this.runName} already exists.`
-      }
-      return ''
-    },
-
-    wfEngineError(): string {
+    wfEngineRules() {
       if (!this.wfEngine) {
-        return 'Reguired'
+        return ['Required']
       }
-      if (!this.wfEngines.includes(this.wfEngine)) {
-        return `Workflow engine: ${this.wfEngine} is not a valid workflow engine.`
-      }
-
-      return ''
+      return []
     },
 
-    wfEngineParamsError(): string {
-      if (isJson(this.wfEngineParams) || isYaml(this.wfEngineParams)) {
-        return ''
-      } else {
-        return 'Invalid format: valid format is JSON or YAML.'
+    wfAttachmentRules(): WfAttachmentRules {
+      const rules: WfAttachmentRules = {
+        download: {
+          urls: [],
+          names: [],
+        },
+        upload: {
+          files: [],
+          names: [],
+        },
       }
-    },
-
-    tagsError(): string {
-      if (isJson(this.wfEngineParams) || isYaml(this.wfEngineParams)) {
-        return ''
-      } else {
-        return 'Invalid format: valid format is JSON or YAML.'
-      }
-    },
-
-    wfAttachmentTextError(): string {
-      if (isJson(this.wfAttachmentText) || isYaml(this.wfAttachmentText)) {
-        try {
-          const content = parseJsonOrYaml(this.wfAttachmentText)
-          if (!Array.isArray(content)) {
-            return 'The type of tags should be `Array<{file_name: string, file_url: string}>`.'
-          } else {
-            for (const item of content) {
-              if (!('file_name' in item) || !('file_url' in item)) {
-                return 'The type of tags should be `Array<{file_name: string, file_url: string}>`.'
-              }
-            }
+      for (let i = 0; i < this.wfAttachment.download.names.length; i++) {
+        if (
+          !!this.wfAttachment.download.urls[i] !==
+          !!this.wfAttachment.download.names[i]
+        ) {
+          if (!this.wfAttachment.download.urls[i]) {
+            rules.download.urls.push(['No value in this field'])
+            rules.download.names.push([] as Array<string>)
           }
-        } catch {
-          return 'Unknown error: workflow attachment'
+          if (!this.wfAttachment.download.names[i]) {
+            rules.download.urls.push([] as Array<string>)
+            rules.download.names.push(['No value in this field'])
+          }
+        } else {
+          rules.download.urls.push([] as Array<string>)
+          rules.download.names.push([] as Array<string>)
         }
-      } else {
-        return 'Invalid format: valid format is JSON or YAML.'
       }
-      return ''
+      for (let i = 0; i < this.wfAttachment.upload.names.length; i++) {
+        if (
+          !!this.wfAttachment.upload.files[i] !==
+          !!this.wfAttachment.upload.names[i]
+        ) {
+          if (!this.wfAttachment.upload.files[i]) {
+            rules.upload.files.push(['No value in this field'])
+            rules.upload.names.push([] as Array<string>)
+          }
+          if (!this.wfAttachment.upload.names[i]) {
+            rules.upload.files.push([] as Array<string>)
+            rules.upload.names.push(['No value in this field'])
+          }
+        } else {
+          rules.upload.files.push([] as Array<string>)
+          rules.upload.names.push([] as Array<string>)
+        }
+      }
+      return rules
     },
 
     wfParamsError(): string {
       if (isJson(this.wfParams) || isYaml(this.wfParams)) {
         return ''
       } else {
-        return 'Invalid format: valid format is JSON or YAML.'
+        return 'Invalid JSON or YAML'
       }
+    },
+
+    wfEngineParamsError(): string {
+      if (isJson(this.wfEngineParams) || isYaml(this.wfEngineParams)) {
+        return ''
+      } else {
+        return 'Invalid JSON or YAML'
+      }
+    },
+
+    tagsError(): string {
+      if (isJson(this.tags) || isYaml(this.tags)) {
+        return ''
+      } else {
+        return 'Invalid JSON or YAML'
+      }
+    },
+
+    formValid(): boolean {
+      const wfAttachmentValid =
+        !this.wfAttachmentRules.download.urls
+          .map((rules) => rules.length)
+          .reduce((a, b) => a + b, 0) &&
+        !this.wfAttachmentRules.download.names
+          .map((rules) => rules.length)
+          .reduce((a, b) => a + b, 0) &&
+        !this.wfAttachmentRules.upload.files
+          .map((rules) => rules.length)
+          .reduce((a, b) => a + b, 0) &&
+        !this.wfAttachmentRules.upload.names
+          .map((rules) => rules.length)
+          .reduce((a, b) => a + b, 0)
+      return (
+        !this.runNameRules.length &&
+        !this.wfEngineRules.length &&
+        !this.wfParamsError &&
+        !this.wfEngineParamsError &&
+        !this.tagsError &&
+        wfAttachmentValid
+      )
     },
   },
 
@@ -423,18 +645,36 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     if (this.wfEngines.length === 1) {
       this.wfEngine = this.wfEngines[0]
     }
-    this.wfAttachmentText = JSON.stringify(
-      this.workflow.preRegisteredWorkflowAttachment,
-      null,
-      2
-    )
+    if (this.workflow.preRegisteredWorkflowAttachment.length) {
+      this.wfAttachment.download.urls.pop()
+      this.wfAttachment.download.names.pop()
+      for (const attachedFile of this.workflow
+        .preRegisteredWorkflowAttachment) {
+        this.wfAttachment.download.urls.push(attachedFile.file_url)
+        this.wfAttachment.download.names.push(attachedFile.file_name)
+      }
+      this.attachmentMode = 'download'
+    }
   },
 
   methods: {
-    async executeRun(): Promise<void> {
-      if (this.formValid) {
+    executeRun(): void {
+      if (
+        this.formValid ||
+        this.service.state === 'Available' ||
+        this.executeButton
+      ) {
         this.executeButton = false
-        await this.$store
+        const wfAttachmentObj: AttachedFile[] = []
+        for (let i = 0; i < this.wfAttachment.download.urls.length; i++) {
+          if (this.wfAttachment.download.urls[i]) {
+            wfAttachmentObj.push({
+              file_url: this.wfAttachment.download.urls[i] as string,
+              file_name: this.wfAttachment.download.names[i] as string,
+            })
+          }
+        }
+        this.$store
           .dispatch('runs/executeRun', {
             service: this.service,
             workflow: this.workflow,
@@ -444,11 +684,9 @@ const options: ThisTypedComponentOptionsWithRecordProps<
               ? yamlToJson(this.wfEngineParams)
               : this.wfEngineParams,
             tags: isYaml(this.tags) ? yamlToJson(this.tags) : this.tags,
-            wfAttachmentText: isYaml(this.wfAttachmentText)
-              ? yamlToJson(this.wfAttachmentText)
-              : this.wfAttachmentText,
-            workflowAttachment: this.workflowAttachment,
-            fileNames: this.fileNames,
+            wfAttachmentText: JSON.stringify(wfAttachmentObj, null, 2),
+            workflowAttachment: this.wfAttachment.upload.files,
+            fileNames: this.wfAttachment.upload.names,
             wfParams: isYaml(this.wfParams)
               ? yamlToJson(this.wfParams)
               : this.wfParams,
@@ -459,33 +697,62 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
 
-    updateWorkflowAttachment(file: File | null, ind: number) {
-      if (file === null) {
-        Vue.set(this.fileNames, ind, null)
-      } else {
-        Vue.set(this.fileNames, ind, file.name)
-      }
-    },
-
-    updateFileName(fileName: string | null, ind: number) {
-      if (fileName === null) {
-        const file: File | null = this.workflowAttachment[ind]
-        if (file !== null) {
-          Vue.set(this.fileNames, ind, file.name)
+    updateWfAttachementUrl(url: string | null, ind: number) {
+      Vue.set(this.wfAttachment.download.urls, ind, url)
+      if (url) {
+        try {
+          const tmpUrl = new URL(url)
+          const fileName = tmpUrl.pathname.split('/').pop() || ''
+          Vue.set(this.wfAttachment.download.names, ind, fileName)
+        } catch {
+          // do nothing
         }
       }
     },
 
-    incrementWorkflowAttachment() {
-      this.workflowAttachment.push(null)
-      this.fileNames.push(null)
+    updateWfAttachmentName(name: string | null, ind: number) {
+      Vue.set(
+        this.wfAttachment[this.attachmentMode as 'download' | 'upload'].names,
+        ind,
+        name
+      )
     },
 
-    decrementWorkflowAttachment() {
-      const len = this.workflowAttachment.length
-      if (len > 1) {
-        this.workflowAttachment = this.workflowAttachment.slice(0, len - 1)
-        this.fileNames = this.fileNames.slice(0, len - 1)
+    updateWfAttachementFile(file: File | null, ind: number) {
+      Vue.set(this.wfAttachment.upload.files, ind, file)
+      if (file) {
+        try {
+          const fileName = file.name || ''
+          Vue.set(this.wfAttachment.upload.names, ind, fileName)
+        } catch {
+          // do nothing
+        }
+      }
+    },
+
+    addWfAttachment() {
+      if (this.attachmentMode === 'download') {
+        this.wfAttachment.download.urls.push(null)
+        this.wfAttachment.download.names.push(null)
+      } else if (this.attachmentMode === 'upload') {
+        this.wfAttachment.upload.files.push(null)
+        this.wfAttachment.upload.names.push(null)
+      }
+    },
+
+    removeWfAttachment() {
+      if (
+        this.attachmentMode === 'download' &&
+        this.wfAttachment.download.names.length > 1
+      ) {
+        this.wfAttachment.download.urls.pop()
+        this.wfAttachment.download.names.pop()
+      } else if (
+        this.attachmentMode === 'upload' &&
+        this.wfAttachment.download.names.length > 1
+      ) {
+        this.wfAttachment.upload.files.pop()
+        this.wfAttachment.upload.names.pop()
       }
     },
 
@@ -499,12 +766,6 @@ export default Vue.extend(options)
 </script>
 
 <style scoped>
-.param-card-header {
-  font-family: 'Quicksand', sans-serif;
-  font-size: 1.2rem;
-  font-weight: 600;
-  background: #eeeeee;
-}
 .field-header {
   font-size: 1.1rem;
   font-weight: 400;
@@ -521,13 +782,6 @@ export default Vue.extend(options)
   font-size: 0.9rem !important;
 }
 .input-field-middle >>> .CodeMirror-lines {
-  font-family: 'Fira Code', monospace, sans-serif !important;
-}
-.input-field-large >>> .CodeMirror {
-  height: 400px !important;
-  font-size: 0.9rem !important;
-}
-.input-field-large >>> .CodeMirror-lines {
   font-family: 'Fira Code', monospace, sans-serif !important;
 }
 </style>

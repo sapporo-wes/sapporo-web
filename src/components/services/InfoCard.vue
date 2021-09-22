@@ -21,14 +21,20 @@
         text-color="white"
         v-text="service.state"
       />
-      <v-btn
-        :color="$colors.grey.darken2"
-        outlined
-        small
-        @click.stop="reloadService"
-      >
-        <v-icon v-text="'mdi-reload'" />
-      </v-btn>
+      <v-tooltip top>
+        <template #activator="{ on }">
+          <v-btn
+            :color="$colors.grey.darken2"
+            outlined
+            small
+            @click.stop="reloadService"
+            v-on="on"
+          >
+            <v-icon v-text="'mdi-reload'" />
+          </v-btn>
+        </template>
+        <span v-text="'Reload WES service'" />
+      </v-tooltip>
     </div>
     <v-data-table
       :headers="serviceInfoHeaders"

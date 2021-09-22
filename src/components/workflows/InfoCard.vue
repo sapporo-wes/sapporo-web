@@ -1,17 +1,60 @@
 <template>
-  <v-card v-if="workflow" max-width="1200">
+  <v-card max-width="1200">
     <div class="d-flex align-center mx-6 pt-4">
+      <v-tooltip top>
+        <template #activator="{ on }">
+          <img
+            v-if="workflow.type.toLowerCase() === 'cwl'"
+            src="~/assets/icon/cwl-icon.png"
+            height="36"
+            class="mr-2"
+            v-on="on"
+          />
+          <img
+            v-else-if="workflow.type.toLowerCase() === 'wdl'"
+            src="~/assets/icon/wdl-icon.png"
+            height="36"
+            class="mr-2"
+            v-on="on"
+          />
+          <img
+            v-else-if="workflow.type.toLowerCase() === 'nextflow'"
+            src="~/assets/icon/nextflow-icon.png"
+            height="36"
+            class="mr-4"
+            v-on="on"
+          />
+          <img
+            v-else-if="workflow.type.toLowerCase() === 'snakemake'"
+            src="~/assets/icon/snakemake-icon.png"
+            height="36"
+            class="mr-4"
+            v-on="on"
+          />
+          <v-icon
+            v-else
+            left
+            color="black"
+            v-on="on"
+            v-text="'mdi-graph-outline'"
+          />
+        </template>
+        <span v-text="`${workflow.type} ${workflow.version}`" />
+      </v-tooltip>
       <div class="card-header" v-text="workflow.name" />
-      <v-chip
-        v-if="workflow.preRegistered"
-        :color="$colors.blueGrey.darken1"
-        label
-        small
-        text-color="white"
-        class="ml-4"
-        v-text="'Pre-registered'"
-      />
+      <v-tooltip v-if="workflow.preRegistered" top>
+        <template #activator="{ on }">
+          <v-icon
+            :color="$colors.indigo.darken1"
+            class="ml-2 mt-1"
+            v-on="on"
+            v-text="'mdi-account-check-outline'"
+          />
+        </template>
+        <span v-text="'Pre-registered workflow'" />
+      </v-tooltip>
     </div>
+
     <v-data-table
       :headers="workflowInfoHeaders"
       :items="workflowInfoContents"
@@ -25,40 +68,62 @@
       item-key="key"
     >
       <template #[`item.value`]="{ item }">
-        <nuxt-link
-          v-if="item.key === 'Service'"
-          :to="{ path: '/services', query: { serviceId: service.id } }"
-          v-text="service.name"
-        />
         <a
-          v-else-if="item.key === 'Workflow URL' && validUrl(item.value)"
+          v-if="item.key === 'URL' && validUrl(item.value)"
           :href="item.value"
-          >{{ item.value }}</a
-        >
-        <div v-else v-text="item.value" />
+          v-text="item.value"
+        />
+        <span v-else v-text="item.value" />
       </template>
     </v-data-table>
 
-    <codemirror
-      :options="{
-        lineNumbers: true,
-        mode: codeMirrorMode(workflow.content),
-        tabSize: 2,
-        readOnly: true,
-      }"
-      :style="{
-        outline: `solid 1px ${$colors.grey.lighten1}`,
-      }"
-      :value="workflow.content"
-      class="mx-12 mt-4 elevation-2 content-viewer"
-    />
-    <div class="d-flex mt-4 pb-6 mr-12">
+    <div class="d-flex ml-12 mr-3 mt-2 pb-6">
+      <codemirror
+        :options="{
+          lineNumbers: true,
+          mode: codeMirrorMode(workflow.content),
+          tabSize: 2,
+          readOnly: true,
+        }"
+        :style="{
+          outline: `solid 1px ${$colors.grey.lighten1}`,
+        }"
+        :value="workflow.content"
+        class="elevation-2 content-viewer flex-grow-1"
+      />
+      <div class="d-flex flex-column ml-3">
+        <v-tooltip top>
+          <template #activator="{ on }">
+            <v-icon
+              :color="$colors.grey.darken1"
+              @click.stop="downloadWorkflowContent"
+              v-on="on"
+              v-text="'mdi-download'"
+            />
+          </template>
+          <span v-text="'Download the workflow document'" />
+        </v-tooltip>
+        <v-tooltip v-model="copyTooltip" top>
+          <template #activator="{ on }">
+            <div class="mt-2" v-on="on">
+              <v-icon
+                :color="$colors.grey.darken1"
+                @click.stop="copyWorkflowContent"
+                v-text="'mdi-clipboard-outline'"
+              />
+            </div>
+          </template>
+          <span v-text="copied ? 'Copied!!' : 'Copy the workflow document'" />
+        </v-tooltip>
+      </div>
+    </div>
+    <!-- <div class="d-flex mt-6 pb-6 mr-12">
       <v-spacer />
       <v-btn
         :color="$colors.grey.darken2"
         class="mr-4"
         outlined
-        width="150"
+        width="140"
         @click.stop="downloadWorkflowContent"
       >
         <v-icon left v-text="'mdi-download'" />
@@ -67,16 +132,18 @@
       <v-btn
         :color="$colors.grey.darken2"
         outlined
-        width="150"
+        width="140"
         @click.stop="copyWorkflowContent"
       >
-        <template v-if="copy">copied!</template>
+        <template v-if="copy">
+          <span v-text="'copied!'" />
+        </template>
         <template v-else>
           <v-icon left v-text="'mdi-clipboard-outline'" />
           <span v-text="'Copy'" />
         </template>
       </v-btn>
-    </div>
+    </div> -->
   </v-card>
 </template>
 
@@ -94,7 +161,8 @@ import { Workflow } from '@/store/workflows'
 
 type Data = {
   workflowInfoHeaders: DataTableHeader[]
-  copy: boolean
+  copyTooltip: boolean
+  copied: boolean
 }
 
 type Methods = {
@@ -141,7 +209,8 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         { text: 'Key', value: 'key' },
         { text: 'Value', value: 'value' },
       ],
-      copy: false,
+      copyTooltip: false,
+      copied: false,
     }
   },
 
@@ -156,14 +225,9 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     workflowInfoContents() {
       return [
-        { key: 'Service', value: '' },
+        { key: 'URL', value: this.workflow.url },
         {
-          key: 'Workflow Type Version',
-          value: `${this.workflow.type} ${this.workflow.version}`,
-        },
-        { key: 'Workflow URL', value: this.workflow.url },
-        {
-          key: 'Added / Updated Date',
+          key: this.workflow.preRegistered ? 'Updated Date' : 'Added Date',
           value: this.workflow.preRegistered
             ? this.$dayjs(this.workflow.updatedDate)
                 .local()
@@ -186,11 +250,18 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     },
 
     copyWorkflowContent() {
+      this.copyTooltip = false
       this.$copyText(this.workflow.content)
-      this.copy = true
       setTimeout(() => {
-        this.copy = false
-      }, 2000)
+        this.copyTooltip = true
+        this.copied = true
+        setTimeout(() => {
+          this.copyTooltip = false
+          setTimeout(() => {
+            this.copied = false
+          }, 300)
+        }, 1000)
+      }, 300)
     },
 
     downloadWorkflowContent() {
@@ -211,14 +282,17 @@ export default Vue.extend(options)
 
 <style scoped>
 .content-viewer >>> .CodeMirror {
-  height: 400px !important;
+  height: 250px !important;
   font-size: 0.9rem !important;
 }
 .content-viewer >>> .CodeMirror-lines {
   font-family: 'Fira Code', monospace, sans-serif !important;
 }
 .info-table >>> td:nth-child(1) {
-  width: 220px;
+  width: 270px;
   font-weight: 500;
+}
+.info-table >>> tr:not(:last-child) td {
+  border-bottom: none !important;
 }
 </style>

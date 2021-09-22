@@ -171,8 +171,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         {
           key: 'Start Time',
           value: this.run.runLog.run_log.start_time
-            ? this.$dayjs
-                .utc(this.run.runLog.run_log.start_time)
+            ? this.$dayjs(this.run.runLog.run_log.start_time)
                 .local()
                 .format('YYYY-MM-DD HH:mm:ss')
             : '',
@@ -180,8 +179,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         {
           key: 'End Time',
           value: this.run.runLog.run_log.end_time
-            ? this.$dayjs
-                .utc(this.run.runLog.run_log.end_time)
+            ? this.$dayjs(this.run.runLog.run_log.end_time)
                 .local()
                 .format('YYYY-MM-DD HH:mm:ss')
             : '',

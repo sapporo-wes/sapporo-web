@@ -282,8 +282,9 @@ const options: ThisTypedComponentOptionsWithRecordProps<
           this.workflowName =
             runLog.request.workflow_name ||
             runLog.request.workflow_url.split('/').slice(-1)[0]
-          this.runName = `${this.workflowName} ${this.$dayjs
-            .utc(runLog.run_log.start_time)
+          this.runName = `${this.workflowName} ${this.$dayjs(
+            runLog.run_log.start_time
+          )
             .local()
             .format('YYYY-MM-DD HH:mm:ss')}`
           this.workflowType = runLog.request.workflow_type

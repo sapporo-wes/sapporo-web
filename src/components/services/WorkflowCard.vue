@@ -56,28 +56,28 @@
             <img
               v-if="item.workflowType.toLowerCase() === 'cwl'"
               src="~/assets/icon/cwl-icon.png"
-              class="mt-1"
+              class="mt-2 mr-2"
               height="26"
               v-on="on"
             />
             <img
               v-else-if="item.workflowType.toLowerCase() === 'wdl'"
               src="~/assets/icon/wdl-icon.png"
-              class="mt-1"
+              class="mt-2 mr-2"
               height="26"
               v-on="on"
             />
             <img
               v-else-if="item.workflowType.toLowerCase() === 'nextflow'"
               src="~/assets/icon/nextflow-icon.png"
-              class="mt-1"
+              class="mt-2 mr-2"
               height="26"
               v-on="on"
             />
             <img
               v-else-if="item.workflowType.toLowerCase() === 'snakemake'"
               src="~/assets/icon/snakemake-icon.png"
-              class="mt-1"
+              class="mt-2 mr-2"
               height="26"
               v-on="on"
             />
@@ -85,7 +85,7 @@
               v-else
               class="my-2 mr-2"
               v-on="on"
-              v-text="'mdi-beaker-question-outline'"
+              v-text="'mdi-graph-outline'"
             />
           </template>
           <span v-text="`${item.workflowType} ${item.workflowVersion}`" />

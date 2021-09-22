@@ -55,7 +55,7 @@
                 v-text="'mdi-clipboard-outline'"
               />
             </template>
-            <span>Coppied!</span>
+            <span>Copied!</span>
           </v-tooltip>
         </div>
         <nuxt-link

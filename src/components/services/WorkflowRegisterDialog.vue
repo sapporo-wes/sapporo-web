@@ -21,7 +21,7 @@
           :items="types"
           :persistent-hint="!type.length"
           :rule="typeRules"
-          hint="Select a workflow langauge type"
+          hint="Select the workflow langauge type"
           label="Type"
           @change="changeType"
         />
@@ -31,7 +31,7 @@
           :items="versions"
           :persistent-hint="!type.length"
           :rules="versionRules"
-          hint="Select a workflow langauge version"
+          hint="Select the workflow langauge version"
           label="Version"
         />
       </div>
@@ -44,8 +44,8 @@
           <v-chip-group
             v-model="locationMode"
             class="ml-6"
-            color="primary"
             mandatory
+            color="primary"
           >
             <v-chip :value="'download'" label outlined>
               <v-icon left v-text="'mdi-download-outline'" />
@@ -101,7 +101,7 @@
             :persistent-hint="!fileName.length"
             :rules="fileNameRules"
             class="ma-0"
-            hint="The name of workflow document when it is placed in the execution directory and passed to the workflow runner"
+            hint="The name of workflow document when it is placed in the execution directory and passed to the workflow engine"
             label="File Name"
             placeholder="Type a file name"
           />
@@ -140,7 +140,7 @@
           </template>
           <span
             v-text="
-              'Check this box if you want to place the workflow document in the execution directory and pass it as a local path, instead of passing the remote URL directly to the workflow runner.'
+              'Check this box if you want to place the workflow document in the execution directory and pass it as a local path, instead of passing the remote URL directly to the workflow engine.'
             "
           />
         </v-tooltip>
@@ -420,7 +420,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         if (this.locationMode === 'download') {
           if (this.attachAsFile) {
             const tmpUrl = new URL(this.url)
-            url = tmpUrl.pathname.split('/').slice(-1)[0]
+            url = tmpUrl.pathname.split('/').pop() || this.url
           } else {
             url = this.url
           }
