@@ -1,6 +1,6 @@
 <template>
   <v-card max-width="1200">
-    <div class="d-flex mx-6 pt-4">
+    <div class="d-flex align-center mx-6 pt-4">
       <v-icon color="black" left v-text="'mdi-graph-outline'" />
       <div class="card-header" v-text="'Workflows'" />
       <v-spacer />
@@ -134,7 +134,8 @@
         </v-tooltip>
       </template>
     </v-data-table>
-    <div class="d-flex justify-end pb-6 mr-12 mt-4">
+
+    <div class="d-flex justify-end pb-6 mr-12 mt-2">
       <v-tooltip top max-width="400">
         <template #activator="{ on }">
           <v-btn

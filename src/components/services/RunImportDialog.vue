@@ -6,71 +6,81 @@
     @click:outside="$emit('close')"
   >
     <v-card>
-      <div class="card-header mx-6 pt-4" v-text="'Import Run'" />
+      <div class="d-flex align-center mx-6 pt-4">
+        <v-icon color="black" left v-text="'mdi-sticker-plus-outline'" />
+        <div class="card-header" v-text="'Import Run'" />
+      </div>
       <div class="mx-12 my-2">
         <v-text-field
           v-model="runId"
-          :error-messages="runIdError || checkRunExistMessage"
-          clearable
+          :persistent-hint="!runId.length"
+          :rules="runIdRules"
+          class="ma-0"
+          hint="Enter the Run ID included in this WES service"
           label="Run ID"
-          @change="
-            checkRunExistMessage =
-              'Move to the next field to check if the run exists'
-          "
-          @blur="checkRunExist"
+          placeholder="Enter the Run ID"
+          @input="changeRunId"
         />
+
         <v-text-field
+          v-if="!getFailed"
           v-model="runName"
-          :error-messages="runNameError"
-          clearable
+          class="ma-0"
           label="Run Name"
-          :disabled="!runLog"
+          readonly
         />
+
         <v-text-field
+          v-if="!getFailed"
           v-model="workflowName"
-          :error-messages="workflowNameError"
-          clearable
+          class="ma-0"
           label="Workflow Name"
-          :disabled="!runLog"
+          readonly
         />
-        <v-select
-          v-model="workflowType"
-          :disabled="!runLog"
-          :error-messages="workflowTypeError"
-          :items="workflowTypes"
-          clearable
-          label="Workflow Type"
-          @change="changeWorkflowType"
-        />
-        <v-select
-          v-model="workflowVersion"
-          :disabled="!runLog || !workflowType"
-          :error-messages="workflowVersionError"
-          :items="workflowVersions"
-          clearable
-          label="Workflow Version"
-        />
+
+        <div class="d-flex">
+          <v-text-field
+            v-if="!getFailed"
+            v-model="workflowType"
+            :style="{ maxWidth: '48%', minWidth: '48%' }"
+            class="my-0 mr-auto"
+            label="Workflow Type"
+            readonly
+          />
+
+          <v-text-field
+            v-if="!getFailed"
+            v-model="workflowVersion"
+            :style="{ maxWidth: '48%', minWidth: '48%' }"
+            class="ma-0"
+            label="Workflow Version"
+            readonly
+          />
+        </div>
+
         <v-text-field
-          :value="workflowUrl"
-          :disabled="!runLog"
-          label="Workflow URL (read-only)"
+          v-if="!getFailed"
+          v-model="workflowUrl"
+          class="ma-0"
+          label="Workflow URL"
           readonly
         />
         <codemirror
+          v-if="!getFailed"
           v-model="workflowContent"
           :options="{
             lineNumbers: true,
             tabSize: 2,
             mode: codeMirrorMode(workflowContent),
-            readOnly: true,
+            readOnly: 'nocursor',
           }"
           :style="{
             outline: `solid 1px ${$colors.grey.lighten1}`,
           }"
-          class="mt-4 mx-4 mb-2 elevation-2 content-viewer"
+          class="elevation-2 content-viewer"
         />
       </div>
-      <div class="d-flex justify-end mx-12 pb-6">
+      <div class="d-flex justify-end mx-12 pb-6 mt-4">
         <v-btn
           :disabled="!formValid"
           color="primary"
@@ -99,9 +109,11 @@ import { RunLog } from '@/types/WES'
 import { Run } from '@/store/runs'
 import { Workflow } from '@/store/workflows'
 
+const changeQueue: Array<NodeJS.Timeout> = []
+
 type Data = {
   runId: string
-  checkRunExistMessage: string
+  getFailed: boolean
   runLog: RunLog | undefined
   runName: string
   workflowName: string
@@ -112,24 +124,17 @@ type Data = {
 }
 
 type Methods = {
-  checkRunExist: () => Promise<void>
-  changeWorkflowType: () => void
+  changeRunId: () => void
+  getRunsId: (runId: string) => void
   codeMirrorMode: (content: string) => ReturnType<typeof codeMirrorMode>
-  importRun: () => Promise<void>
+  importRun: () => void
 }
 
 type Computed = {
   service: Service
   workflows: Workflow[]
-  runs: Run[]
+  runIdRules: string[]
   formValid: boolean
-  runIdError: string
-  runNameError: string
-  workflowNameError: string
-  workflowTypes: string[]
-  workflowTypeError: string
-  workflowVersions: string[]
-  workflowVersionError: string
 }
 
 type Props = {
@@ -163,7 +168,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   data() {
     return {
       runId: '',
-      checkRunExistMessage: 'Move to the next field to check if the run exists',
+      getFailed: true,
       runLog: undefined,
       runName: '',
       workflowName: '',
@@ -185,154 +190,99 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       )
     },
 
-    runs() {
-      return this.$store.getters['runs/runsByIds'](this.service.runIds)
+    runIdRules() {
+      if (!this.runId) {
+        return ['Required']
+      }
+      if (this.service.runIds.includes(this.runId)) {
+        return ['The Run ID already exists']
+      }
+      if (this.getFailed) {
+        return ['The Run ID does not exist in this WES service']
+      }
+      return []
     },
 
     formValid() {
-      return (
-        !this.runIdError &&
-        !this.checkRunExistMessage &&
-        !this.runNameError &&
-        !this.workflowTypeError &&
-        !this.workflowVersionError
-      )
-    },
-
-    runIdError() {
-      if (!this.runId) {
-        return 'Required'
-      }
-      if (this.runs.map((run) => run.id).includes(this.runId)) {
-        return `Run ID: ${this.runId} already exists in this service.`
-      }
-      return ''
-    },
-
-    runNameError() {
-      if (!this.runName) {
-        return 'Required'
-      }
-      if (this.runs.map((run) => run.name).includes(this.runName)) {
-        return `Run name: ${this.runName} already exists in this service.`
-      }
-      return ''
-    },
-
-    workflowNameError() {
-      if (!this.workflowName) {
-        return 'Required'
-      }
-      if (
-        this.workflows
-          .map((workflow) => workflow.name)
-          .includes(this.workflowName)
-      ) {
-        return `Workflow name: ${this.workflowName} already exists in this service.`
-      }
-      return ''
-    },
-
-    workflowTypes() {
-      return this.$store.getters['services/workflowLanguages'](
-        this.serviceId
-      ).map((lang: { name: string; versions: string[] }) => lang.name)
-    },
-
-    workflowVersions() {
-      return (
-        (
-          this.$store.getters['services/workflowLanguages'](
-            this.serviceId
-          ).filter(
-            (lang: { name: string; versions: string[] }) =>
-              lang.name === this.workflowType
-          ) as { name: string; versions: string[] }[]
-        )?.[0]?.versions || []
-      )
-    },
-
-    workflowTypeError() {
-      if (!this.workflowType) {
-        return 'Required'
-      }
-      if (!this.workflowTypes.includes(this.workflowType)) {
-        return `Workflow type: ${this.workflowType} is not supported by this service.`
-      }
-      return ''
-    },
-
-    workflowVersionError() {
-      if (!this.workflowVersion) {
-        return 'Required'
-      }
-      if (!this.workflowVersions.includes(this.workflowVersion)) {
-        return `Workflow version: ${this.workflowVersion} is not supported by this service.`
-      }
-      return ''
+      return !this.runIdRules.length
     },
   },
 
   methods: {
-    async checkRunExist() {
-      await getRunsId(this.$axios, this.service.endpoint, this.runId)
-        .then(async (runLog) => {
-          this.checkRunExistMessage = ''
-          this.runLog = runLog
-          this.workflowName =
-            runLog.request.workflow_name ||
-            runLog.request.workflow_url.split('/').slice(-1)[0]
-          this.runName = `${this.workflowName} ${this.$dayjs(
-            runLog.run_log.start_time
-          )
-            .local()
-            .format('YYYY-MM-DD HH:mm:ss')}`
-          this.workflowType = runLog.request.workflow_type
-          this.workflowVersion = runLog.request.workflow_type_version
-          this.workflowUrl = runLog.request.workflow_url
-          this.workflowContent = 'Failed to retrieve workflow content'
-          if (validUrl(this.workflowUrl)) {
-            this.workflowUrl = await convertGitHubUrl(
-              this.$axios,
-              this.workflowUrl
-            )
-            const res = await this.$axios.$get(this.workflowUrl)
-            if (typeof res === 'string') {
-              this.workflowContent = res
-            } else {
-              this.workflowContent = JSON.stringify(res, null, 2)
-            }
-          } else {
-            const fileName = this.workflowUrl.split('/').slice(-1)[0]
-            for (const file of runLog.request.workflow_attachment || []) {
-              const attachedFileName = file.file_name.split('/').slice(-1)[0]
-              if (fileName === attachedFileName) {
-                const res = await this.$axios.$get(file.file_url)
-                if (typeof res === 'string') {
-                  this.workflowContent = res
-                } else {
-                  this.workflowContent = JSON.stringify(res, null, 2)
-                }
-                break
-              }
-            }
-          }
-        })
-        .catch((_) => {
-          this.checkRunExistMessage = `Invalid Run ID: GET runs/${this.runId}/status not responding`
-          this.runLog = undefined
-        })
+    changeRunId() {
+      while (changeQueue.length) {
+        const timeoutId = changeQueue.shift()
+        if (timeoutId) {
+          clearTimeout(timeoutId)
+        }
+      }
+      const eventId = setTimeout(
+        (runId) => {
+          this.getRunsId(runId)
+        },
+        1000,
+        this.runId
+      )
+      changeQueue.push(eventId)
     },
 
-    changeWorkflowType() {
-      if (this.workflowType) {
-        if (this.workflowVersions.length === 1) {
-          this.workflowVersion = this.workflowVersions[0]
-        } else {
-          this.workflowVersion = ''
-        }
-      } else {
-        this.workflowVersion = ''
+    getRunsId(runId: string) {
+      if (!this.service.runIds.includes(this.runId)) {
+        getRunsId(this.$axios, this.service.endpoint, runId)
+          .then((runLog) => {
+            this.getFailed = false
+            this.runLog = runLog
+            this.workflowName =
+              runLog.request.workflow_name ||
+              runLog.request.workflow_url.split('/').pop() ||
+              runId
+            this.runName = `${this.workflowName} ${this.$dayjs(
+              runLog.run_log.start_time
+            )
+              .local()
+              .format('YYYY-MM-DD HH:mm:ss')}`
+            this.workflowType = runLog.request.workflow_type
+            this.workflowVersion = runLog.request.workflow_type_version
+            this.workflowUrl = runLog.request.workflow_url
+            this.workflowContent = 'Failed to get workflow content'
+            if (validUrl(this.workflowUrl)) {
+              convertGitHubUrl(this.$axios, this.workflowUrl).then((url) => {
+                this.workflowUrl = url
+                this.$axios.$get(this.workflowUrl).then((res) => {
+                  if (typeof res === 'string') {
+                    this.workflowContent = res
+                  } else {
+                    this.workflowContent = JSON.stringify(res, null, 2)
+                  }
+                })
+              })
+            } else {
+              const fileName = this.workflowUrl.split('/').pop() || ''
+              for (const file of runLog.request.workflow_attachment || []) {
+                const attachedFileName = file.file_name.split('/').pop() || ''
+                if (fileName === attachedFileName) {
+                  this.$axios.$get(file.file_url).then((res) => {
+                    if (typeof res === 'string') {
+                      this.workflowContent = res
+                    } else {
+                      this.workflowContent = JSON.stringify(res, null, 2)
+                    }
+                  })
+                  break
+                }
+              }
+            }
+          })
+          .catch((_) => {
+            this.getFailed = true
+            this.runLog = undefined
+            this.runName = ''
+            this.workflowName = ''
+            this.workflowType = ''
+            this.workflowVersion = ''
+            this.workflowUrl = ''
+            this.workflowContent = ''
+          })
       }
     },
 
@@ -340,34 +290,50 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return codeMirrorMode(content)
     },
 
-    async importRun() {
+    importRun() {
       if (this.formValid) {
-        const workflowId: string = await this.$store.dispatch(
-          'workflows/addWorkflow',
-          {
-            serviceId: this.serviceId,
-            workflow: {
-              workflow_name: this.workflowName,
-              workflow_url: this.workflowUrl,
-              workflow_type: this.workflowType,
-              workflow_type_version: this.workflowVersion,
-              workflow_attachment:
-                this.runLog?.request?.workflow_attachment || [],
-            },
-            preRegistered: false,
+        let workflowId = null
+        this.workflows.forEach((workflow) => {
+          if (workflow.name === this.workflowName) {
+            workflowId = workflow.id
           }
-        )
-        this.$store.dispatch('services/addWorkflowId', {
-          serviceId: this.serviceId,
-          workflowId,
         })
-        this.$store.dispatch('runs/addRun', {
-          serviceId: this.serviceId,
-          workflowId,
-          runId: this.runId,
-          runName: this.runName,
-          runLog: this.runLog,
-        })
+        if (workflowId) {
+          this.$store.dispatch('runs/addRun', {
+            serviceId: this.serviceId,
+            workflowId,
+            runId: this.runId,
+            runName: this.runName,
+            runLog: this.runLog,
+          })
+        } else {
+          this.$store
+            .dispatch('workflows/addWorkflow', {
+              serviceId: this.serviceId,
+              workflow: {
+                workflow_name: this.workflowName,
+                workflow_url: this.workflowUrl,
+                workflow_type: this.workflowType,
+                workflow_type_version: this.workflowVersion,
+                workflow_attachment:
+                  this.runLog?.request?.workflow_attachment || [],
+              },
+              preRegistered: false,
+            })
+            .then((workflowId) => {
+              this.$store.dispatch('services/addWorkflowId', {
+                serviceId: this.serviceId,
+                workflowId,
+              })
+              this.$store.dispatch('runs/addRun', {
+                serviceId: this.serviceId,
+                workflowId,
+                runId: this.runId,
+                runName: this.runName,
+                runLog: this.runLog,
+              })
+            })
+        }
         this.$router.push({ path: '/runs', query: { runId: this.runId } })
       }
     },
@@ -379,7 +345,7 @@ export default Vue.extend(options)
 
 <style scoped>
 .content-viewer >>> .CodeMirror {
-  height: 300px !important;
+  height: 200px !important;
   font-size: 0.9rem !important;
 }
 .content-viewer >>> .CodeMirror-lines {

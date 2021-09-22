@@ -42,7 +42,8 @@ export interface RunTableItem {
   serviceName: string
   workflowId: string
   workflowName: string
-  workflowTypeVersion: string
+  workflowType: string
+  workflowVersion: string
   addedDate: string
   state: string
   stateColor: string
@@ -96,9 +97,8 @@ export const getters: GetterTree<State, RootState> = {
           serviceName: service ? service.name : '',
           workflowId: run.workflowId,
           workflowName: workflow ? workflow.name : '',
-          workflowTypeVersion: `${workflow ? workflow.type : ''} ${
-            workflow ? workflow.version : ''
-          }`,
+          workflowType: workflow ? workflow.type : '',
+          workflowVersion: workflow ? workflow.version : '',
           addedDate: dayjs(run.addedDate).local().format('YYYY-MM-DD HH:mm:ss'),
           state: run.state,
           stateColor: getters.stateColor(run.id),

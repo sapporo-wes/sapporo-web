@@ -6,19 +6,14 @@
     @click:outside="$emit('close')"
   >
     <v-card>
-      <div class="card-header mx-6 pt-4" v-text="'Remove Runs'" />
-      <div class="mx-12 my-2" v-text="'These runs will be removed:'" />
+      <div class="d-flex align-center mx-6 pt-4">
+        <v-icon color="black" left v-text="'mdi-trash-can-outline'" />
+        <div class="card-header" v-text="'Remove Run'" />
+      </div>
+      <div class="mx-12 my-2" v-text="'The following run will be removed:'" />
       <ul :style="{ paddingLeft: '96px', paddingRight: '96px' }">
         <li v-for="(item, i) in selectedItems" :key="i" v-text="item.runName" />
       </ul>
-      <!-- <div
-        :style="{
-          fontSize: '1.4rem',
-          color: $vuetify.theme.themes.light.error,
-        }"
-        class="text-center"
-        v-text="'Are you sure to delete these?'"
-      /> -->
       <div class="d-flex justify-end mx-12 mt-4 pb-6">
         <v-btn color="error" outlined @click.stop="deleteSelectedItems">
           <v-icon left v-text="'mdi-trash-can-outline'" />
@@ -77,7 +72,6 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         'runs/deleteRuns',
         this.selectedItems.map((run) => run.runId)
       )
-      this.$emit('clearSelected')
       this.$emit('close')
     },
   },

@@ -6,7 +6,10 @@
     @click:outside="$emit('close')"
   >
     <v-card>
-      <div class="card-header mx-6 pt-4" v-text="'Remove Workflow'" />
+      <div class="d-flex align-center mx-6 pt-4">
+        <v-icon color="black" left v-text="'mdi-trash-can-outline'" />
+        <div class="card-header" v-text="'Remove Workflow'" />
+      </div>
       <div
         class="mx-12 my-2"
         v-text="'The following workflow will be removed:'"

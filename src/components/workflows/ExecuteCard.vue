@@ -42,36 +42,10 @@
             "
           />
         </v-tooltip>
-        <v-chip-group
-          v-if="serviceWorkflowAttachment"
-          v-model="attachmentMode"
-          class="ml-6"
-          color="primary"
-        >
-          <v-chip :value="'download'" class="my-0 py-0" label outlined>
-            <v-icon left v-text="'mdi-download-outline'" />
-            <span v-text="'Download'" />
-          </v-chip>
-          <v-chip
-            :disabled="!serviceWorkflowAttachment"
-            :value="'upload'"
-            class="my-0 py-0"
-            label
-            outlined
-          >
-            <v-icon left v-text="'mdi-upload-outline'" />
-            <span v-text="'Upload'" />
-          </v-chip>
-        </v-chip-group>
-        <v-chip-group
-          v-else-if="!serviceWorkflowAttachment"
-          v-model="attachmentMode"
-          class="ml-6"
-          color="primary"
-        >
+        <v-chip-group v-model="attachmentMode" class="ml-6" color="primary">
           <v-tooltip top>
             <template #activator="{ on }">
-              <div v-on="on">
+              <div v-on="!serviceWorkflowAttachment && on">
                 <v-chip
                   :disabled="!serviceWorkflowAttachment"
                   :value="'download'"
@@ -90,7 +64,7 @@
           </v-tooltip>
           <v-tooltip top>
             <template #activator="{ on }">
-              <div v-on="on">
+              <div v-on="!serviceWorkflowAttachment && on">
                 <v-chip
                   :disabled="!serviceWorkflowAttachment"
                   :value="'upload'"

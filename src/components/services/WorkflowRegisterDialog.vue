@@ -6,7 +6,10 @@
     @click:outside="$emit('close')"
   >
     <v-card>
-      <div class="card-header mx-6 pt-4" v-text="'Add Workflow'" />
+      <div class="d-flex align-center mx-6 pt-4">
+        <v-icon color="black" left v-text="'mdi-sticker-plus-outline'" />
+        <div class="card-header" v-text="'Add Workflow'" />
+      </div>
       <div class="mx-12 my-2">
         <v-text-field
           v-model="name"
