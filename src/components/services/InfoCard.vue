@@ -1,7 +1,7 @@
 <template>
   <v-card v-if="service" ref="card" max-width="1200">
     <div class="d-flex align-center mx-6 pt-4">
-      <v-icon color="black" left v-text="'mdi-dns-outline '" />
+      <v-icon color="black" left v-text="'mdi-dns-outline'" />
       <div class="card-header" v-text="service.name" />
       <v-tooltip v-if="service.preRegistered" top>
         <template #activator="{ on }">
@@ -36,6 +36,7 @@
         <span v-text="'Reload WES service'" />
       </v-tooltip>
     </div>
+
     <v-data-table
       :headers="serviceInfoHeaders"
       :items="serviceInfoContents"

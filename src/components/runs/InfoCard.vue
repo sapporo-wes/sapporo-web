@@ -1,6 +1,46 @@
 <template>
   <v-card max-width="1200">
     <div class="d-flex align-center mx-6 pt-4">
+      <v-tooltip top>
+        <template #activator="{ on }">
+          <img
+            v-if="workflow.type.toLowerCase() === 'cwl'"
+            src="~/assets/icon/cwl-icon.png"
+            height="36"
+            class="mr-2"
+            v-on="on"
+          />
+          <img
+            v-else-if="workflow.type.toLowerCase() === 'wdl'"
+            src="~/assets/icon/wdl-icon.png"
+            height="36"
+            class="mr-2"
+            v-on="on"
+          />
+          <img
+            v-else-if="workflow.type.toLowerCase() === 'nextflow'"
+            src="~/assets/icon/nextflow-icon.png"
+            height="36"
+            class="mr-4"
+            v-on="on"
+          />
+          <img
+            v-else-if="workflow.type.toLowerCase() === 'snakemake'"
+            src="~/assets/icon/snakemake-icon.png"
+            height="36"
+            class="mr-4"
+            v-on="on"
+          />
+          <v-icon
+            v-else
+            left
+            color="black"
+            v-on="on"
+            v-text="'mdi-graph-outline'"
+          />
+        </template>
+        <span v-text="`${workflow.type} ${workflow.version}`" />
+      </v-tooltip>
       <div class="card-header" v-text="run.name" />
       <v-spacer />
       <v-chip
@@ -22,14 +62,20 @@
         <v-icon left v-text="'mdi-close'" />
         <span v-text="'Cancel Run'" />
       </v-btn>
-      <v-btn
-        :color="$colors.grey.darken2"
-        outlined
-        small
-        @click.stop="reloadRunState"
-      >
-        <v-icon v-text="'mdi-reload'" />
-      </v-btn>
+      <v-tooltip top>
+        <template #activator="{ on }">
+          <v-btn
+            :color="$colors.grey.darken2"
+            outlined
+            small
+            @click.stop="reloadRunState"
+            v-on="on"
+          >
+            <v-icon v-text="'mdi-reload'" />
+          </v-btn>
+        </template>
+        <span v-text="'Reload run status'" />
+      </v-tooltip>
     </div>
 
     <v-data-table
@@ -45,39 +91,29 @@
       item-key="key"
     >
       <template #[`item.value`]="{ item }">
-        <div v-if="item.key === 'Run ID'" class="align-center">
-          <span>{{ item.value }}</span>
-          <v-tooltip top :value="runIdTooltip" color="primary">
-            <template #activator="{}">
+        <div v-if="item.key === 'Run ID'" class="d-flex align-center">
+          <span v-text="item.value" />
+          <v-tooltip top :value="tooltip">
+            <template #activator>
               <v-icon
-                class="ml-2"
-                @click.stop="copyRunId"
+                right
+                @click.stop="copyTooltip"
                 v-text="'mdi-clipboard-outline'"
               />
             </template>
-            <span>Copied!</span>
+            <span v-text="'Copied!!'" />
           </v-tooltip>
         </div>
-        <nuxt-link
-          v-else-if="item.key === 'Service'"
-          :to="{ path: '/services', query: { serviceId: service.id } }"
-          v-text="service.name"
-        />
-        <nuxt-link
-          v-else-if="item.key === 'Workflow'"
-          :to="{ path: '/workflows', query: { workflowId: workflow.id } }"
-          v-text="workflow.name"
-        />
         <a
           v-else-if="item.key === 'Workflow URL' && validUrl(item.value)"
           :href="item.value"
-          >{{ item.value }}</a
-        >
-        <div v-else v-text="item.value" />
+          v-text="item.value"
+        />
+        <span v-else v-text="item.value" />
       </template>
     </v-data-table>
 
-    <div class="mx-12">
+    <div class="ml-12 mr-11">
       <v-tabs v-model="tab" vertical height="332">
         <v-tab
           v-for="tabItem in tabItems"
@@ -127,7 +163,7 @@ import { Workflow } from '@/store/workflows'
 type Data = {
   runInfoHeaders: DataTableHeader[]
   tab: number | null
-  runIdTooltip: boolean
+  tooltip: boolean
   cancelButton: boolean
 }
 
@@ -136,7 +172,7 @@ type Methods = {
   codeMirrorMode: (content: string) => ReturnType<typeof codeMirrorMode>
   validUrl: (val: string) => ReturnType<typeof validUrl>
   cancelRun: () => Promise<void>
-  copyRunId: () => void
+  copyTooltip: () => void
 }
 
 type Computed = {
@@ -182,7 +218,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         { text: 'Value', value: 'value' },
       ],
       tab: 3,
-      runIdTooltip: false,
+      tooltip: false,
       cancelButton: true,
     }
   },
@@ -203,13 +239,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     runInfoContents() {
       return [
         { key: 'Run ID', value: this.runId },
-        { key: 'Service', value: '' },
-        { key: 'Workflow', value: '' },
         { key: 'Workflow URL', value: this.run.runLog.request.workflow_url },
-        {
-          key: 'Workflow Type Version',
-          value: `${this.run.runLog.request.workflow_type} ${this.run.runLog.request.workflow_type_version}`,
-        },
         {
           key: 'Workflow Engine',
           value: `${
@@ -269,11 +299,11 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
 
-    copyRunId() {
+    copyTooltip() {
       this.$copyText(this.runId)
-      this.runIdTooltip = true
+      this.tooltip = true
       setTimeout(() => {
-        this.runIdTooltip = false
+        this.tooltip = false
       }, 1500)
     },
   },
@@ -293,5 +323,8 @@ export default Vue.extend(options)
 .info-table >>> td:nth-child(1) {
   width: 220px;
   font-weight: 500;
+}
+.info-table >>> tr:not(:last-child) td {
+  border-bottom: none !important;
 }
 </style>

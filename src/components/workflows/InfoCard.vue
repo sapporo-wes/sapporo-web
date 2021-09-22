@@ -117,33 +117,6 @@
         </v-tooltip>
       </div>
     </div>
-    <!-- <div class="d-flex mt-6 pb-6 mr-12">
-      <v-spacer />
-      <v-btn
-        :color="$colors.grey.darken2"
-        class="mr-4"
-        outlined
-        width="140"
-        @click.stop="downloadWorkflowContent"
-      >
-        <v-icon left v-text="'mdi-download'" />
-        <span v-text="'Download'" />
-      </v-btn>
-      <v-btn
-        :color="$colors.grey.darken2"
-        outlined
-        width="140"
-        @click.stop="copyWorkflowContent"
-      >
-        <template v-if="copy">
-          <span v-text="'copied!'" />
-        </template>
-        <template v-else>
-          <v-icon left v-text="'mdi-clipboard-outline'" />
-          <span v-text="'Copy'" />
-        </template>
-      </v-btn>
-    </div> -->
   </v-card>
 </template>
 

@@ -1,12 +1,13 @@
 <template>
   <v-card max-width="1200">
     <div class="d-flex align-center mx-6 pt-4">
+      <v-icon color="black" left v-text="'mdi-file-chart-outline'" />
       <div class="card-header" v-text="'Run Log'" />
       <v-spacer />
       <v-btn
         :color="$colors.grey.darken2"
         outlined
-        class="mr-4"
+        class="mr-6"
         @click.stop="downloadRunLog"
       >
         <v-icon left v-text="'mdi-download'" />
@@ -26,7 +27,7 @@
       item-key="key"
     />
 
-    <div class="mx-12">
+    <div class="ml-12 mr-11">
       <v-tabs v-model="tab" vertical height="332">
         <v-tab
           v-for="tabItem in tabItems"
@@ -260,5 +261,8 @@ export default Vue.extend(options)
 .info-table >>> td:nth-child(1) {
   width: 220px;
   font-weight: 500;
+}
+.info-table >>> tr:not(:last-child) td {
+  border-bottom: none !important;
 }
 </style>
