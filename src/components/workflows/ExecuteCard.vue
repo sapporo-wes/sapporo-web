@@ -54,7 +54,7 @@
                   outlined
                 >
                   <v-icon left v-text="'mdi-download-outline'" />
-                  <span v-text="'Download'" />
+                  <span v-text="'Fetch'" />
                 </v-chip>
               </div>
             </template>

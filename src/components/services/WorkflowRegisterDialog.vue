@@ -52,7 +52,7 @@
           >
             <v-chip :value="'download'" label outlined>
               <v-icon left v-text="'mdi-download-outline'" />
-              <span v-text="'Download'" />
+              <span v-text="'Fetch'" />
             </v-chip>
             <v-chip :value="'upload'" label outlined>
               <v-icon left v-text="'mdi-upload-outline'" />
