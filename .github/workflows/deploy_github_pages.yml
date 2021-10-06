@@ -8,7 +8,7 @@ on:
 
 jobs:
   deploy_github_pages:
-    if: github.repository == 'ddbj/sapporo-web'
+    if: github.repository == 'sapporo-wes/sapporo-web'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

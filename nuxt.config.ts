@@ -19,15 +19,6 @@ const config: NuxtConfig = {
       { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
       { rel: 'icon alternate', type: 'image/png', href: '/favicon.png' },
     ],
-    // not working
-    // script: [
-    //   {
-    //     type: 'text/javascript',
-    //     src: 'https://www.ddbj.nig.ac.jp/assets/js/ddbj_common_framework.js',
-    //     id: 'DDBJ_common_framework',
-    //     async: true,
-    //   },
-    // ],
   },
   loading: { color: '#fff' },
   css: ['~/assets/common.css'],

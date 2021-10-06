@@ -19,7 +19,7 @@
         <div class="my-2">
           <span>
             Use a public WES service, or run your own using
-            <a href="https://github.com/ddbj/sapporo-service">
+            <a href="https://github.com/sapporo-wes/sapporo-service">
               Sapporo-service
             </a>
           </span>
