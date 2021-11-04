@@ -9,7 +9,7 @@ declare let window: MyWindow
 
 export default (context: Context): void => {
   window.onNuxtReady(async () => {
-    if (context.env?.LOAD_PRE_REGISTERED_SERVICES === "'true'") {
+    if (context.env?.LOAD_PRE_REGISTERED_SERVICES === 'true') {
       const services: Service[] = context.store.getters['services/services']
       const serviceNames = services.map((service) => service.name)
       for (const preRegisteredService of preRegisteredServices) {
