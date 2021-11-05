@@ -1,6 +1,6 @@
 {
   "name": "sapporo-web",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "A web application for managing and executing WES services.",
   "author": "ddbj",
   "private": true,
