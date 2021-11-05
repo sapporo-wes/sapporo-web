@@ -251,15 +251,10 @@ export const actions: ActionTree<State, RootState> = {
       }
     }
 
-    const runId = (await postRuns(this.$axios, payload.service.endpoint, data))
-      .run_id
+    const runId = (await postRuns(payload.service.endpoint, data)).run_id
 
-    const runStatus = await getRunsIdStatus(
-      this.$axios,
-      payload.service.endpoint,
-      runId
-    )
-    const runLog = await getRunsId(this.$axios, payload.service.endpoint, runId)
+    const runStatus = await getRunsIdStatus(payload.service.endpoint, runId)
+    const runLog = await getRunsId(payload.service.endpoint, runId)
 
     dispatch(
       'services/addRunId',
@@ -352,7 +347,7 @@ export const actions: ActionTree<State, RootState> = {
         run.serviceId
       )
       if (service) {
-        const runLog = await getRunsId(this.$axios, service.endpoint, runId)
+        const runLog = await getRunsId(service.endpoint, runId)
         commit('setProp', {
           key: 'state',
           value: runLog.state,
@@ -377,10 +372,7 @@ export const actions: ActionTree<State, RootState> = {
     if (service) {
       const date = dayjs().utc().format()
       if (rootGetters['services/getRuns'](service.id)) {
-        const runListRes: RunListResponse = await getRuns(
-          this.$axios,
-          service.endpoint
-        )
+        const runListRes: RunListResponse = await getRuns(service.endpoint)
         const runsMap: Record<string, RunStatus> = {}
         for (const run of runListRes.runs) {
           runsMap[run.run_id] = run
@@ -408,11 +400,9 @@ export const actions: ActionTree<State, RootState> = {
       } else {
         for (const runId of service.runIds) {
           const state = (
-            await getRunsIdStatus(this.$axios, service.endpoint, runId).catch(
-              (_) => ({
-                state: 'UNKNOWN',
-              })
-            )
+            await getRunsIdStatus(service.endpoint, runId).catch((_) => ({
+              state: 'UNKNOWN',
+            }))
           ).state
           commit('setProp', {
             key: 'state',
@@ -439,7 +429,7 @@ export const actions: ActionTree<State, RootState> = {
         run.serviceId
       )
       if (service) {
-        await postRunsIdCancel(this.$axios, service.endpoint, runId)
+        await postRunsIdCancel(service.endpoint, runId)
       }
     }
   },

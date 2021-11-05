@@ -106,7 +106,6 @@ import { codeMirrorMode, validUrl, convertGitHubUrl } from '@/utils'
 import { Service } from '@/store/services'
 import { getRunsId } from '@/utils/WESRequest'
 import { RunLog } from '@/types/WES'
-import { Run } from '@/store/runs'
 import { Workflow } from '@/store/workflows'
 
 const changeQueue: Array<NodeJS.Timeout> = []
@@ -228,7 +227,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     getRunsId(runId: string) {
       if (!this.service.runIds.includes(this.runId)) {
-        getRunsId(this.$axios, this.service.endpoint, runId)
+        getRunsId(this.service.endpoint, runId)
           .then((runLog) => {
             this.getFailed = false
             this.runLog = runLog
@@ -246,14 +245,13 @@ const options: ThisTypedComponentOptionsWithRecordProps<
             this.workflowUrl = runLog.request.workflow_url
             this.workflowContent = 'Failed to get workflow content'
             if (validUrl(this.workflowUrl)) {
-              convertGitHubUrl(this.$axios, this.workflowUrl).then((url) => {
+              convertGitHubUrl(this.workflowUrl).then((url) => {
                 this.workflowUrl = url
-                this.$axios.$get(this.workflowUrl).then((res) => {
-                  if (typeof res === 'string') {
-                    this.workflowContent = res
-                  } else {
-                    this.workflowContent = JSON.stringify(res, null, 2)
+                fetch(this.workflowUrl).then((res) => {
+                  if (!res.ok) {
+                    throw new Error(res.statusText)
                   }
+                  res.text().then((text) => (this.workflowContent = text))
                 })
               })
             } else {
@@ -261,12 +259,11 @@ const options: ThisTypedComponentOptionsWithRecordProps<
               for (const file of runLog.request.workflow_attachment || []) {
                 const attachedFileName = file.file_name.split('/').pop() || ''
                 if (fileName === attachedFileName) {
-                  this.$axios.$get(file.file_url).then((res) => {
-                    if (typeof res === 'string') {
-                      this.workflowContent = res
-                    } else {
-                      this.workflowContent = JSON.stringify(res, null, 2)
+                  fetch(file.file_url).then((res) => {
+                    if (!res.ok) {
+                      throw new Error(res.statusText)
                     }
+                    res.text().then((text) => (this.workflowContent = text))
                   })
                   break
                 }

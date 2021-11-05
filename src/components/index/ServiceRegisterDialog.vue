@@ -136,7 +136,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
   methods: {
     async submitService(): Promise<void> {
-      await getServiceInfo(this.$axios, this.endpoint)
+      await getServiceInfo(this.endpoint)
         .then(async (_) => {
           this.registerButton = false
           await this.$store

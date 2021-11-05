@@ -388,16 +388,18 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     fetchWfContent(url: string) {
       if (validUrl(url)) {
-        convertGitHubUrl(this.$axios, this.url).then((url) => {
+        convertGitHubUrl(this.url).then((url) => {
           this.url = url
-          this.$axios
-            .$get(this.url)
+          fetch(this.url)
             .then((res) => {
-              this.fetchFailed = false
-              if (typeof res === 'string') {
-                this.wfContentDownload = res
+              if (!res.ok) {
+                this.fetchFailed = true
+                this.wfContentDownload = ''
               } else {
-                this.wfContentDownload = JSON.stringify(res, null, 2)
+                res.text().then((content) => {
+                  this.fetchFailed = false
+                  this.wfContentDownload = content
+                })
               }
             })
             .catch((_) => {

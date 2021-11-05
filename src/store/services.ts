@@ -235,10 +235,7 @@ export const actions: ActionTree<State, RootState> = {
       preRegistered: boolean
     }
   ): Promise<string> {
-    const { serviceInfo, state } = await getServiceInfo(
-      this.$axios,
-      payload.endpoint
-    )
+    const { serviceInfo, state } = await getServiceInfo(payload.endpoint)
       .then((serviceInfo) => ({ serviceInfo, state: 'Available' }))
       .catch((_) => ({
         serviceInfo: {
@@ -318,7 +315,7 @@ export const actions: ActionTree<State, RootState> = {
   ): Promise<void> {
     const service: Service | undefined = getters.service(serviceId)
     if (service) {
-      await getServiceInfo(this.$axios, service.endpoint)
+      await getServiceInfo(service.endpoint)
         .then(async (serviceInfo) => {
           commit('setProp', {
             key: 'serviceInfo',

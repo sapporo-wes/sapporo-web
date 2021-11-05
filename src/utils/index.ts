@@ -1,7 +1,5 @@
 import yaml from 'js-yaml'
 
-import { NuxtAxiosInstance } from '@nuxtjs/axios'
-
 export const parseJsonOrYaml = (
   content: string
 ): ReturnType<typeof JSON.parse> | ReturnType<typeof yaml.load> | false => {
@@ -41,10 +39,7 @@ export const readFile = (file: File): Promise<string> => {
   })
 }
 
-export const convertGitHubUrl = async (
-  axios: NuxtAxiosInstance,
-  url: string
-): Promise<string> => {
+export const convertGitHubUrl = async (url: string): Promise<string> => {
   const urlObj = new URL(url)
   if (urlObj.host === 'github.com') {
     const repoName = urlObj.pathname.split('/').slice(1, 3).join('/')
@@ -52,8 +47,16 @@ export const convertGitHubUrl = async (
     urlObj.host = 'api.github.com'
     urlObj.pathname = `repos/${repoName}/contents/${filePath}`
     const apiUrl = urlObj.toString()
-
-    return await axios.$get(apiUrl).then((res) => res.download_url)
+    const res = await fetch(apiUrl, {
+      headers: {
+        Accept: 'application/vnd.github.v3.raw',
+      },
+      method: 'GET',
+    })
+    if (res.status === 200) {
+      const content = await res.json()
+      return content.download_url
+    }
   }
   return url
 }

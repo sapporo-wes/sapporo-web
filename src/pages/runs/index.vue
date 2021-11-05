@@ -92,7 +92,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
             'INITIALIZING',
             'RUNNING',
             'CANCELING',
-          ].includes(this.run.state)
+          ].includes(this.$store.getters['runs/run'](this.runId))
         ) {
           await this.$store.dispatch('runs/updateRun', this.runId)
         }

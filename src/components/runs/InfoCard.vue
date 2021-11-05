@@ -94,9 +94,10 @@
         <div v-if="item.key === 'Run ID'" class="d-flex align-center">
           <span v-text="item.value" />
           <v-tooltip top :value="tooltip">
-            <template #activator>
+            <template #activator="on">
               <v-icon
                 right
+                v-on="on"
                 @click.stop="copyTooltip"
                 v-text="'mdi-clipboard-outline'"
               />

@@ -30,8 +30,7 @@ const config: NuxtConfig = {
     '~/plugins/loadPreRegisteredServices.ts',
   ],
   buildModules: ['@nuxt/typescript-build', '@nuxtjs/vuetify'],
-  modules: ['@nuxtjs/axios', 'nuxt-webfontloader'],
-  axios: {},
+  modules: ['nuxt-webfontloader'],
   webfontloader: {
     google: {
       families: ['Quicksand', 'Fira Code'],

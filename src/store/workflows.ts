@@ -177,28 +177,23 @@ export const actions: ActionTree<State, RootState> = {
     const workflowId: string = uuidv4()
     let content = ''
     if (validUrl(payload.workflow.workflow_url)) {
-      const url = await convertGitHubUrl(
-        this.$axios,
-        payload.workflow.workflow_url
-      )
-      const res = await this.$axios.$get(url)
-      if (typeof res === 'string') {
-        content = res
-      } else {
-        content = JSON.stringify(res, null, 2)
+      const url = await convertGitHubUrl(payload.workflow.workflow_url)
+      const res = await fetch(url, { method: 'GET' })
+      if (!res.ok) {
+        throw new Error(`Failed to fetch workflow from ${url}`)
       }
+      content = await res.text()
     } else {
       const fileName = payload.workflow.workflow_url.split('/').slice(-1)[0]
       for (const file of payload.workflow.workflow_attachment) {
         const attachedFileName = file.file_name.split('/').slice(-1)[0]
         if (fileName === attachedFileName) {
-          const url = await convertGitHubUrl(this.$axios, file.file_url)
-          const res = await this.$axios.$get(url)
-          if (typeof res === 'string') {
-            content = res
-          } else {
-            content = JSON.stringify(res, null, 2)
+          const url = await convertGitHubUrl(file.file_url)
+          const res = await fetch(url, { method: 'GET' })
+          if (!res.ok) {
+            throw new Error(`Failed to fetch workflow from ${url}`)
           }
+          content = await res.text()
           break
         }
       }
@@ -232,28 +227,23 @@ export const actions: ActionTree<State, RootState> = {
   ): Promise<void> {
     let content = ''
     if (validUrl(payload.workflow.workflow_url)) {
-      const url = await convertGitHubUrl(
-        this.$axios,
-        payload.workflow.workflow_url
-      )
-      const res = await this.$axios.$get(url)
-      if (typeof res === 'string') {
-        content = res
-      } else {
-        content = JSON.stringify(res, null, 2)
+      const url = await convertGitHubUrl(payload.workflow.workflow_url)
+      const res = await fetch(url, { method: 'GET' })
+      if (!res.ok) {
+        throw new Error(`Failed to fetch workflow from ${url}`)
       }
+      content = await res.text()
     } else {
       const fileName = payload.workflow.workflow_url.split('/').slice(-1)[0]
       for (const file of payload.workflow.workflow_attachment) {
         const attachedFileName = file.file_name.split('/').slice(-1)[0]
         if (fileName === attachedFileName) {
-          const url = await convertGitHubUrl(this.$axios, file.file_url)
-          const res = await this.$axios.$get(url)
-          if (typeof res === 'string') {
-            content = res
-          } else {
-            content = JSON.stringify(res, null, 2)
+          const url = await convertGitHubUrl(file.file_url)
+          const res = await fetch(url, { method: 'GET' })
+          if (!res.ok) {
+            throw new Error(`Failed to fetch workflow from ${url}`)
           }
+          content = await res.text()
           break
         }
       }
