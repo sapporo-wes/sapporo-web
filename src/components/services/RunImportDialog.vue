@@ -105,7 +105,7 @@ import Vue from 'vue'
 import { codeMirrorMode, validUrl, convertGitHubUrl } from '@/utils'
 import { Service } from '@/store/services'
 import { getRunsId } from '@/utils/WESRequest'
-import { RunLog } from '@/types/WES'
+import { CwlWesLog, Log, RunLog } from '@/types/WES'
 import { Workflow } from '@/store/workflows'
 
 const changeQueue: Array<NodeJS.Timeout> = []
@@ -235,9 +235,16 @@ const options: ThisTypedComponentOptionsWithRecordProps<
               runLog.request.workflow_name ||
               runLog.request.workflow_url.split('/').pop() ||
               runId
-            this.runName = `${this.workflowName} ${this.$dayjs(
-              runLog.run_log.start_time
-            )
+            const startTimeStr =
+              this.service.serviceInfo.supported_wes_versions.includes(
+                'sapporo-wes-1.0.0'
+              )
+                ? (runLog.run_log as Log).start_time
+                : (runLog.run_log as CwlWesLog)?.task_started
+            const startTime = startTimeStr
+              ? this.$dayjs(startTimeStr)
+              : this.$dayjs()
+            this.runName = `${this.workflowName} ${startTime
               .local()
               .format('YYYY-MM-DD HH:mm:ss')}`
             this.workflowType = runLog.request.workflow_type

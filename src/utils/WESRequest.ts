@@ -22,7 +22,7 @@ export const getServiceInfo = async (
 }
 
 export const getRuns = async (endpoint: string): Promise<RunListResponse> => {
-  const res = await fetch(`${endpoint}/runs`, {
+  const res = await fetch(`${endpoint}/runs?page_size=50`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

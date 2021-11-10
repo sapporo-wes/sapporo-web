@@ -47,12 +47,7 @@ export const convertGitHubUrl = async (url: string): Promise<string> => {
     urlObj.host = 'api.github.com'
     urlObj.pathname = `repos/${repoName}/contents/${filePath}`
     const apiUrl = urlObj.toString()
-    const res = await fetch(apiUrl, {
-      headers: {
-        Accept: 'application/vnd.github.v3.raw',
-      },
-      method: 'GET',
-    })
+    const res = await fetch(apiUrl, { method: 'GET' })
     if (res.status === 200) {
       const content = await res.json()
       return content.download_url

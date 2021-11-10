@@ -241,7 +241,6 @@ export const actions: ActionTree<State, RootState> = {
       workflow_type_versions: {},
       supported_wes_versions: [],
       supported_filesystem_protocols: [],
-      supported_file_system_protocols: [],
       workflow_engine_versions: {},
       default_workflow_engine_parameters: [],
       system_state_counts: {} as SystemStateCounts,

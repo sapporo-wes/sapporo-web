@@ -218,7 +218,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         { text: 'Key', value: 'key' },
         { text: 'Value', value: 'value' },
       ],
-      tab: 3,
+      tab: 2,
       tooltip: false,
       cancelButton: true,
     }
@@ -238,10 +238,16 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     },
 
     runInfoContents() {
-      return [
+      const contents = [
         { key: 'Run ID', value: this.runId },
         { key: 'Workflow URL', value: this.run.runLog.request.workflow_url },
-        {
+      ]
+      if (
+        this.service.serviceInfo.supported_wes_versions.includes(
+          'sapporo-wes-1.0.0'
+        )
+      ) {
+        contents.push({
           key: 'Workflow Engine',
           value: `${
             this.run.runLog.request.workflow_engine_name
@@ -249,30 +255,60 @@ const options: ThisTypedComponentOptionsWithRecordProps<
             serviceId: this.service.id,
             workflowEngine: this.run.runLog.request.workflow_engine_name,
           })}`,
-        },
-      ]
+        })
+      }
+      return contents
     },
 
     tabItems() {
-      return [
+      const items = [
         {
           key: 'Workflow Engine Parameters',
-          value: this.run.runLog.request.workflow_engine_parameters,
+          value:
+            typeof this.run.runLog.request.workflow_engine_parameters ===
+            'string'
+              ? this.run.runLog.request.workflow_engine_parameters
+              : JSON.stringify(
+                  this.run.runLog.request.workflow_engine_parameters,
+                  null,
+                  2
+                ),
         },
-        { key: 'Tags', value: this.run.runLog.request.tags },
         {
-          key: 'Workflow Attachment',
-          value: JSON.stringify(
-            this.run.runLog.request.workflow_attachment,
-            null,
-            2
-          ),
+          key: 'Tags',
+          value:
+            typeof this.run.runLog.request.tags === 'string'
+              ? this.run.runLog.request.tags
+              : JSON.stringify(this.run.runLog.request.tags, null, 2),
         },
         {
           key: 'Workflow Prameters',
-          value: this.run.runLog.request.workflow_params,
+          value:
+            typeof this.run.runLog.request.workflow_params === 'string'
+              ? this.run.runLog.request.workflow_params
+              : JSON.stringify(
+                  this.run.runLog.request.workflow_params,
+                  null,
+                  2
+                ),
         },
       ]
+      if (
+        this.service.serviceInfo.supported_wes_versions.includes(
+          'sapporo-wes-1.0.0'
+        )
+      ) {
+        this.tab = 3
+        items.splice(2, 0, {
+          key: 'Workflow Attachment',
+          value: JSON.stringify(
+            this.run.runLog.request?.workflow_attachment || null,
+            null,
+            2
+          ),
+        })
+      }
+      return items
     },
   },
 

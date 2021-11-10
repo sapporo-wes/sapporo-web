@@ -44,6 +44,9 @@
         <v-tab-item v-for="tabItem in tabItems" :key="tabItem.key">
           <v-list
             v-if="
+              service.serviceInfo.supported_wes_versions.includes(
+                'sapporo-wes-1.0.0'
+              ) &&
               tabItem.key === 'Outputs' &&
               JSON.parse(tabItem.value) !== null &&
               JSON.parse(tabItem.value).length !== 0
@@ -103,9 +106,10 @@ import { codemirror } from 'vue-codemirror'
 import { DataTableHeader } from 'vuetify/types'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import Vue from 'vue'
-import { Run } from '@/store/runs'
+import { AttachedFile, CwlWesLog, Log } from '@/types/WES'
 import { codeMirrorMode } from '@/utils'
-import { AttachedFile } from '@/types/WES'
+import { Run } from '@/store/runs'
+import { Service } from '@/store/services'
 
 type Data = {
   logInfoHeaders: DataTableHeader[]
@@ -119,6 +123,7 @@ type Methods = {
 }
 
 type Computed = {
+  service: Service
   run: Run
   logInfoContents: {
     key: string
@@ -163,58 +168,116 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   },
 
   computed: {
+    service(): Service {
+      return this.$store.getters['services/service'](this.run.serviceId)
+    },
+
     run(): Run {
       return this.$store.getters['runs/run'](this.runId)
     },
 
     logInfoContents() {
-      return [
-        {
-          key: 'Start Time',
-          value: this.run.runLog.run_log.start_time
-            ? this.$dayjs(this.run.runLog.run_log.start_time)
-                .local()
-                .format('YYYY-MM-DD HH:mm:ss')
-            : '',
-        },
-        {
-          key: 'End Time',
-          value: this.run.runLog.run_log.end_time
-            ? this.$dayjs(this.run.runLog.run_log.end_time)
-                .local()
-                .format('YYYY-MM-DD HH:mm:ss')
-            : '',
-        },
-        {
-          key: 'Exit Code',
-          value: `${
-            Number.isInteger(this.run.runLog.run_log.exit_code)
-              ? this.run.runLog.run_log.exit_code
-              : ''
-          }`,
-        },
-      ]
+      if (
+        this.service.serviceInfo.supported_wes_versions.includes(
+          'sapporo-wes-1.0.0'
+        )
+      ) {
+        const log = this.run.runLog.run_log as Log
+        return [
+          {
+            key: 'Start Time',
+            value: log.start_time
+              ? this.$dayjs(log.start_time)
+                  .local()
+                  .format('YYYY-MM-DD HH:mm:ss')
+              : '',
+          },
+          {
+            key: 'End Time',
+            value: log.end_time
+              ? this.$dayjs(log.end_time).local().format('YYYY-MM-DD HH:mm:ss')
+              : '',
+          },
+          {
+            key: 'Exit Code',
+            value: `${Number.isInteger(log.exit_code) ? log.exit_code : ''}`,
+          },
+        ]
+      } else {
+        const log = this.run.runLog.run_log as CwlWesLog
+        return [
+          {
+            key: 'Start Time',
+            value: log?.task_started
+              ? this.$dayjs(log.task_started)
+                  .add(log?.utc_offset || 0, 'h')
+                  .local()
+                  .format('YYYY-MM-DD HH:mm:ss')
+              : '',
+          },
+          {
+            key: 'End Time',
+            value: log?.task_finished
+              ? this.$dayjs(log.task_finished)
+                  .add(log?.utc_offset || 0, 'h')
+                  .local()
+                  .format('YYYY-MM-DD HH:mm:ss')
+              : '',
+          },
+        ]
+      }
     },
 
     tabItems() {
-      return [
-        {
-          key: 'Command',
-          value: this.run.runLog.run_log.cmd,
-        },
-        {
-          key: 'Stdout',
-          value: this.run.runLog.run_log.stdout,
-        },
-        {
-          key: 'Stderr',
-          value: this.run.runLog.run_log.stderr,
-        },
-        {
-          key: 'Outputs',
-          value: JSON.stringify(this.run.runLog.outputs, null, 2),
-        },
-      ]
+      if (
+        this.service.serviceInfo.supported_wes_versions.includes(
+          'sapporo-wes-1.0.0'
+        )
+      ) {
+        const log = this.run.runLog.run_log as Log
+        return [
+          {
+            key: 'Command',
+            value: log.cmd,
+          },
+          {
+            key: 'Stdout',
+            value: log.stdout,
+          },
+          {
+            key: 'Stderr',
+            value: log.stderr,
+          },
+          {
+            key: 'Outputs',
+            value: JSON.stringify(this.run.runLog.outputs || {}, null, 2),
+          },
+        ]
+      } else {
+        const log = this.run.runLog.run_log as CwlWesLog
+        return [
+          {
+            key: 'Command',
+            value: log?.command || '',
+          },
+          {
+            key: 'Stdout',
+            value: log?.stdout || '',
+          },
+          {
+            key: 'Stderr',
+            value: log?.stderr || '',
+          },
+          {
+            key: 'Task Logs',
+            value: JSON.stringify(this.run.runLog.task_logs, null, 2),
+          },
+          {
+            key: 'Outputs',
+            value: JSON.stringify(this.run.runLog.outputs, null, 2),
+          },
+        ]
+      }
     },
   },
 

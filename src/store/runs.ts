@@ -210,7 +210,13 @@ export const actions: ActionTree<State, RootState> = {
       }
       data.append('tags', JSON.stringify(tags))
     }
-    data.append('workflow_engine_name', payload.wfEngineName)
+    if (
+      payload.service.serviceInfo.supported_wes_versions.includes(
+        'sapporo-wes-1.0.0'
+      )
+    ) {
+      data.append('workflow_engine_name', payload.wfEngineName)
+    }
     data.append('workflow_engine_parameters', payload.wfEngineParams)
     data.append('workflow_params', payload.wfParams)
     data.append('workflow_attachment', payload.wfAttachmentText)
