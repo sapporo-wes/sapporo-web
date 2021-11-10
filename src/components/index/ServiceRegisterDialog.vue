@@ -124,6 +124,12 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       if (!this.endpoint) {
         return ['Required']
       }
+      if (
+        !this.endpoint.startsWith('http://') &&
+        !this.endpoint.startsWith('https://')
+      ) {
+        return ['The endpoint must start with http:// or https://']
+      }
       if (!validUrl(this.endpoint)) {
         return ['Invalid URL']
       }
@@ -136,14 +142,15 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
   methods: {
     async submitService(): Promise<void> {
-      await getServiceInfo(this.endpoint)
-        .then(async (_) => {
+      await getServiceInfo(this.endpoint.replace(/\/$/, ''))
+        .then(async (serviceInfo) => {
           this.registerButton = false
           await this.$store
             .dispatch('services/submitService', {
               name: this.name,
-              endpoint: this.endpoint,
+              endpoint: this.endpoint.replace(/\/$/, ''),
               preRegistered: false,
+              serviceInfo,
             })
             .then((serviceId) => {
               this.$router.push({ path: '/services', query: { serviceId } })

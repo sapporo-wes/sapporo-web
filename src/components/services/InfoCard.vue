@@ -198,7 +198,9 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         {
           key: 'Supported Filesystem Protocols',
           value: JSON.stringify(
-            this.service?.serviceInfo?.supported_filesystem_protocols || '',
+            this.service?.serviceInfo?.supported_filesystem_protocols ||
+              this.service?.serviceInfo?.supported_file_system_protocols ||
+              '',
             null,
             2
           ),

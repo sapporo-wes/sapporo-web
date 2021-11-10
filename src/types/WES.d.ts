@@ -46,13 +46,18 @@ export interface Workflow {
   workflow_attachment: AttachedFile[]
 }
 
+export interface SystemStateCounts {
+  State: number
+}
+
 export interface ServiceInfo {
   workflow_type_versions: { [key: string]: WorkflowTypeVersion }
   supported_wes_versions: string[]
   supported_filesystem_protocols: string[]
+  supported_file_system_protocols: string[]
   workflow_engine_versions: { [key: string]: string }
   default_workflow_engine_parameters: DefaultWorkflowEngineParameter[]
-  system_state_counts: { State: number }
+  system_state_counts: SystemStateCounts
   auth_instructions_url: string
   contact_info_url: string
   tags: { [key: string]: string | boolean }

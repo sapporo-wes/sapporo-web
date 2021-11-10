@@ -4,7 +4,7 @@
     <v-main class="background">
       <v-container fluid>
         <v-card max-width="1200" class="mx-auto">
-          <div class="d-flex flex-column mx-6 my-4">
+          <div class="d-flex flex-column mx-6 py-4">
             <div class="d-flex mb-4">
               <v-btn
                 color="info"

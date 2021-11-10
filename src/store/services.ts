@@ -9,6 +9,7 @@ import { Run } from '@/store/runs'
 import { Workflow } from '@/store/workflows'
 import {
   ServiceInfo,
+  SystemStateCounts,
   Workflow as WesWorkflow,
   WorkflowTypeVersion,
 } from '@/types/WES'
@@ -233,25 +234,36 @@ export const actions: ActionTree<State, RootState> = {
       name: string
       endpoint: string
       preRegistered: boolean
+      serviceInfo: ServiceInfo | undefined
     }
   ): Promise<string> {
-    const { serviceInfo, state } = await getServiceInfo(payload.endpoint)
-      .then((serviceInfo) => ({ serviceInfo, state: 'Available' }))
-      .catch((_) => ({
-        serviceInfo: {
-          workflow_type_versions: {},
-          supported_wes_versions: [],
-          supported_filesystem_protocols: [],
-          workflow_engine_versions: {},
-          default_workflow_engine_parameters: [],
-          system_state_counts: {},
-          auth_instructions_url: '',
-          contact_info_url: '',
-          tags: {},
-          executable_workflows: [],
-        },
-        state: 'Disconnect',
-      }))
+    let serviceInfo: ServiceInfo = {
+      workflow_type_versions: {},
+      supported_wes_versions: [],
+      supported_filesystem_protocols: [],
+      supported_file_system_protocols: [],
+      workflow_engine_versions: {},
+      default_workflow_engine_parameters: [],
+      system_state_counts: {} as SystemStateCounts,
+      auth_instructions_url: '',
+      contact_info_url: '',
+      tags: {},
+      executable_workflows: [],
+    }
+    let state = 'Unknown'
+    if (payload.serviceInfo) {
+      serviceInfo = payload.serviceInfo
+      state = 'Available'
+    } else {
+      await getServiceInfo(payload.endpoint)
+        .then((fetchedServiceInfo) => {
+          serviceInfo = fetchedServiceInfo
+          state = 'Available'
+        })
+        .catch((_) => {
+          state = 'Disconnect'
+        })
+    }
     const serviceId: string = uuidv4()
 
     const workflowIds: string[] = []
