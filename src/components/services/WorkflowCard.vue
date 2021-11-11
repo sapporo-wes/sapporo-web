@@ -156,6 +156,27 @@
           "
         />
       </v-tooltip>
+      <v-tooltip top max-width="400">
+        <template #activator="{ on }">
+          <v-btn
+            :disabled="registeredOnlyMode"
+            color="primary"
+            outlined
+            class="ml-4"
+            width="140"
+            v-on="registeredOnlyMode && on"
+            @click.stop="importDialogShow = true"
+          >
+            <v-icon left v-text="'mdi-application-import'" />
+            <span v-text="'Import'" />
+          </v-btn>
+        </template>
+        <span
+          v-text="
+            'This WES service operates in the mode of pre-registering workflows. Would you please ask your administrator to import workflows?'
+          "
+        />
+      </v-tooltip>
     </div>
 
     <workflow-register-dialog
@@ -172,6 +193,12 @@
         selectedWorkflow = []
       "
     />
+
+    <workflow-trs-import-dialog
+      :dialog-show="importDialogShow"
+      :service-id="serviceId"
+      @close="importDialogShow = false"
+    />
   </v-card>
 </template>
 
@@ -183,11 +210,13 @@ import { Service } from '@/store/services'
 import { WorkflowTableItem } from '@/store/workflows'
 import WorkflowDeleteDialog from '@/components/services/WorkflowDeleteDialog.vue'
 import WorkflowRegisterDialog from '@/components/services/WorkflowRegisterDialog.vue'
+import WorkflowTrsImportDialog from '@/components/services/WorkflowTrsImportDialog.vue'
 
 type Data = {
   workflowHeaders: DataTableHeader[]
   selectedWorkflows: WorkflowTableItem[]
   registerDialogShow: boolean
+  importDialogShow: boolean
   deleteDialogShow: boolean
   filterType: string
   filterName: string
@@ -217,6 +246,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   components: {
     WorkflowDeleteDialog,
     WorkflowRegisterDialog,
+    WorkflowTrsImportDialog,
   },
 
   props: {
@@ -255,6 +285,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       ],
       selectedWorkflows: [],
       registerDialogShow: false,
+      importDialogShow: false,
       deleteDialogShow: false,
       filterType: '',
       filterName: '',

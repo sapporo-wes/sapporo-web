@@ -1,12 +1,20 @@
-import { ActionTree, GetterTree, MutationTree } from 'vuex/types'
-import { v4 as uuidv4 } from 'uuid'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
+import { v4 as uuidv4 } from 'uuid'
 import Vue from 'vue'
-import { AttachedFile, Workflow as WesWorkflow } from '@/types/WES'
-import { convertGitHubUrl, validUrl } from '@/utils'
+import { ActionTree, GetterTree, MutationTree } from 'vuex/types'
+
 import { RootState } from '@/store'
 import { Run } from '@/store/runs'
+import { AttachedFile, Workflow as WesWorkflow } from '@/types/WES'
+import { convertGitHubUrl, validUrl } from '@/utils'
+import {
+  generateWfAttachmentUrl,
+  generateWfContentUrl,
+  getFiles,
+  WorkflowType,
+  workflowTypeToDescriptorType,
+} from '@/utils/TRSRequest'
 
 dayjs.extend(utc)
 
@@ -347,5 +355,77 @@ export const actions: ActionTree<State, RootState> = {
         workflowId: payload.workflowId,
       })
     }
+  },
+
+  async importWorkflowFromTrs(
+    { commit, dispatch },
+    payload: {
+      serviceId: string
+      trsEndpoint: string
+      trsWorkflowId: string
+      trsWorkflowVersion: string
+      trsWorkflowType: WorkflowType
+      trsWorkflowName: string
+      workflowVersion: string
+    }
+  ) {
+    const descriptorType = workflowTypeToDescriptorType(payload.trsWorkflowType)
+    const url = generateWfContentUrl(
+      payload.trsEndpoint,
+      payload.trsWorkflowId,
+      payload.trsWorkflowVersion,
+      descriptorType
+    )
+    const res = await fetch(url.toString(), { method: 'GET' })
+    if (!res.ok) {
+      throw new Error(`Failed to fetch workflow from ${url}`)
+    }
+    const content = await res.text()
+    const files = await getFiles(
+      payload.trsEndpoint,
+      payload.trsWorkflowId,
+      payload.trsWorkflowVersion,
+      descriptorType
+    )
+    const attachmentFiles: AttachedFile[] = []
+    for (const file of files) {
+      if (file.path) {
+        attachmentFiles.push({
+          file_name: file.path,
+          file_url: generateWfAttachmentUrl(
+            payload.trsEndpoint,
+            payload.trsWorkflowId,
+            payload.trsWorkflowVersion,
+            descriptorType,
+            file.path
+          ).toString(),
+        })
+      }
+    }
+    const workflowId: string = uuidv4()
+    dispatch(
+      'services/addWorkflowId',
+      {
+        serviceId: payload.serviceId,
+        workflowId,
+      },
+      { root: true }
+    )
+    const date = dayjs()
+    commit('setWorkflow', {
+      name: payload.trsWorkflowName,
+      type: payload.trsWorkflowType,
+      version: payload.workflowVersion,
+      url: url.toString(),
+      content,
+      addedDate: date,
+      updatedDate: date,
+      preRegistered: false,
+      preRegisteredWorkflowAttachment: attachmentFiles,
+      serviceId: payload.serviceId,
+      id: workflowId,
+      runIds: [],
+    })
+    return workflowId
   },
 }

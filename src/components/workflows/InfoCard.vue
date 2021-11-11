@@ -87,6 +87,7 @@
         }"
         :style="{
           outline: `solid 1px ${$colors.grey.lighten1}`,
+          maxWidth: '97%',
         }"
         :value="workflow.content"
         class="elevation-2 content-viewer flex-grow-1"
