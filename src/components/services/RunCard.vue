@@ -73,45 +73,7 @@
       item-key="runId"
     >
       <template #[`item.workflowType`]="{ item }">
-        <v-tooltip top>
-          <template #activator="{ on }">
-            <img
-              v-if="item.workflowType.toLowerCase() === 'cwl'"
-              src="~/assets/icon/cwl-icon.png"
-              class="mt-2 mr-2"
-              height="26"
-              v-on="on"
-            />
-            <img
-              v-else-if="item.workflowType.toLowerCase() === 'wdl'"
-              src="~/assets/icon/wdl-icon.png"
-              class="mt-2 mr-2"
-              height="26"
-              v-on="on"
-            />
-            <img
-              v-else-if="item.workflowType.toLowerCase() === 'nextflow'"
-              src="~/assets/icon/nextflow-icon.png"
-              class="mt-2 mr-2"
-              height="26"
-              v-on="on"
-            />
-            <img
-              v-else-if="item.workflowType.toLowerCase() === 'snakemake'"
-              src="~/assets/icon/snakemake-icon.png"
-              class="mt-2 mr-2"
-              height="26"
-              v-on="on"
-            />
-            <v-icon
-              v-else
-              class="my-2 mr-2"
-              v-on="on"
-              v-text="'mdi-graph-outline'"
-            />
-          </template>
-          <span v-text="`${item.workflowType} ${item.workflowVersion}`" />
-        </v-tooltip>
+        <workflow-icon :wf-type="item.workflowType" />
       </template>
       <template #[`item.runName`]="{ item }">
         <nuxt-link
@@ -183,6 +145,7 @@ import { RunTableItem } from '@/store/runs'
 import { Service } from '@/store/services'
 import RunDeleteDialog from '@/components/services/RunDeleteDialog.vue'
 import RunImportDialog from '@/components/services/RunImportDialog.vue'
+import WorkflowIcon from '@/components/WorkflowIcon.vue'
 
 type Data = {
   runHeaders: DataTableHeader[]
@@ -219,6 +182,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   components: {
     RunDeleteDialog,
     RunImportDialog,
+    WorkflowIcon,
   },
 
   props: {

@@ -1,4 +1,4 @@
-import { paths, components } from '@/types/TRS'
+import { components, paths } from '@/types/TRS'
 
 export type ServiceInfoResponse =
   paths['/service-info']['get']['responses'][200]['content']['application/json']
@@ -6,37 +6,76 @@ export type ServiceInfoResponse =
 export const getServiceInfo = async (
   trsEndpoint: string
 ): Promise<ServiceInfoResponse> => {
-  const response = await fetch(`${trsEndpoint}/service-info`, {
+  if (trsEndpoint === 'https://api.biocontainers.pro/ga4gh/trs/v2') {
+    return generateBiocontainersServiceInfo()
+  }
+
+  const res = await fetch(`${trsEndpoint}/service-info`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
     },
   })
-  if (response.status !== 200) {
+
+  if (!res.ok) {
     throw new Error(
       `Failed to fetch service info from ${trsEndpoint}/service-info`
     )
   }
-  return response.json()
+
+  return res.json()
+}
+
+export const generateBiocontainersServiceInfo = (): ServiceInfoResponse => {
+  return {
+    id: 'biocontainers',
+    name: 'biocontainers',
+    organization: {
+      name: 'biocontainers',
+      url: 'https://api.biocontainers.pro',
+    },
+    version: '1.0.0',
+    type: {
+      group: 'ga4gh',
+      artifact: 'trs',
+      version: '2.0.0',
+    },
+  }
 }
 
 export type ToolsResponse =
   paths['/tools']['get']['responses'][200]['content']['application/json']
-export const workflowTypes = ['CWL', 'WDL', 'Nextflow', 'Snakemake']
+export const workflowTypes = [
+  'CWL',
+  'WDL',
+  'Nextflow',
+  'nextflow',
+  'NFL',
+  'Snakemake',
+  'snakemake',
+  'SMK',
+]
 export type WorkflowType = typeof workflowTypes[number]
-export type DescriptorType = components['schemas']['DescriptorType']
+export const descriptorTypes = ['CWL', 'WDL', 'NFL', 'SMK']
+export type DescriptorType = typeof descriptorTypes[number]
 
 export const workflowTypeToDescriptorType = (
   wfType: WorkflowType
 ): DescriptorType => {
   switch (wfType) {
     case 'CWL':
+    case 'cwl':
       return 'CWL'
     case 'WDL':
+    case 'wdl':
       return 'WDL'
     case 'Nextflow':
+    case 'nextflow':
+    case 'NFL':
       return 'NFL'
     case 'Snakemake':
+    case 'snakemake':
+    case 'SMK':
       return 'SMK'
     default:
       throw new Error(`Unknown workflow type: ${wfType}`)
@@ -65,25 +104,31 @@ export const getTools = async (
   workflowType?: WorkflowType,
   descriptorType?: DescriptorType
 ): Promise<ToolsResponse> => {
-  const url = new URL(`${trsEndpoint}/tools`)
-  if (workflowType) {
-    const descriptorType = workflowTypeToDescriptorType(workflowType)
-    const queryParams = new URLSearchParams({ descriptorType })
-    url.search = queryParams.toString()
-  } else if (descriptorType) {
-    const queryParams = new URLSearchParams({ descriptorType })
-    url.search = queryParams.toString()
+  if (!workflowType && !descriptorType) {
+    throw new Error('Either workflowType or descriptorType must be specified')
   }
-  const response = await fetch(url.toString(), {
+  descriptorType =
+    descriptorType || workflowTypeToDescriptorType(workflowType || '')
+  if (!descriptorTypes.includes(descriptorType)) {
+    throw new Error(`Unknown descriptor type: ${descriptorType}`)
+  }
+
+  const url = new URL(`${trsEndpoint}/tools`)
+  const queryParams = new URLSearchParams({ descriptorType })
+  url.search = queryParams.toString()
+
+  const res = await fetch(url.toString(), {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
     },
   })
-  if (response.status !== 200) {
+
+  if (!res.ok) {
     throw new Error(`Failed to fetch tools from ${url}`)
   }
-  return response.json()
+
+  return res.json()
 }
 
 export const generateWfContentUrl = (
@@ -93,7 +138,11 @@ export const generateWfContentUrl = (
   descriptorType: DescriptorType
 ): URL => {
   return new URL(
-    `${trsEndpoint}/tools/${toolId}/versions/${version}/PLAIN_${descriptorType}/descriptor`
+    `${trsEndpoint}/tools/${encodeURIComponent(
+      toolId
+    )}/versions/${encodeURIComponent(
+      version
+    )}/PLAIN_${descriptorType}/descriptor`
   )
 }
 
@@ -105,20 +154,13 @@ export const generateWfAttachmentUrl = (
   path: string
 ): URL => {
   return new URL(
-    `${trsEndpoint}/tools/${toolId}/versions/${version}/PLAIN_${descriptorType}/descriptor/${path.replace(
-      /^\//,
-      ''
-    )}`
+    `${trsEndpoint}/tools/${encodeURIComponent(
+      toolId
+    )}/versions/${encodeURIComponent(
+      version
+    )}/PLAIN_${descriptorType}/descriptor/${path.replace(/^\//, '')}`
   )
 }
-
-// export type DescriptorResponse =
-//   paths['/tools/{id}/versions/{version_id}/{type}/descriptor']['get']['responses'][200]
-
-// export const getDescriptor = async (
-//   trsEndpoint: string,
-//   id: string
-// ): Promise<> => {}
 
 export type FilesResponse =
   paths['/tools/{id}/versions/{version_id}/{type}/files']['get']['responses'][200]['content']['application/json']
@@ -129,8 +171,10 @@ export const getFiles = async (
   version: string,
   descriptorType: DescriptorType
 ): Promise<FilesResponse> => {
-  const response = await fetch(
-    `${trsEndpoint}/tools/${toolId}/versions/${version}/${descriptorType}/files`,
+  const res = await fetch(
+    `${trsEndpoint}/tools/${encodeURIComponent(
+      toolId
+    )}/versions/${encodeURIComponent(version)}/${descriptorType}/files`,
     {
       method: 'GET',
       headers: {
@@ -138,8 +182,9 @@ export const getFiles = async (
       },
     }
   )
-  if (response.status !== 200) {
+
+  if (!res.ok) {
     throw new Error(`Failed to fetch files from ${trsEndpoint}`)
   }
-  return response.json()
+  return res.json()
 }

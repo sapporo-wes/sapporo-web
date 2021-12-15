@@ -1,6 +1,7 @@
 <template>
   <v-dialog
     :value="dialogShow"
+    eager
     overlay-opacity="0.8"
     width="1200"
     @click:outside="$emit('close')"
@@ -10,21 +11,40 @@
         <v-icon color="black" left v-text="'mdi-application-import'" />
         <div class="card-header" v-text="'Import Workflow from TRS'" />
       </div>
-      <div class="mx-12 my-2">
-        <v-text-field
-          v-model="trsEndpoint"
-          :persistent-hint="!trsEndpoint.length"
-          :rules="trsEndpointRules"
-          hint="Endpoint of the TRS (e.g., 'https://workflowhub.eu/ga4gh/trs/v2' etc.)"
-          label="TRS Endpoint"
-          placeholder="Type a TRS endpoint"
-          @input="changeTrsEndpoint"
+      <div class="mx-12 my-2 d-flex align-center">
+        <v-form ref="form" class="flex-grow-1 mr-4">
+          <v-text-field
+            v-model="trsEndpoint"
+            :persistent-hint="!trsEndpoint.length"
+            :rules="trsEndpointRules"
+            hint="Endpoint of the TRS (e.g., 'https://workflowhub.eu/ga4gh/trs/v2' etc.)"
+            label="TRS Endpoint"
+            placeholder="Type a TRS endpoint"
+            @input="changeTrsEndpoint"
+          />
+        </v-form>
+        <v-btn
+          v-for="(item, index) in defaultEndpoints"
+          :key="item.name"
+          :class="{
+            'text-capitalize': true,
+            'mr-2': index != defaultEndpoints.length - 1,
+          }"
+          outlined
+          width="110"
+          small
+          @click.stop="
+            trsEndpoint = item.endpoint
+            fetchTrs(item.endpoint)
+          "
+          v-text="item.name"
         />
       </div>
-      <div v-if="tableContents.length" class="d-flex mx-12">
+      <div class="d-flex mx-12">
         <v-spacer />
         <v-select
           v-model="filterType"
+          :disabled="!tableContents.length"
           :items="wfTypes"
           :prepend-inner-icon="'mdi-filter-outline'"
           :style="{ maxWidth: '160px', minWidth: '160px' }"
@@ -36,7 +56,8 @@
           single-line
         />
         <v-text-field
-          v-model="filterWorklfowName"
+          v-model="filterWorkflowName"
+          :disabled="!tableContents.length"
           :prepend-inner-icon="'mdi-magnify'"
           :style="{ maxWidth: '200px', minWidth: '200px' }"
           class="mr-6"
@@ -48,6 +69,7 @@
         />
         <v-text-field
           v-model="filterOrganization"
+          :disabled="!tableContents.length"
           :prepend-inner-icon="'mdi-magnify'"
           :style="{ maxWidth: '200px', minWidth: '200px' }"
           clearable
@@ -58,39 +80,14 @@
         />
       </div>
       <v-data-table
-        v-if="tableContents.length"
         :headers="tableHeaders"
         :items-per-page="Number(10)"
-        :items="tableContents"
+        :items="filteredTableContents"
         class="mx-12 my-2 workflow-table"
         item-key="idVersionType"
       >
         <template #[`item.workflowType`]="{ item }">
-          <img
-            v-if="item.workflowType === 'CWL'"
-            src="~/assets/icon/cwl-icon.png"
-            class="mt-2 mr-2"
-            height="26"
-          />
-          <img
-            v-else-if="item.workflowType === 'WDL'"
-            src="~/assets/icon/wdl-icon.png"
-            class="mt-2 mr-2"
-            height="26"
-          />
-          <img
-            v-else-if="item.workflowType === 'Nextflow'"
-            src="~/assets/icon/nextflow-icon.png"
-            class="mt-2 mr-2"
-            height="26"
-          />
-          <img
-            v-else-if="item.workflowType === 'Snakemake'"
-            src="~/assets/icon/snakemake-icon.png"
-            class="mt-2 mr-2"
-            height="26"
-          />
-          <v-icon v-else class="my-2 mr-2" v-text="'mdi-graph-outline'" />
+          <workflow-icon :wf-type="item.workflowType" />
         </template>
         <template #[`item.workflowNameVal`]="{ item }">
           <span>
@@ -123,10 +120,10 @@
 </template>
 
 <script lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import Vue from 'vue'
 import { DataTableHeader } from 'vuetify/types'
-import AppBar from '@/components/AppBar.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import {
   getServiceInfo,
@@ -136,9 +133,12 @@ import {
   workflowTypes,
   WorkflowType,
   descriptorTypeToWorkflowType,
+  generateBiocontainersServiceInfo,
 } from '@/utils/TRSRequest'
 import { validUrl } from '@/utils'
 import { Service, WorkflowLanguage } from '@/store/services'
+import AppBar from '@/components/AppBar.vue'
+import WorkflowIcon from '@/components/WorkflowIcon.vue'
 
 const changeQueue: Array<NodeJS.Timeout> = []
 
@@ -155,21 +155,42 @@ interface TableContent {
   importButton: string
 }
 
+interface DefaultEndpoint {
+  name: string
+  endpoint: string
+}
+
+const defaultEndpoints: DefaultEndpoint[] = [
+  {
+    name: 'WorkflowHub',
+    endpoint: 'https://workflowhub.eu/ga4gh/trs/v2',
+  },
+  {
+    name: 'Dockstore',
+    endpoint: 'https://dockstore.org/api/ga4gh/trs/v2',
+  },
+  {
+    name: 'BioContainers',
+    endpoint: 'https://api.biocontainers.pro/ga4gh/trs/v2',
+  },
+]
+
 type Data = {
   trsEndpoint: string
+  defaultEndpoints: DefaultEndpoint[]
   fetchFailed: boolean
   serviceInfo: ServiceInfoResponse | null
-  tools: ToolsResponse
-  tableHeaders: DataTableHeader[]
   filterType: WorkflowType | null
-  filterWorklfowName: string
+  filterWorkflowName: string
   filterOrganization: string
+  tableContents: TableContent[]
 }
 
 type Methods = {
   changeTrsEndpoint: (event: Event) => void
   fetchTrs: (trsEndpoint: string) => void
   importWorkflow: (item: TableContent) => void
+  updateTableContents: () => void
 }
 
 type Computed = {
@@ -177,7 +198,8 @@ type Computed = {
   wfLangs: WorkflowLanguage[]
   wfTypes: string[]
   trsEndpointRules: string[]
-  tableContents: TableContent[]
+  tableHeaders: DataTableHeader[]
+  filteredTableContents: TableContent[]
 }
 
 type Props = {
@@ -195,6 +217,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   components: {
     AppBar,
     AppFooter,
+    WorkflowIcon,
   },
 
   props: {
@@ -211,41 +234,16 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
   data() {
     return {
-      trsEndpoint: 'https://workflowhub.eu/ga4gh/trs/v2',
+      trsEndpoint: defaultEndpoints.filter(
+        (item) => item.name === 'WorkflowHub'
+      )[0].endpoint,
+      defaultEndpoints,
       fetchFailed: false,
       serviceInfo: null,
-      tools: [],
-      tableHeaders: [
-        {
-          text: '',
-          value: 'workflowType',
-          sortable: false,
-          width: '40px',
-        },
-        {
-          text: 'Name',
-          value: 'workflowNameVal',
-          sortable: true,
-        },
-        {
-          text: 'Organization',
-          value: 'organization',
-          sortable: true,
-        },
-        {
-          text: 'Workflow URL',
-          value: 'workflowUrl',
-          sortable: false,
-        },
-        {
-          text: '',
-          value: 'importButton',
-          sortable: false,
-        },
-      ],
       filterType: null,
-      filterWorklfowName: '',
+      filterWorkflowName: '',
       filterOrganization: '',
+      tableContents: [],
     }
   },
 
@@ -273,7 +271,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         return ['Failed to fetch TRS response from the endpoint']
       }
       if (this.serviceInfo) {
-        if (this.serviceInfo.type.artifact !== 'trs') {
+        if (this.serviceInfo.type.artifact.toLowerCase() !== 'trs') {
           return ['Not a TRS endpoint']
         }
         if (!this.serviceInfo.type.version.startsWith('2')) {
@@ -283,48 +281,59 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return []
     },
 
-    tableContents() {
-      const tableContents: TableContent[] = []
-      for (const tool of this.tools) {
-        for (const version of tool.versions) {
-          if (version.descriptor_type) {
-            for (const type of version.descriptor_type) {
-              const tableContent = {
-                id: tool.id,
-                version: version.id,
-                idVersionType: `${tool.id}-${version.id}-${type}`,
-                workflowType: descriptorTypeToWorkflowType(type),
-                workflowName: tool.name ? `${tool.name}` : `${tool.id}-${type}`,
-                workflowNameVal: tool.name
-                  ? `${tool.name}-${version.id}`
-                  : `${tool.id}-${type}-${version.id}`,
-                workflowVersion: version.id,
-                organization: tool.organization,
-                workflowUrl: version.url,
-                importButton: '',
-              }
-              if (
-                this.filterType &&
-                tableContent.workflowType !== this.filterType
-              ) {
-                continue
-              }
-              if (
-                !tableContent.workflowName.includes(this.filterWorklfowName)
-              ) {
-                continue
-              }
-              if (
-                !tableContent.organization.includes(this.filterOrganization)
-              ) {
-                continue
-              }
-              tableContents.push(tableContent)
-            }
-          }
-        }
+    tableHeaders() {
+      const tableHeaders = [
+        {
+          text: '',
+          value: 'workflowType',
+          sortable: false,
+          width: '40px',
+        },
+        {
+          text: 'Name',
+          value: 'workflowNameVal',
+          sortable: true,
+        },
+        {
+          text: 'Organization',
+          value: 'organization',
+          sortable: true,
+        },
+        {
+          text: '',
+          value: 'importButton',
+          sortable: false,
+        },
+      ]
+      if (this.trsEndpoint !== 'https://dockstore.org/api/ga4gh/trs/v2') {
+        tableHeaders.splice(3, 0, {
+          text: 'Workflow URL',
+          value: 'workflowUrl',
+          sortable: false,
+        })
       }
-      return tableContents
+      return tableHeaders
+    },
+
+    filteredTableContents() {
+      return this.tableContents.filter((item) => {
+        if (this.filterType && item.workflowType !== this.filterType) {
+          return false
+        }
+        if (
+          this.filterWorkflowName &&
+          !item.workflowName.toLowerCase().includes(this.filterWorkflowName)
+        ) {
+          return false
+        }
+        if (
+          this.filterOrganization &&
+          !item.organization.toLowerCase().includes(this.filterOrganization)
+        ) {
+          return false
+        }
+        return true
+      })
     },
   },
 
@@ -353,31 +362,19 @@ const options: ThisTypedComponentOptionsWithRecordProps<
           .then((response) => {
             this.fetchFailed = false
             this.serviceInfo = response
-            if (
-              this.serviceInfo.type.artifact === 'trs' &&
-              this.serviceInfo.type.version.startsWith('2')
-            ) {
-              for (const wfType of this.wfTypes) {
-                if (workflowTypes.includes(wfType)) {
-                  getTools(this.trsEndpoint, wfType).then((response) => {
-                    this.tools = this.tools.concat(response)
-                  })
-                }
-              }
-            }
+            this.updateTableContents()
           })
           .catch(() => {
             this.fetchFailed = true
             this.serviceInfo = null
-            this.tools = []
           })
       }
     },
 
     importWorkflow(workflow: TableContent) {
-      const wfLang = this.wfLangs.find(
-        (lang) => lang.name === workflow.workflowType
-      )
+      const wfVersion =
+        this.wfLangs.find((lang) => lang.name === workflow.workflowType)
+          ?.versions[0] || ''
       this.$store
         .dispatch('workflows/importWorkflowFromTrs', {
           serviceId: this.serviceId,
@@ -385,13 +382,56 @@ const options: ThisTypedComponentOptionsWithRecordProps<
           trsWorkflowId: workflow.id,
           trsWorkflowVersion: workflow.version,
           trsWorkflowType: workflow.workflowType,
-          trsWorkflowName: workflow.workflowNameVal,
-          workflowVersion: wfLang?.versions[0] || '',
+          trsWorkflowName: `${workflow.workflowName}: ${workflow.workflowVersion}`,
+          workflowVersion: wfVersion,
         })
         .then((workflowId) => {
           this.$emit('close')
           this.$router.push({ path: '/workflows', query: { workflowId } })
         })
+    },
+
+    updateTableContents() {
+      this.tableContents = []
+      if (
+        this.serviceInfo &&
+        this.serviceInfo.type.artifact.toLowerCase() === 'trs' &&
+        this.serviceInfo.type.version.startsWith('2')
+      ) {
+        for (const wfType of this.wfTypes) {
+          getTools(this.trsEndpoint, wfType)
+            .then((res: ToolsResponse) => {
+              for (const tool of res) {
+                for (const version of tool.versions) {
+                  if (version.descriptor_type) {
+                    for (const type of version.descriptor_type) {
+                      const tableContent: TableContent = {
+                        id: tool.id,
+                        version: version.id,
+                        idVersionType: `${tool.id}-${version.id}-${type}`,
+                        workflowType: descriptorTypeToWorkflowType(type),
+                        workflowName: tool.name
+                          ? `${tool.name}`
+                          : `${tool.id}-${type}`,
+                        workflowNameVal: tool.name
+                          ? `${tool.name}-${version.id}`
+                          : `${tool.id}-${type}-${version.id}`,
+                        workflowVersion: version.id,
+                        organization: tool.organization,
+                        workflowUrl: version.url,
+                        importButton: '',
+                      }
+                      this.tableContents.push(tableContent)
+                    }
+                  }
+                }
+              }
+            })
+            .catch((_) => {
+              // do nothing
+            })
+        }
+      }
     },
   },
 

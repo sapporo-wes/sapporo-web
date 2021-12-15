@@ -51,45 +51,7 @@
       item-key="workflowId"
     >
       <template #[`item.workflowType`]="{ item }">
-        <v-tooltip top>
-          <template #activator="{ on }">
-            <img
-              v-if="item.workflowType.toLowerCase() === 'cwl'"
-              src="~/assets/icon/cwl-icon.png"
-              class="mt-2 mr-2"
-              height="26"
-              v-on="on"
-            />
-            <img
-              v-else-if="item.workflowType.toLowerCase() === 'wdl'"
-              src="~/assets/icon/wdl-icon.png"
-              class="mt-2 mr-2"
-              height="26"
-              v-on="on"
-            />
-            <img
-              v-else-if="item.workflowType.toLowerCase() === 'nextflow'"
-              src="~/assets/icon/nextflow-icon.png"
-              class="mt-2 mr-2"
-              height="26"
-              v-on="on"
-            />
-            <img
-              v-else-if="item.workflowType.toLowerCase() === 'snakemake'"
-              src="~/assets/icon/snakemake-icon.png"
-              class="mt-2 mr-2"
-              height="26"
-              v-on="on"
-            />
-            <v-icon
-              v-else
-              class="my-2 mr-2"
-              v-on="on"
-              v-text="'mdi-graph-outline'"
-            />
-          </template>
-          <span v-text="`${item.workflowType} ${item.workflowVersion}`" />
-        </v-tooltip>
+        <workflow-icon :wf-type="item.workflowType" />
       </template>
       <template #[`item.workflowName`]="{ item }">
         <div class="d-flex">
@@ -204,11 +166,12 @@
 
 <script lang="ts">
 import { DataTableHeader } from 'vuetify/types'
-import Vue from 'vue'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
+import Vue from 'vue'
 import { Service } from '@/store/services'
 import { WorkflowTableItem } from '@/store/workflows'
 import WorkflowDeleteDialog from '@/components/services/WorkflowDeleteDialog.vue'
+import WorkflowIcon from '@/components/WorkflowIcon.vue'
 import WorkflowRegisterDialog from '@/components/services/WorkflowRegisterDialog.vue'
 import WorkflowTrsImportDialog from '@/components/services/WorkflowTrsImportDialog.vue'
 
@@ -245,6 +208,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 > = {
   components: {
     WorkflowDeleteDialog,
+    WorkflowIcon,
     WorkflowRegisterDialog,
     WorkflowTrsImportDialog,
   },
