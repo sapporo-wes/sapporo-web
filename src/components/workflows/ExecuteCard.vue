@@ -124,7 +124,7 @@
             hint="Network reachable location of the workflow attachment"
             label="URL"
             placeholder="Type a URL"
-            @input="updateWfAttachementUrl($event, ind - 1)"
+            @input="updateWfAttachmentUrl($event, ind - 1)"
           />
           <v-text-field
             v-model="wfAttachment[attachmentMode].names[ind - 1]"
@@ -161,7 +161,7 @@
             placeholder="Select a file"
             prepend-inner-icon="mdi-paperclip"
             show-size
-            @change="updateWfAttachementFile($event, ind - 1)"
+            @change="updateWfAttachmentFile($event, ind - 1)"
           />
           <v-text-field
             v-model="wfAttachment[attachmentMode].names[ind - 1]"
@@ -398,9 +398,9 @@ type Data = {
 
 type Methods = {
   executeRun: () => void
-  updateWfAttachementUrl: (url: string | null, ind: number) => void
+  updateWfAttachmentUrl: (url: string | null, ind: number) => void
   updateWfAttachmentName: (name: string | null, ind: number) => void
-  updateWfAttachementFile: (file: File | null, ind: number) => void
+  updateWfAttachmentFile: (file: File | null, ind: number) => void
   addWfAttachment: () => void
   removeWfAttachment: () => void
   codeMirrorMode: (content: string) => ReturnType<typeof codeMirrorMode>
@@ -671,7 +671,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
 
-    updateWfAttachementUrl(url: string | null, ind: number) {
+    updateWfAttachmentUrl(url: string | null, ind: number) {
       Vue.set(this.wfAttachment.download.urls, ind, url)
       if (url) {
         try {
@@ -692,7 +692,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       )
     },
 
-    updateWfAttachementFile(file: File | null, ind: number) {
+    updateWfAttachmentFile(file: File | null, ind: number) {
       Vue.set(this.wfAttachment.upload.files, ind, file)
       if (file) {
         try {

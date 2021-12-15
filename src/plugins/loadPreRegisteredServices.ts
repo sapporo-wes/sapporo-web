@@ -1,4 +1,5 @@
 import { Context } from '@nuxt/types'
+
 import preRegisteredServices from '@/assets/preRegisteredServices.json'
 import { Service } from '@/store/services'
 

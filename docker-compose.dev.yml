@@ -18,7 +18,7 @@ services:
       - 0.0.0.0:1121:1121
     restart: on-failure
     working_dir: /app
-    command: ["sleep", "infinity"]
+    command: [ "sleep", "infinity" ]
     networks:
       - sapporo
 

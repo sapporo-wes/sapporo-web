@@ -3,6 +3,7 @@ import utc from 'dayjs/plugin/utc'
 import Vue from 'vue'
 import colors from 'vuetify/lib/util/colors'
 import { ActionTree, GetterTree, MutationTree } from 'vuex/types'
+
 import { RootState } from '@/store'
 import { Service } from '@/store/services'
 import { Workflow } from '@/store/workflows'

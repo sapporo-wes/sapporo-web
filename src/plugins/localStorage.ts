@@ -1,7 +1,6 @@
+import { Context, Plugin } from '@nuxt/types'
 import SecureLS from 'secure-ls'
 import createPersistedState from 'vuex-persistedstate'
-
-import { Context, Plugin } from '@nuxt/types'
 
 const ls = new SecureLS({ isCompression: false })
 

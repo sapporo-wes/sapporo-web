@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid'
 import Vue from 'vue'
 import colors from 'vuetify/lib/util/colors'
 import { ActionTree, GetterTree, MutationTree } from 'vuex/types'
+
 import { RootState } from '@/store'
 import { Run } from '@/store/runs'
 import { Workflow } from '@/store/workflows'
