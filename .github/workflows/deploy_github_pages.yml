@@ -20,7 +20,7 @@ jobs:
           node-version: '15'
 
       - name: 'Install dependencies'
-        run: yarn ci
+        run: yarn install
 
       - name: 'Generate static web page'
         run: yarn generate
