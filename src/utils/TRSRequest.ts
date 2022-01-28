@@ -1,4 +1,4 @@
-import { components, paths } from '@/types/TRS'
+import { paths } from '@/types/TRS'
 
 export type ServiceInfoResponse =
   paths['/service-info']['get']['responses'][200]['content']['application/json']
@@ -23,7 +23,7 @@ export const getServiceInfo = async (
     )
   }
 
-  return res.json()
+  return await res.json()
 }
 
 export const generateBiocontainersServiceInfo = (): ServiceInfoResponse => {
@@ -128,7 +128,7 @@ export const getTools = async (
     throw new Error(`Failed to fetch tools from ${url}`)
   }
 
-  return res.json()
+  return await res.json()
 }
 
 export const generateWfContentUrl = (
@@ -186,5 +186,6 @@ export const getFiles = async (
   if (!res.ok) {
     throw new Error(`Failed to fetch files from ${trsEndpoint}`)
   }
-  return res.json()
+
+  return await res.json()
 }
