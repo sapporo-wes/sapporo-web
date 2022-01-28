@@ -360,8 +360,8 @@ import { Service, WorkflowEngine } from '@/store/services'
 import { Workflow } from '@/store/workflows'
 import { AttachedFile } from '@/types/WES'
 
-type StringAttachments = Array<string | null>
-type FileAttachments = Array<File | null>
+type StringAttachments = (string | null)[]
+type FileAttachments = (File | null)[]
 type WfAttachment = {
   download: {
     urls: StringAttachments
@@ -374,12 +374,12 @@ type WfAttachment = {
 }
 type WfAttachmentRules = {
   download: {
-    urls: Array<Array<string>>
-    names: Array<Array<string>>
+    urls: string[][]
+    names: string[][]
   }
   upload: {
-    files: Array<Array<string>>
-    names: Array<Array<string>>
+    files: string[][]
+    names: string[][]
   }
 }
 
@@ -531,15 +531,15 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         ) {
           if (!this.wfAttachment.download.urls[i]) {
             rules.download.urls.push(['No value in this field'])
-            rules.download.names.push([] as Array<string>)
+            rules.download.names.push([] as string[])
           }
           if (!this.wfAttachment.download.names[i]) {
-            rules.download.urls.push([] as Array<string>)
+            rules.download.urls.push([] as string[])
             rules.download.names.push(['No value in this field'])
           }
         } else {
-          rules.download.urls.push([] as Array<string>)
-          rules.download.names.push([] as Array<string>)
+          rules.download.urls.push([] as string[])
+          rules.download.names.push([] as string[])
         }
       }
       for (let i = 0; i < this.wfAttachment.upload.names.length; i++) {
@@ -549,15 +549,15 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         ) {
           if (!this.wfAttachment.upload.files[i]) {
             rules.upload.files.push(['No value in this field'])
-            rules.upload.names.push([] as Array<string>)
+            rules.upload.names.push([] as string[])
           }
           if (!this.wfAttachment.upload.names[i]) {
-            rules.upload.files.push([] as Array<string>)
+            rules.upload.files.push([] as string[])
             rules.upload.names.push(['No value in this field'])
           }
         } else {
-          rules.upload.files.push([] as Array<string>)
-          rules.upload.names.push([] as Array<string>)
+          rules.upload.files.push([] as string[])
+          rules.upload.names.push([] as string[])
         }
       }
       return rules

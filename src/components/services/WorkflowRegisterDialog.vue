@@ -24,7 +24,7 @@
           :items="types"
           :persistent-hint="!type.length"
           :rule="typeRules"
-          hint="Select the workflow langauge type"
+          hint="Select the workflow language type"
           label="Type"
           @change="changeType"
         />
@@ -34,7 +34,7 @@
           :items="versions"
           :persistent-hint="!type.length"
           :rules="versionRules"
-          hint="Select the workflow langauge version"
+          hint="Select the workflow language version"
           label="Version"
         />
       </div>
@@ -50,7 +50,7 @@
             mandatory
             color="primary"
           >
-            <v-chip :value="'download'" label outlined>
+            <v-chip :value="'fetch'" label outlined>
               <v-icon left v-text="'mdi-download-outline'" />
               <span v-text="'Fetch'" />
             </v-chip>
@@ -60,7 +60,7 @@
             </v-chip>
           </v-chip-group>
         </div>
-        <div v-if="locationMode === 'download'" class="ml-4 d-flex flex-column">
+        <div v-if="locationMode === 'fetch'" class="ml-4 d-flex flex-column">
           <v-text-field
             v-model="url"
             :persistent-hint="!url.length"
@@ -72,12 +72,12 @@
             @input="changeUrl"
           />
           <codemirror
-            v-if="wfContentDownload.length"
-            v-model="wfContentDownload"
+            v-if="wfContentFetch.length"
+            v-model="wfContentFetch"
             :options="{
               lineNumbers: true,
               tabSize: 2,
-              mode: codeMirrorMode(wfContentDownload),
+              mode: codeMirrorMode(wfContentFetch),
               readOnly: 'nocursor',
             }"
             :style="{
@@ -127,7 +127,7 @@
       </div>
       <div class="d-flex justify-end align-center mx-12 pb-6 mt-4">
         <v-tooltip
-          v-if="locationMode === 'download' && wfContentDownload.length"
+          v-if="locationMode === 'fetch' && wfContentFetch.length"
           top
           max-width="400"
         >
@@ -172,7 +172,7 @@ import { codeMirrorMode, validUrl, convertGitHubUrl } from '@/utils'
 import { WorkflowLanguages, Service } from '@/store/services'
 import { Workflow } from '@/store/workflows'
 
-const changeQueue: Array<NodeJS.Timeout> = []
+const changeQueue: NodeJS.Timeout[] = []
 
 type Data = {
   name: string
@@ -181,7 +181,7 @@ type Data = {
   locationMode: string
   url: string
   fetchFailed: boolean
-  wfContentDownload: string
+  wfContentFetch: string
   attachAsFile: boolean
   wfContentUpload: string
   fileName: string
@@ -243,10 +243,10 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       name: '',
       type: '',
       version: '',
-      locationMode: 'download',
+      locationMode: 'fetch',
       url: '',
       fetchFailed: false,
-      wfContentDownload: '',
+      wfContentFetch: '',
       attachAsFile: false,
       wfContentUpload: '',
       fileName: '',
@@ -294,8 +294,8 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     registerValid() {
       const content =
-        this.locationMode === 'download'
-          ? !!this.wfContentDownload.length
+        this.locationMode === 'fetch'
+          ? !!this.wfContentFetch.length
           : !!this.wfContentUpload.length
       return (
         !this.nameRules.length &&
@@ -332,7 +332,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     },
 
     urlRules() {
-      if (this.locationMode === 'download') {
+      if (this.locationMode === 'fetch') {
         if (!this.url) {
           return ['Required']
         }
@@ -394,21 +394,21 @@ const options: ThisTypedComponentOptionsWithRecordProps<
             .then((res) => {
               if (!res.ok) {
                 this.fetchFailed = true
-                this.wfContentDownload = ''
+                this.wfContentFetch = ''
               } else {
                 res.text().then((content) => {
                   this.fetchFailed = false
-                  this.wfContentDownload = content
+                  this.wfContentFetch = content
                 })
               }
             })
             .catch((_) => {
               this.fetchFailed = true
-              this.wfContentDownload = ''
+              this.wfContentFetch = ''
             })
         })
       } else {
-        this.wfContentDownload = ''
+        this.wfContentFetch = ''
       }
     },
 
@@ -422,7 +422,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       if (this.registerValid) {
         this.submitButton = false
         let url = ''
-        if (this.locationMode === 'download') {
+        if (this.locationMode === 'fetch') {
           if (this.attachAsFile) {
             const tmpUrl = new URL(this.url)
             url = tmpUrl.pathname.split('/').pop() || this.url
@@ -440,8 +440,8 @@ const options: ThisTypedComponentOptionsWithRecordProps<
             version: this.version,
             url,
             content:
-              this.locationMode === 'download'
-                ? this.wfContentDownload
+              this.locationMode === 'fetch'
+                ? this.wfContentFetch
                 : this.wfContentUpload,
             preRegistered: false,
           })
@@ -454,6 +454,31 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     codeMirrorMode(content) {
       return codeMirrorMode(content)
+    },
+  },
+
+  watch: {
+    type() {
+      if (this.type === 'CWL') {
+        this.attachAsFile = false
+      } else {
+        this.attachAsFile = true
+      }
+    },
+
+    url() {
+      if (!this.name) {
+        this.name = (this.url.split('/').pop() || '').replace(/\.[^/.]+$/, '')
+      }
+    },
+
+    fileName() {
+      if (!this.name) {
+        this.name = (this.fileName.split('/').pop() || '').replace(
+          /\.[^/.]+$/,
+          ''
+        )
+      }
     },
   },
 }

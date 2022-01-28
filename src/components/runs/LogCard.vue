@@ -106,10 +106,11 @@ import { codemirror } from 'vue-codemirror'
 import { DataTableHeader } from 'vuetify/types'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import Vue from 'vue'
-import { AttachedFile, CwlWesLog, Log } from '@/types/WES'
+import { AttachedFile } from '@/types/WES'
 import { codeMirrorMode } from '@/utils'
 import { Run } from '@/store/runs'
 import { Service } from '@/store/services'
+import { WesVersions } from '@/utils/WESRequest'
 
 type Data = {
   logInfoHeaders: DataTableHeader[]
@@ -124,6 +125,7 @@ type Methods = {
 
 type Computed = {
   service: Service
+  wesVersion: WesVersions
   run: Run
   logInfoContents: {
     key: string
@@ -172,112 +174,110 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return this.$store.getters['services/service'](this.run.serviceId)
     },
 
+    wesVersion(): WesVersions {
+      return this.$store.getters['services/wesVersion'](this.run.serviceId)
+    },
+
     run(): Run {
       return this.$store.getters['runs/run'](this.runId)
     },
 
     logInfoContents() {
+      let startTime = this.run.runLog.run_log?.start_time || ''
       if (
-        this.service.serviceInfo.supported_wes_versions.includes(
-          'sapporo-wes-1.0.0'
-        )
+        !startTime &&
+        this.run.runLog.run_log &&
+        'task_started' in this.run.runLog.run_log
       ) {
-        const log = this.run.runLog.run_log as Log
-        return [
-          {
-            key: 'Start Time',
-            value: log.start_time
-              ? this.$dayjs(log.start_time)
-                  .local()
-                  .format('YYYY-MM-DD HH:mm:ss')
-              : '',
-          },
-          {
-            key: 'End Time',
-            value: log.end_time
-              ? this.$dayjs(log.end_time).local().format('YYYY-MM-DD HH:mm:ss')
-              : '',
-          },
-          {
-            key: 'Exit Code',
-            value: `${Number.isInteger(log.exit_code) ? log.exit_code : ''}`,
-          },
-        ]
-      } else {
-        const log = this.run.runLog.run_log as CwlWesLog
-        return [
-          {
-            key: 'Start Time',
-            value: log?.task_started
-              ? this.$dayjs(log.task_started)
-                  .add(log?.utc_offset || 0, 'h')
-                  .local()
-                  .format('YYYY-MM-DD HH:mm:ss')
-              : '',
-          },
-          {
-            key: 'End Time',
-            value: log?.task_finished
-              ? this.$dayjs(log.task_finished)
-                  .add(log?.utc_offset || 0, 'h')
-                  .local()
-                  .format('YYYY-MM-DD HH:mm:ss')
-              : '',
-          },
-        ]
+        // for cwl-wes
+        // eslint-disable-next-line camelcase
+        startTime = (this.run.runLog.run_log as { task_started: string })
+          .task_started
       }
+      let endTime = this.run.runLog.run_log?.end_time || ''
+      if (
+        !endTime &&
+        this.run.runLog.run_log &&
+        'task_finished' in this.run.runLog.run_log
+      ) {
+        // for cwl-wes
+        // eslint-disable-next-line camelcase
+        endTime = (this.run.runLog.run_log as { task_finished: string })
+          .task_finished
+      }
+      const exitCode = this.run.runLog.run_log?.exit_code
+
+      const contents = [
+        {
+          key: 'Start Time',
+          value:
+            this.$dayjs(startTime).local().format('YYYY-MM-DD HH:mm:ss') ||
+            startTime,
+        },
+        {
+          key: 'End Time',
+          value:
+            this.$dayjs(endTime).local().format('YYYY-MM-DD HH:mm:ss') ||
+            endTime,
+        },
+      ]
+      if (Number.isInteger(exitCode)) {
+        contents.push({
+          key: 'Exit Code',
+          value: `${exitCode}`,
+        })
+      }
+
+      return contents
     },
 
     tabItems() {
+      let command = this.run.runLog.run_log?.cmd || ''
       if (
-        this.service.serviceInfo.supported_wes_versions.includes(
-          'sapporo-wes-1.0.0'
-        )
+        !command &&
+        this.run.runLog.run_log &&
+        'command' in this.run.runLog.run_log
       ) {
-        const log = this.run.runLog.run_log as Log
-        return [
-          {
-            key: 'Command',
-            value: log.cmd,
-          },
-          {
-            key: 'Stdout',
-            value: log.stdout,
-          },
-          {
-            key: 'Stderr',
-            value: log.stderr,
-          },
-          {
-            key: 'Outputs',
-            value: JSON.stringify(this.run.runLog.outputs || {}, null, 2),
-          },
-        ]
-      } else {
-        const log = this.run.runLog.run_log as CwlWesLog
-        return [
-          {
-            key: 'Command',
-            value: log?.command || '',
-          },
-          {
-            key: 'Stdout',
-            value: log?.stdout || '',
-          },
-          {
-            key: 'Stderr',
-            value: log?.stderr || '',
-          },
-          {
-            key: 'Task Logs',
-            value: JSON.stringify(this.run.runLog.task_logs, null, 2),
-          },
-          {
-            key: 'Outputs',
-            value: JSON.stringify(this.run.runLog.outputs, null, 2),
-          },
-        ]
+        // for cwl-wes
+        // eslint-disable-next-line camelcase
+        command = (this.run.runLog.run_log as { command: string }).command
       }
+      if (typeof command !== 'string') {
+        command = JSON.stringify(command, null, 2)
+      }
+      const stdout = this.run.runLog.run_log?.stdout || ''
+      const stderr = this.run.runLog.run_log?.stderr || ''
+      let taskLogs = this.run.runLog.task_logs || ''
+      if (typeof taskLogs !== 'string') {
+        taskLogs = JSON.stringify(taskLogs, null, 2)
+      }
+      let outputs = this.run.runLog.outputs || ''
+      if (typeof outputs !== 'string') {
+        outputs = JSON.stringify(outputs, null, 2)
+      }
+
+      return [
+        {
+          key: 'Command',
+          value: command,
+        },
+        {
+          key: 'Stdout',
+          value: stdout,
+        },
+        {
+          key: 'Stderr',
+          value: stderr,
+        },
+        {
+          key: 'Task Logs',
+          value: taskLogs,
+        },
+        {
+          key: 'Outputs',
+          value: outputs,
+        },
+      ]
     },
   },
 

@@ -160,6 +160,8 @@ import { codeMirrorMode, validUrl } from '@/utils'
 import { Run } from '@/store/runs'
 import { Service } from '@/store/services'
 import { Workflow } from '@/store/workflows'
+import { WesVersions } from '@/utils/WESRequest'
+import { AttachedFile, RunLogSpr } from '@/types/WES'
 
 type Data = {
   runInfoHeaders: DataTableHeader[]
@@ -178,6 +180,7 @@ type Methods = {
 
 type Computed = {
   service: Service
+  wesVersion: WesVersions
   workflow: Workflow
   run: Run
   runInfoContents: {
@@ -229,6 +232,10 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return this.$store.getters['services/service'](this.run.serviceId)
     },
 
+    wesVersion(): WesVersions {
+      return this.$store.getters['services/wesVersion'](this.run.serviceId)
+    },
+
     workflow(): Workflow {
       return this.$store.getters['workflows/workflow'](this.run.workflowId)
     },
@@ -238,74 +245,73 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     },
 
     runInfoContents() {
+      const wfUrl = this.run.runLog?.request?.workflow_url || ''
+      let wfEngineName = ''
+      if (this.wesVersion !== '1.0.0') {
+        wfEngineName =
+          (this.run.runLog as RunLogSpr).request?.workflow_engine_name || ''
+      }
+
       const contents = [
         { key: 'Run ID', value: this.runId },
-        { key: 'Workflow URL', value: this.run.runLog.request.workflow_url },
+        { key: 'Workflow URL', value: wfUrl },
       ]
-      if (
-        this.service.serviceInfo.supported_wes_versions.includes(
-          'sapporo-wes-1.0.0'
-        )
-      ) {
+      if (this.wesVersion !== '1.0.0' && wfEngineName) {
+        const wfEngineVersion = this.$store.getters[
+          'services/workflowEngineVersion'
+        ]({
+          serviceId: this.service.id,
+          workflowEngine: wfEngineName,
+        })
         contents.push({
           key: 'Workflow Engine',
-          value: `${
-            this.run.runLog.request.workflow_engine_name
-          } ${this.$store.getters['services/workflowEngineVersion']({
-            serviceId: this.service.id,
-            workflowEngine: this.run.runLog.request.workflow_engine_name,
-          })}`,
+          value: `${wfEngineName} ${wfEngineVersion}`,
         })
       }
       return contents
     },
 
     tabItems() {
+      let wfEngineParams = this.run.runLog?.request?.workflow_engine_parameters
+      if (typeof wfEngineParams !== 'string') {
+        wfEngineParams = JSON.stringify(wfEngineParams, null, 2)
+      }
+      let tags = this.run.runLog?.request?.tags
+      if (typeof tags !== 'string') {
+        tags = JSON.stringify(tags, null, 2)
+      }
+      let wfParams = this.run.runLog?.request?.workflow_params
+      if (typeof wfParams !== 'string') {
+        wfParams = JSON.stringify(wfParams, null, 2)
+      }
+      let wfAttachment: AttachedFile[] = []
+      if (
+        this.run.runLog?.request &&
+        'workflow_attachment' in this.run.runLog?.request
+      ) {
+        wfAttachment = this.run.runLog?.request
+          .workflow_attachment as unknown as AttachedFile[]
+      }
+
       const items = [
         {
           key: 'Workflow Engine Parameters',
-          value:
-            typeof this.run.runLog.request.workflow_engine_parameters ===
-            'string'
-              ? this.run.runLog.request.workflow_engine_parameters
-              : JSON.stringify(
-                  this.run.runLog.request.workflow_engine_parameters,
-                  null,
-                  2
-                ),
+          value: wfEngineParams,
         },
         {
           key: 'Tags',
-          value:
-            typeof this.run.runLog.request.tags === 'string'
-              ? this.run.runLog.request.tags
-              : JSON.stringify(this.run.runLog.request.tags, null, 2),
+          value: tags,
         },
         {
-          key: 'Workflow Prameters',
-          value:
-            typeof this.run.runLog.request.workflow_params === 'string'
-              ? this.run.runLog.request.workflow_params
-              : JSON.stringify(
-                  this.run.runLog.request.workflow_params,
-                  null,
-                  2
-                ),
+          key: 'Workflow Parameters',
+          value: wfParams,
         },
       ]
-      if (
-        this.service.serviceInfo.supported_wes_versions.includes(
-          'sapporo-wes-1.0.0'
-        )
-      ) {
+      if (this.wesVersion !== '1.0.0') {
         this.tab = 3
         items.splice(2, 0, {
           key: 'Workflow Attachment',
-          value: JSON.stringify(
-            this.run.runLog.request?.workflow_attachment || null,
-            null,
-            2
-          ),
+          value: JSON.stringify(wfAttachment, null, 2),
         })
       }
       return items

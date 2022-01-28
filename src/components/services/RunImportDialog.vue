@@ -102,18 +102,18 @@ import 'codemirror/mode/yaml/yaml.js'
 import { codemirror } from 'vue-codemirror'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import Vue from 'vue'
-import { codeMirrorMode, validUrl, convertGitHubUrl } from '@/utils'
+import { codeMirrorMode, convertGitHubUrl } from '@/utils'
+import { fetchWorkflowContent, getRunsId } from '@/utils/WESRequest'
 import { Service } from '@/store/services'
-import { getRunsId } from '@/utils/WESRequest'
-import { CwlWesLog, Log, RunLog } from '@/types/WES'
+import { RunLog, AttachedFile } from '@/types/WES'
 import { Workflow } from '@/store/workflows'
 
-const changeQueue: Array<NodeJS.Timeout> = []
+const changeQueue: NodeJS.Timeout[] = []
 
 type Data = {
   runId: string
   getFailed: boolean
-  runLog: RunLog | undefined
+  runLog?: RunLog
   runName: string
   workflowName: string
   workflowType: string
@@ -125,6 +125,7 @@ type Data = {
 type Methods = {
   changeRunId: () => void
   getRunsId: (runId: string) => void
+  clearState: () => void
   codeMirrorMode: (content: string) => ReturnType<typeof codeMirrorMode>
   importRun: () => void
 }
@@ -197,7 +198,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         return ['The Run ID already exists']
       }
       if (this.getFailed) {
-        return ['The Run ID does not exist in this WES service']
+        return ['The Run could not be fetched correctly']
       }
       return []
     },
@@ -229,18 +230,29 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       if (!this.service.runIds.includes(this.runId)) {
         getRunsId(this.service.endpoint, runId)
           .then((runLog) => {
-            this.getFailed = false
+            if (
+              !runLog.request ||
+              !runLog.run_log ||
+              !runLog.request.workflow_url ||
+              !runLog.request.workflow_type ||
+              !runLog.request.workflow_type_version
+            ) {
+              throw new Error('The Run could not be fetched correctly')
+            }
             this.runLog = runLog
-            this.workflowName =
-              runLog.request.workflow_name ||
-              runLog.request.workflow_url.split('/').pop() ||
-              runId
-            const startTimeStr =
-              this.service.serviceInfo.supported_wes_versions.includes(
-                'sapporo-wes-1.0.0'
-              )
-                ? (runLog.run_log as Log).start_time
-                : (runLog.run_log as CwlWesLog)?.task_started
+            if ('workflow_name' in runLog.request) {
+              this.workflowName = runLog.request.workflow_name || runId
+            } else {
+              const wfUrl = runLog.request.workflow_url || ''
+              this.workflowName = wfUrl.split('/').pop() || runId
+            }
+            let startTimeStr = runLog.run_log.start_time
+            if (!startTimeStr && 'task_started' in runLog.run_log) {
+              // for cwl-wes
+              // eslint-disable-next-line camelcase
+              startTimeStr = (runLog.run_log as { task_started: string })
+                .task_started
+            }
             const startTime = startTimeStr
               ? this.$dayjs(startTimeStr)
               : this.$dayjs()
@@ -249,45 +261,44 @@ const options: ThisTypedComponentOptionsWithRecordProps<
               .format('YYYY-MM-DD HH:mm:ss')}`
             this.workflowType = runLog.request.workflow_type
             this.workflowVersion = runLog.request.workflow_type_version
-            this.workflowUrl = runLog.request.workflow_url
-            this.workflowContent = 'Failed to get workflow content'
-            if (validUrl(this.workflowUrl)) {
-              convertGitHubUrl(this.workflowUrl).then((url) => {
-                this.workflowUrl = url
-                fetch(this.workflowUrl).then((res) => {
-                  if (!res.ok) {
-                    throw new Error(res.statusText)
-                  }
-                  res.text().then((text) => (this.workflowContent = text))
-                })
-              })
-            } else {
-              const fileName = this.workflowUrl.split('/').pop() || ''
-              for (const file of runLog.request.workflow_attachment || []) {
-                const attachedFileName = file.file_name.split('/').pop() || ''
-                if (fileName === attachedFileName) {
-                  fetch(file.file_url).then((res) => {
-                    if (!res.ok) {
-                      throw new Error(res.statusText)
-                    }
-                    res.text().then((text) => (this.workflowContent = text))
-                  })
-                  break
-                }
-              }
+            let wfAttachment: AttachedFile[] = []
+            if ('workflow_attachment' in runLog.request) {
+              wfAttachment = runLog.request
+                .workflow_attachment as AttachedFile[]
             }
+            convertGitHubUrl(runLog.request.workflow_url).then((url) => {
+              this.workflowUrl = url
+            })
+            fetchWorkflowContent({
+              workflow_name: this.workflowName,
+              workflow_url: runLog.request.workflow_url,
+              workflow_type: this.workflowType,
+              workflow_type_version: this.workflowVersion,
+              workflow_attachment: wfAttachment,
+            })
+              .then((wfContent) => {
+                this.workflowContent = wfContent
+              })
+              .catch(() => {
+                throw new Error('The Workflow could not be fetched correctly')
+              })
+            this.getFailed = false
           })
           .catch((_) => {
             this.getFailed = true
-            this.runLog = undefined
-            this.runName = ''
-            this.workflowName = ''
-            this.workflowType = ''
-            this.workflowVersion = ''
-            this.workflowUrl = ''
-            this.workflowContent = ''
+            this.clearState()
           })
       }
+    },
+
+    clearState() {
+      this.runLog = undefined
+      this.runName = ''
+      this.workflowName = ''
+      this.workflowType = ''
+      this.workflowVersion = ''
+      this.workflowUrl = ''
+      this.workflowContent = ''
     },
 
     codeMirrorMode(content) {
@@ -296,12 +307,9 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     importRun() {
       if (this.formValid) {
-        let workflowId = null
-        this.workflows.forEach((workflow) => {
-          if (workflow.name === this.workflowName) {
-            workflowId = workflow.id
-          }
-        })
+        const workflowId = this.workflows.filter(
+          (wf) => wf.name === this.workflowName
+        )[0]?.id
         if (workflowId) {
           this.$store.dispatch('runs/addRun', {
             serviceId: this.serviceId,
@@ -311,6 +319,14 @@ const options: ThisTypedComponentOptionsWithRecordProps<
             runLog: this.runLog,
           })
         } else {
+          let wfAttachment: AttachedFile[] = []
+          if (
+            this.runLog?.request &&
+            'workflow_attachment' in this.runLog.request
+          ) {
+            wfAttachment = this.runLog.request
+              .workflow_attachment as AttachedFile[]
+          }
           this.$store
             .dispatch('workflows/addWorkflow', {
               serviceId: this.serviceId,
@@ -319,8 +335,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
                 workflow_url: this.workflowUrl,
                 workflow_type: this.workflowType,
                 workflow_type_version: this.workflowVersion,
-                workflow_attachment:
-                  this.runLog?.request?.workflow_attachment || [],
+                workflow_attachment: wfAttachment,
               },
               preRegistered: false,
             })

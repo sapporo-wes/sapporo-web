@@ -199,7 +199,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
           key: 'Supported Filesystem Protocols',
           value: JSON.stringify(
             this.service?.serviceInfo?.supported_filesystem_protocols ||
-              this.service?.serviceInfo?.supported_file_system_protocols ||
+              this.service?.serviceInfo?.supported_filesystem_protocols ||
               '',
             null,
             2
@@ -224,12 +224,6 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     validUrl(val) {
       return validUrl(val)
-    },
-  },
-
-  filters: {
-    jsonStringfy(jsonObj: ReturnType<typeof JSON.parse>): string {
-      return JSON.stringify(jsonObj)
     },
   },
 }

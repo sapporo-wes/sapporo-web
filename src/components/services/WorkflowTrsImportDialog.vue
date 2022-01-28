@@ -130,17 +130,15 @@ import {
   ServiceInfoResponse,
   getTools,
   ToolsResponse,
-  workflowTypes,
   WorkflowType,
   descriptorTypeToWorkflowType,
-  generateBiocontainersServiceInfo,
 } from '@/utils/TRSRequest'
 import { validUrl } from '@/utils'
 import { Service, WorkflowLanguage } from '@/store/services'
 import AppBar from '@/components/AppBar.vue'
 import WorkflowIcon from '@/components/WorkflowIcon.vue'
 
-const changeQueue: Array<NodeJS.Timeout> = []
+const changeQueue: NodeJS.Timeout[] = []
 
 interface TableContent {
   id: string
