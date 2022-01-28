@@ -26,9 +26,7 @@ jobs:
         run: yarn install
 
       - name: 'Generate static web page'
-        run: yarn generate
-        env:
-          SAPPORO_URL_PREFIX: /sapporo-web/
+        run: SAPPORO_URL_PREFIX=/sapporo-web/ yarn generate
 
       - name: 'Deploy to gh-pages branch'
         uses: peaceiris/actions-gh-pages@v3
