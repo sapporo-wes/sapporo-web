@@ -1,25 +1,33 @@
 name: deploy_github_pages
 
 on:
-  release:
-    types:
-      - published
-  workflow_dispatch: {}
+  push:
+    tags:
+      - '*.*.*'
 
 jobs:
   deploy_github_pages:
     if: github.repository == 'sapporo-wes/sapporo-web'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: 'Checkout'
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
       - uses: actions/setup-node@v2
         with:
           node-version: '15'
-      - name: Install dependencies
-        run: yarn install
-      - name: Generate
-        run: SAPPORO_URL_PREFIX=/sapporo-web/ yarn generate
-      - name: Deploy
+
+      - name: 'Install dependencies'
+        run: yarn ci
+
+      - name: 'Generate static web page'
+        run: yarn generate
+        env:
+          SAPPORO_URL_PREFIX: /sapporo-web/
+
+      - name: 'Deploy to gh-pages branch'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
