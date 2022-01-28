@@ -4,6 +4,9 @@ on:
   push:
     tags:
       - '*.*.*'
+  workflow_dispatch:
+    branches:
+      - 'main'
 
 jobs:
   deploy_github_pages:
