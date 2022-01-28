@@ -246,19 +246,25 @@ const options: ThisTypedComponentOptionsWithRecordProps<
               const wfUrl = runLog.request.workflow_url || ''
               this.workflowName = wfUrl.split('/').pop() || runId
             }
-            let startTimeStr = runLog.run_log.start_time
-            if (!startTimeStr && 'task_started' in runLog.run_log) {
+
+            let startTime = runLog.run_log.start_time
+            if (!startTime && 'task_started' in runLog.run_log) {
               // for cwl-wes
               // eslint-disable-next-line camelcase
-              startTimeStr = (runLog.run_log as { task_started: string })
+              startTime = (runLog.run_log as { task_started: string })
                 .task_started
             }
-            const startTime = startTimeStr
-              ? this.$dayjs(startTimeStr)
+            const startTimeDayJs = startTime
+              ? this.$dayjs(startTime)
               : this.$dayjs()
-            this.runName = `${this.workflowName} ${startTime
+            let startTimeStr = startTimeDayJs
               .local()
-              .format('YYYY-MM-DD HH:mm:ss')}`
+              .format('YYYY-MM-DD HH:mm:ss')
+            if (startTimeStr === 'Invalid Date') {
+              startTimeStr = startTime || ''
+            }
+
+            this.runName = `${this.workflowName} ${startTimeStr}`
             this.workflowType = runLog.request.workflow_type
             this.workflowVersion = runLog.request.workflow_type_version
             let wfAttachment: AttachedFile[] = []
