@@ -118,7 +118,7 @@ import { DataTableHeader } from 'vuetify/types'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import Vue from 'vue'
 import { AttachedFile, RunLogSpr } from '@/types/WES'
-import { codeMirrorMode, validUrl } from '@/utils'
+import { codeMirrorMode, validUrl, formatResponse } from '@/utils'
 import { Run } from '@/store/runs'
 import { Service } from '@/store/services'
 import { WesVersions } from '@/utils/WESRequest'
@@ -208,11 +208,12 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     },
 
     runInfoContents() {
-      const wfUrl = this.run.runLog?.request?.workflow_url || ''
+      const wfUrl = formatResponse(this.run.runLog?.request?.workflow_url)
       let wfEngineName = ''
       if (this.wesVersion !== '1.0.0') {
-        wfEngineName =
-          (this.run.runLog as RunLogSpr).request?.workflow_engine_name || ''
+        wfEngineName = formatResponse(
+          (this.run.runLog as RunLogSpr).request?.workflow_engine_name
+        )
       }
 
       const contents = [
@@ -235,18 +236,11 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     },
 
     tabItems() {
-      let wfEngineParams = this.run.runLog?.request?.workflow_engine_parameters
-      if (typeof wfEngineParams !== 'string') {
-        wfEngineParams = JSON.stringify(wfEngineParams, null, 2)
-      }
-      let tags = this.run.runLog?.request?.tags
-      if (typeof tags !== 'string') {
-        tags = JSON.stringify(tags, null, 2)
-      }
-      let wfParams = this.run.runLog?.request?.workflow_params
-      if (typeof wfParams !== 'string') {
-        wfParams = JSON.stringify(wfParams, null, 2)
-      }
+      const wfEngineParams = formatResponse(
+        this.run.runLog?.request?.workflow_engine_parameters
+      )
+      const tags = formatResponse(this.run.runLog?.request?.tags)
+      const wfParams = formatResponse(this.run.runLog?.request?.workflow_params)
       let wfAttachment: AttachedFile[] = []
       if (
         this.run.runLog?.request &&
@@ -255,6 +249,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         wfAttachment = this.run.runLog?.request
           .workflow_attachment as unknown as AttachedFile[]
       }
+      const wfAttachmentStr = formatResponse(wfAttachment)
 
       const items = [
         {
@@ -274,7 +269,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         this.tab = 3
         items.splice(2, 0, {
           key: 'Workflow Attachment',
-          value: JSON.stringify(wfAttachment, null, 2),
+          value: wfAttachmentStr,
         })
       }
       return items

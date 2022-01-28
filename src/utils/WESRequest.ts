@@ -154,6 +154,7 @@ export interface Attachment {
 
 export const postRuns = async (
   endpoint: string,
+  wesVersion: WesVersions,
   runRequest: RunRequest,
   attachments: Attachment[]
 ): Promise<RunId> => {
@@ -168,7 +169,11 @@ export const postRuns = async (
     }
   })
   attachments.forEach((attachment) => {
-    formData.append('workflow_attachment', attachment.file, attachment.name)
+    if (wesVersion === 'sapporo-1.0.0') {
+      formData.append('workflow_attachment[]', attachment.file, attachment.name)
+    } else {
+      formData.append('workflow_attachment', attachment.file, attachment.name)
+    }
   })
 
   const res = await fetch(`${endpoint}/runs`, {

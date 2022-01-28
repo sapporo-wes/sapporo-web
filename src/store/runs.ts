@@ -212,7 +212,12 @@ export const actions: ActionTree<State, RootState> = {
       }
     }
     const runId = (
-      await postRuns(payload.service.endpoint, runRequest, attachments)
+      await postRuns(
+        payload.service.endpoint,
+        wesVersion,
+        runRequest,
+        attachments
+      )
     ).run_id as string
 
     dispatch(

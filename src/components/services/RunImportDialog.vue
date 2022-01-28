@@ -102,7 +102,12 @@ import 'codemirror/mode/yaml/yaml.js'
 import { codemirror } from 'vue-codemirror'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import Vue from 'vue'
-import { codeMirrorMode, convertGitHubUrl } from '@/utils'
+import {
+  codeMirrorMode,
+  convertGitHubUrl,
+  formatResponse,
+  formatTime,
+} from '@/utils'
 import { fetchWorkflowContent, getRunsId } from '@/utils/WESRequest'
 import { Service } from '@/store/services'
 import { RunLog, AttachedFile } from '@/types/WES'
@@ -239,9 +244,12 @@ const options: ThisTypedComponentOptionsWithRecordProps<
             ) {
               throw new Error('The Run could not be fetched correctly')
             }
+            console.log(runLog)
             this.runLog = runLog
             if ('workflow_name' in runLog.request) {
-              this.workflowName = runLog.request.workflow_name || runId
+              const wfUrl = runLog.request.workflow_url || ''
+              this.workflowName =
+                runLog.request.workflow_name || wfUrl.split('/').pop() || runId
             } else {
               const wfUrl = runLog.request.workflow_url || ''
               this.workflowName = wfUrl.split('/').pop() || runId
@@ -254,30 +262,40 @@ const options: ThisTypedComponentOptionsWithRecordProps<
               startTime = (runLog.run_log as { task_started: string })
                 .task_started
             }
-            const startTimeDayJs = startTime
-              ? this.$dayjs(startTime)
-              : this.$dayjs()
-            let startTimeStr = startTimeDayJs
-              .local()
-              .format('YYYY-MM-DD HH:mm:ss')
-            if (startTimeStr === 'Invalid Date') {
-              startTimeStr = startTime || ''
-            }
+            const startTimeStr = formatTime(
+              this.$dayjs,
+              formatResponse(startTime)
+            )
 
             this.runName = `${this.workflowName} ${startTimeStr}`
             this.workflowType = runLog.request.workflow_type
             this.workflowVersion = runLog.request.workflow_type_version
             let wfAttachment: AttachedFile[] = []
             if ('workflow_attachment' in runLog.request) {
-              wfAttachment = runLog.request
-                .workflow_attachment as AttachedFile[]
+              wfAttachment =
+                JSON.parse(
+                  formatResponse(runLog.request.workflow_attachment)
+                ) || []
             }
-            convertGitHubUrl(runLog.request.workflow_url).then((url) => {
-              this.workflowUrl = url
-            })
+            const wfUrl = formatResponse(runLog.request.workflow_url) || ''
+            try {
+              const newUrl = new URL(wfUrl)
+              convertGitHubUrl(newUrl).then((url) => {
+                this.workflowUrl = url
+              })
+            } catch (_) {
+              // like `./trimming_and_qc.cwl`
+              const fileName = wfUrl.split('/').pop() || wfUrl
+              for (const file of wfAttachment) {
+                if (file.file_name.includes(fileName)) {
+                  this.workflowUrl = file.file_url
+                  break
+                }
+              }
+            }
             fetchWorkflowContent({
               workflow_name: this.workflowName,
-              workflow_url: runLog.request.workflow_url,
+              workflow_url: this.workflowUrl,
               workflow_type: this.workflowType,
               workflow_type_version: this.workflowVersion,
               workflow_attachment: wfAttachment,

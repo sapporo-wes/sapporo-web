@@ -46,6 +46,7 @@
             v-if="
               isSapporo &&
               tabItem.key === 'Outputs' &&
+              tabItem.value !== '' &&
               JSON.parse(tabItem.value) !== null &&
               JSON.parse(tabItem.value).length !== 0
             "
@@ -105,7 +106,7 @@ import { DataTableHeader } from 'vuetify/types'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import Vue from 'vue'
 import { AttachedFile } from '@/types/WES'
-import { codeMirrorMode } from '@/utils'
+import { codeMirrorMode, formatResponse, formatTime } from '@/utils'
 import { Run } from '@/store/runs'
 import { Service } from '@/store/services'
 import { WesVersions } from '@/utils/WESRequest'
@@ -132,7 +133,7 @@ type Computed = {
   }[]
   tabItems: {
     key: string
-    value: string | null
+    value: string
   }[]
 }
 
@@ -189,7 +190,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     },
 
     logInfoContents() {
-      let startTime = this.run.runLog.run_log?.start_time || ''
+      let startTime = this.run.runLog.run_log?.start_time
       if (
         !startTime &&
         this.run.runLog.run_log &&
@@ -200,7 +201,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         startTime = (this.run.runLog.run_log as { task_started: string })
           .task_started
       }
-      let endTime = this.run.runLog.run_log?.end_time || ''
+      let endTime = this.run.runLog.run_log?.end_time
       if (
         !endTime &&
         this.run.runLog.run_log &&
@@ -211,20 +212,10 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         endTime = (this.run.runLog.run_log as { task_finished: string })
           .task_finished
       }
-      const exitCode = this.run.runLog.run_log?.exit_code
+      const startTimeStr = formatTime(this.$dayjs, formatResponse(startTime))
+      const endTimeStr = formatTime(this.$dayjs, formatResponse(endTime))
 
-      let startTimeStr = this.$dayjs(startTime)
-        .local()
-        .format('YYYY-MM-DD HH:mm:ss')
-      if (startTimeStr === 'Invalid Date') {
-        startTimeStr = startTime
-      }
-      let endTimeStr = this.$dayjs(endTime)
-        .local()
-        .format('YYYY-MM-DD HH:mm:ss')
-      if (endTimeStr === 'Invalid Date') {
-        endTimeStr = endTime
-      }
+      const exitCode = formatResponse(this.run.runLog.run_log?.exit_code)
 
       const contents = [
         {
@@ -239,7 +230,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       if (Number.isInteger(exitCode)) {
         contents.push({
           key: 'Exit Code',
-          value: `${exitCode}`,
+          value: exitCode,
         })
       }
 
@@ -247,7 +238,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     },
 
     tabItems() {
-      let command = this.run.runLog.run_log?.cmd || ''
+      let command: unknown = this.run.runLog.run_log?.cmd
       if (
         !command &&
         this.run.runLog.run_log &&
@@ -255,42 +246,34 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       ) {
         // for cwl-wes
         // eslint-disable-next-line camelcase
-        command = (this.run.runLog.run_log as { command: string }).command
+        command = (this.run.runLog.run_log as { command: unknown }).command
       }
-      if (typeof command !== 'string') {
-        command = JSON.stringify(command, null, 2)
-      }
-      const stdout = this.run.runLog.run_log?.stdout || ''
-      const stderr = this.run.runLog.run_log?.stderr || ''
-      let taskLogs = this.run.runLog.task_logs || ''
-      if (typeof taskLogs !== 'string') {
-        taskLogs = JSON.stringify(taskLogs, null, 2)
-      }
-      let outputs = this.run.runLog.outputs || ''
-      if (typeof outputs !== 'string') {
-        outputs = JSON.stringify(outputs, null, 2)
-      }
+      const commandStr = formatResponse(command)
+      const stdout = formatResponse(this.run.runLog.run_log?.stdout)
+      const stderr = formatResponse(this.run.runLog.run_log?.stderr)
+      const taskLogs = formatResponse(this.run.runLog.task_logs)
+      const outputs = formatResponse(this.run.runLog.outputs)
 
       return [
         {
           key: 'Command',
-          value: command || null,
+          value: commandStr,
         },
         {
           key: 'Stdout',
-          value: stdout || null,
+          value: stdout,
         },
         {
           key: 'Stderr',
-          value: stderr || null,
+          value: stderr,
         },
         {
           key: 'Task Logs',
-          value: taskLogs || null,
+          value: taskLogs,
         },
         {
           key: 'Outputs',
-          value: outputs || null,
+          value: outputs,
         },
       ]
     },

@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import yaml from 'js-yaml'
 
 export const parseJsonOrYaml = (
@@ -39,8 +40,8 @@ export const readFile = (file: File): Promise<string> => {
   })
 }
 
-export const convertGitHubUrl = async (url: string): Promise<string> => {
-  const urlObj = new URL(url)
+export const convertGitHubUrl = async (url: string | URL): Promise<string> => {
+  const urlObj = new URL(url.toString())
   if (urlObj.host === 'github.com') {
     const repoName = urlObj.pathname.split('/').slice(1, 3).join('/')
     const filePath = urlObj.pathname.split('/').slice(5).join('/')
@@ -53,7 +54,7 @@ export const convertGitHubUrl = async (url: string): Promise<string> => {
       return content.download_url
     }
   }
-  return url
+  return url.toString()
 }
 
 export const isJson = (content: string): boolean => {
@@ -91,4 +92,30 @@ export const yamlToJson = (content: string): string => {
     return JSON.stringify(yaml.load(content), null, 2)
   }
   return content
+}
+
+export const formatResponse = (val: unknown): string => {
+  if (typeof val === 'string') {
+    try {
+      const obj = JSON.parse(val)
+      return JSON.stringify(obj, null, 2)
+    } catch (_) {
+      return val
+    }
+  } else {
+    try {
+      return JSON.stringify(val, null, 2)
+    } catch (_) {
+      return `${val}`
+    }
+  }
+}
+
+export const formatTime = (dayjsFn: typeof dayjs, time: string): string => {
+  const result = dayjsFn(time).local().format('YYYY-MM-DD HH:mm:ss')
+  if (result === 'Invalid Date') {
+    return time
+  } else {
+    return result
+  }
 }
