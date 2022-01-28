@@ -244,7 +244,6 @@ const options: ThisTypedComponentOptionsWithRecordProps<
             ) {
               throw new Error('The Run could not be fetched correctly')
             }
-            console.log(runLog)
             this.runLog = runLog
             if ('workflow_name' in runLog.request) {
               const wfUrl = runLog.request.workflow_url || ''

@@ -358,7 +358,8 @@ import { codeMirrorMode, isJson, isYaml, yamlToJson } from '@/utils'
 import { Run } from '@/store/runs'
 import { Service, WorkflowEngine } from '@/store/services'
 import { Workflow } from '@/store/workflows'
-import { AttachedFile } from '@/types/WES'
+import { AttachedFile, SvcInfSpr101 } from '@/types/WES'
+import { parseWorkflow, WesVersions } from '@/utils/WESRequest'
 
 type StringAttachments = (string | null)[]
 type FileAttachments = (File | null)[]
@@ -408,6 +409,7 @@ type Methods = {
 
 type Computed = {
   service: Service
+  wesVersion: WesVersions
   serviceWorkflowAttachment: boolean
   workflow: Workflow
   runNames: string[]
@@ -470,6 +472,10 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   computed: {
     service(): Service {
       return this.$store.getters['services/service'](this.workflow.serviceId)
+    },
+
+    wesVersion() {
+      return this.$store.getters['services/wesVersion'](this.workflow.serviceId)
     },
 
     serviceWorkflowAttachment() {
@@ -616,9 +622,11 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     this.runName = `${this.workflow.name} ${this.$dayjs()
       .local()
       .format('YYYY-MM-DD HH:mm:ss')}`
+
     if (this.wfEngines.length === 1) {
       this.wfEngine = this.wfEngines[0]
     }
+
     if (this.workflow.preRegisteredWorkflowAttachment.length) {
       this.wfAttachment.fetch.urls.pop()
       this.wfAttachment.fetch.names.pop()
@@ -629,6 +637,46 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
       this.attachmentMode = 'fetch'
     }
+
+    if (this.wesVersion === 'sapporo-1.0.1') {
+      if (this.workflow.type === 'CWL') {
+        this.wfParams = 'Making template by cwltool...'
+        parseWorkflow(this.service.endpoint, {
+          workflow_content: this.workflow.content,
+          types_of_parsing: ['make_template'],
+        })
+          .then((res) => {
+            this.wfParams = res.inputs as string
+          })
+          .catch((_) => {
+            this.wfParams = '{}'
+          })
+      }
+    }
+  },
+
+  watch: {
+    wfEngine() {
+      if (this.wesVersion === 'sapporo-1.0.1') {
+        const wfEngineName = this.wfEngine.split(' ')[0] || ''
+        const defaultWfEngineParams = this.service.serviceInfo
+          .default_workflow_engine_parameters as {
+          // eslint-disable-next-line camelcase
+          [key: string]: { name: string; default_value: string }[]
+        }
+        if (wfEngineName in defaultWfEngineParams) {
+          const paramsObj: { [key: string]: string } = {}
+          for (const param of defaultWfEngineParams[wfEngineName]) {
+            paramsObj[param.name] = param.default_value
+          }
+          this.wfEngineParams = JSON.stringify(paramsObj, null, 2)
+          this.wfEngineParamsExpand = true
+        } else {
+          this.wfEngineParams = ''
+          this.wfEngineParamsExpand = false
+        }
+      }
+    },
   },
 
   methods: {
