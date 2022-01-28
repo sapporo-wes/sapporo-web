@@ -1,120 +1,74 @@
-/* eslint-disable camelcase */
-export interface DefaultWorkflowEngineParameter {
-  name: string
-  type: string
-  default_value: string
-}
+import {
+  definitions as ga4gh100Def,
+  paths as ga4gh100,
+} from '@/types/ga4ghWes100'
+import {
+  definitions as sapporo100Def,
+  paths as sapporo100,
+} from '@/types/sapporoWes100'
+import {
+  components as sapporo101Def,
+  paths as sapporo101,
+} from '@/types/sapporoWes101'
+
+export type SvcInfGa4gh100 =
+  ga4gh100['/service-info']['get']['responses'][200]['schema']
+export type SvcInfSpr100 =
+  sapporo100['/service-info']['get']['responses'][200]['schema']
+export type SvcInfSpr101 =
+  sapporo101['/service-info']['get']['responses'][200]['content']['application/json']
+export type ServiceInfo = SvcInfGa4gh100 | SvcInfSpr100 | SvcInfSpr101
+
+export type AttachedFileSpr100 = sapporo100Def['AttachedFile']
+export type AttachedFileSpr101 = sapporo101Def['schemas']['AttachedFile']
+export type AttachedFile = Required<AttachedFileSpr100> | AttachedFileSpr101
+
+export type Workflow =
+  | Required<sapporo100Def['Workflow']>
+  | sapporo101Def['schemas']['Workflow']
+
+export type ExecutableWorkflows =
+  | sapporo100['/service-info']['get']['responses'][200]['schema']['executable_workflows']
+  | sapporo101['/executable-workflows']['get']['responses'][200]['content']['application/json']
+
+export type ParseRequest =
+  sapporo101['/parse-workflow']['post']['requestBody']['content']['multipart/form-data']
+
+export type ParseResult =
+  sapporo101['/parse-workflow']['post']['responses'][200]['content']['application/json']
 
 export type State =
-  | 'UNKNOWN'
-  | 'QUEUED'
-  | 'INITIALIZING'
-  | 'RUNNING'
-  | 'PAUSED'
-  | 'COMPLETE'
-  | 'EXECUTOR_ERROR'
-  | 'SYSTEM_ERROR'
-  | 'CANCELED'
-  | 'CANCELING'
+  | ga4gh100Def['State']
+  | sapporo100Def['State']
+  | sapporo101Def['schemas']['State']
 
-export interface WorkflowTypeVersion {
-  workflow_type_version: string[]
-}
+export type RunListResponse =
+  | ga4gh100['/runs']['get']['responses'][200]['schema']
+  | sapporo100['/runs']['get']['responses'][200]['schema']
+  | sapporo101['/runs']['get']['responses'][200]['content']['application/json']
 
-// sapporo original implementation
-export interface AttachedFile {
-  file_name: string
-  file_url: string
-}
+export type RunRquGa4gh100 = ga4gh100['/runs']['post']['parameters']['formData']
+export type RunRquSpr100 = sapporo100['/runs']['post']['parameters']['formData']
+export type RunRquSpr101 =
+  sapporo101['/runs']['post']['requestBody']['content']['multipart/form-data']
+export type RunRquSpr = RunRquSpr100 | RunRquSpr101
+export type RunRequest = RunRquGa4gh100 | RunRquSpr100 | RunRquSpr101
 
-// sapporo original implementation
-export interface Workflow {
-  workflow_name: string
-  workflow_url: string
-  workflow_type: string
-  workflow_type_version: string
-  workflow_attachment: AttachedFile[]
-}
+export type RunId =
+  | ga4gh100['/runs']['post']['responses'][200]['schema']
+  | sapporo100['/runs']['post']['responses'][200]['schema']
+  | sapporo101['/runs']['post']['responses'][200]['content']['application/json']
 
-export interface SystemStateCounts {
-  State: number
-}
+export type RunLogSpr =
+  | sapporo100['/runs/{run_id}']['get']['responses'][200]['schema']
+  | sapporo101['/runs/{run_id}']['get']['responses'][200]['content']['application/json']
 
-export interface ServiceInfo {
-  workflow_type_versions: { [key: string]: WorkflowTypeVersion }
-  supported_wes_versions: string[]
-  supported_filesystem_protocols: string[]
-  supported_file_system_protocols?: string[]
-  workflow_engine_versions: { [key: string]: string }
-  default_workflow_engine_parameters: DefaultWorkflowEngineParameter[]
-  system_state_counts: SystemStateCounts
-  auth_instructions_url: string
-  contact_info_url: string
-  tags: { [key: string]: string | boolean }
-  executable_workflows?: Workflow[] // sapporo original implementation
-}
+export type RunLog =
+  | ga4gh100['/runs/{run_id}']['get']['responses'][200]['schema']
+  | sapporo100['/runs/{run_id}']['get']['responses'][200]['schema']
+  | sapporo101['/runs/{run_id}']['get']['responses'][200]['content']['application/json']
 
-export interface RunStatus {
-  run_id: string
-  state: State
-}
-
-export interface RunListResponse {
-  runs: RunStatus[]
-  next_page_token: string
-}
-
-export interface RunRequest {
-  workflow_params: string | Record<string, unknown>
-  workflow_type: string
-  workflow_type_version: string
-  tags: string | Record<string, unknown>
-  workflow_engine_name?: string // sapporo original implementation
-  workflow_engine_parameters: string | Record<string, unknown>
-  workflow_url: string
-  workflow_name?: string // sapporo original implementation
-  workflow_attachment?: AttachedFile[] // sapporo original implementation
-}
-
-export interface Log {
-  name: string
-  cmd: string
-  start_time: string
-  end_time: string
-  stdout: string
-  stderr: string
-  exit_code: number
-}
-
-export interface CwlWesLog {
-  command?: string
-  expires?: null
-  max_retries?: number
-  stdout?: string
-  stderr?: string
-  task_received?: string // '2021-11-10 01:27:15.123901'
-  task_started?: string // '2021-11-10 01:27:15.127852'
-  task_finished?: string // '2021-11-10 01:27:15.127852'
-  time_queue?: number // 0.004
-  time_execution?: number // 274.625
-  time_total?: number // 274.626
-  utc_offset?: number // 0
-}
-
-export interface RunLog {
-  run_id: string
-  request: RunRequest
-  state: State
-  run_log: Log | CwlWesLog
-  task_logs: Log[]
-  outputs: AttachedFile[] | unknown
-}
-
-export interface RunId {
-  run_id: string
-}
-
-export interface ErrorResponse {
-  msg: string
-  status_code: number
-}
+export type RunStatus =
+  | ga4gh100['/runs/{run_id}']['get']['responses'][200]['schema']
+  | sapporo100['/runs/{run_id}']['get']['responses'][200]['schema']
+  | sapporo101['/runs/{run_id}']['get']['responses'][200]['content']['application/json']
