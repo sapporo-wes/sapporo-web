@@ -18,9 +18,9 @@
         <br />
         <div class="my-2">
           <span>
-            Use a public WES service, or run your own using
+            Use a public WES service, or run your own using the
             <a href="https://github.com/sapporo-wes/sapporo-service">
-              Sapporo-service
+              sapporo-service
             </a>
           </span>
         </div>

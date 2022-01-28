@@ -8,13 +8,13 @@ import { ActionTree, GetterTree, MutationTree } from 'vuex/types'
 import { RootState } from '@/store'
 import { Run } from '@/store/runs'
 import { Workflow } from '@/store/workflows'
+import { ServiceInfo } from '@/types/WES'
 import {
-  ServiceInfo,
-  SystemStateCounts,
-  Workflow as WesWorkflow,
-  WorkflowTypeVersion,
-} from '@/types/WES'
-import { getServiceInfo } from '@/utils/WESRequest'
+  getExecutableWorkflows,
+  getServiceInfo,
+  parseWesVersion,
+  WesVersions,
+} from '@/utils/WESRequest'
 
 dayjs.extend(utc)
 
@@ -68,47 +68,47 @@ export const getters: GetterTree<State, RootState> = {
     return Object.keys(state)
   },
 
+  wesVersion:
+    (_state, getters) =>
+    (serviceId: string): WesVersions => {
+      const service: Service | undefined = getters.service(serviceId)
+      return parseWesVersion(service?.serviceInfo?.supported_wes_versions || [])
+    },
+
   registeredOnlyMode:
     (_state, getters) =>
-    (serviceId: string): boolean | undefined => {
+    (serviceId: string): boolean => {
       const service: Service | undefined = getters.service(serviceId)
-      if (service) {
-        return service.serviceInfo.tags.registered_only_mode === true
-      }
-      return false
+      return !!service?.serviceInfo?.tags?.registered_only_mode
     },
 
   getRuns:
     (_state, getters) =>
-    (serviceId: string): boolean | undefined => {
+    (serviceId: string): boolean => {
       const service: Service | undefined = getters.service(serviceId)
-      if (service) {
-        return service.serviceInfo.tags.get_runs !== false
-      }
-      return true
+      return !!service?.serviceInfo?.tags?.get_runs
     },
 
   workflowAttachment:
     (_state, getters) =>
-    (serviceId: string): boolean | undefined => {
+    (serviceId: string): boolean => {
       const service: Service | undefined = getters.service(serviceId)
-      if (service) {
-        return service.serviceInfo.tags.workflow_attachment !== false
-      }
-      return true
+      return !!service?.serviceInfo?.tags?.workflow_attachment
     },
 
   stateColor:
     (_state, getters) =>
     (serviceId: string): string => {
       const service: Service | undefined = getters.service(serviceId)
-      if (service) {
-        const serviceState = service.state
-        if (serviceState === 'Available') return colors.green.darken1
-        else if (serviceState === 'Disconnect') return colors.red.darken1
-        else if (serviceState === 'Unknown') return colors.grey.darken1
+      const serviceState = service?.state || 'Unknown'
+      switch (serviceState) {
+        case 'Available':
+          return colors.green.darken1
+        case 'Disconnect':
+          return colors.red.darken1
+        default:
+          return colors.grey.darken1
       }
-      return colors.grey.darken1
     },
 
   serviceFilteredByWorkflowId:
@@ -116,48 +116,35 @@ export const getters: GetterTree<State, RootState> = {
     (workflowId: string): Service | undefined => {
       const workflow: Workflow | undefined =
         rootGetters['workflows/workflow'](workflowId)
-      if (workflow) {
-        return getters.service(workflow.serviceId)
-      }
+      return getters.service(workflow?.serviceId || '')
     },
 
   serviceFilteredByRunId:
     (_state, getters, _rootState, rootGetters) =>
     (runId: string): Service | undefined => {
       const run: Run | undefined = rootGetters['runs/run'](runId)
-      if (run) {
-        return getters.service(run.serviceId)
-      }
+      return getters.service(run?.serviceId || '')
     },
 
   workflowEngines:
     (_state, getters) =>
     (serviceId: string): WorkflowEngines => {
       const service: Service | undefined = getters.service(serviceId)
-      if (service) {
-        return Object.entries(service.serviceInfo.workflow_engine_versions).map(
-          ([name, version]: [string, string]) => ({
-            name,
-            version,
-          })
-        )
-      }
-      return []
+      return Object.entries(
+        service?.serviceInfo?.workflow_engine_versions || []
+      ).map(([name, version]) => ({ name, version }))
     },
 
   workflowLanguages:
     (_state, getters) =>
     (serviceId: string): WorkflowLanguages => {
       const service: Service | undefined = getters.service(serviceId)
-      if (service) {
-        return Object.entries(service.serviceInfo.workflow_type_versions).map(
-          ([name, versions]: [string, WorkflowTypeVersion]) => ({
-            name,
-            versions: versions.workflow_type_version,
-          })
-        )
-      }
-      return []
+      return Object.entries(
+        service?.serviceInfo?.workflow_type_versions || []
+      ).map(([name, versions]) => ({
+        name,
+        versions: versions?.workflow_type_version || [],
+      }))
     },
 
   workflowEngineVersion:
@@ -178,7 +165,11 @@ export const getters: GetterTree<State, RootState> = {
 export const mutations: MutationTree<State> = {
   clearServices(state, force: boolean) {
     for (const serviceId of Object.keys(state)) {
-      if (serviceId in state && (force || !state[serviceId].preRegistered)) {
+      if (state[serviceId].preRegistered) {
+        if (force) {
+          Vue.delete(state, serviceId)
+        }
+      } else {
         Vue.delete(state, serviceId)
       }
     }
@@ -202,24 +193,6 @@ export const mutations: MutationTree<State> = {
   ) {
     if (payload.serviceId in state) {
       Vue.set(state[payload.serviceId], payload.key, payload.value)
-      if (
-        typeof payload.value === 'object' &&
-        'workflow_type_versions' in payload.value
-      ) {
-        // For reactivity
-        const serviceInfo = payload.value
-        for (const [key, value] of Object.entries(serviceInfo)) {
-          if (value === null || typeof value !== 'object') {
-            Vue.set(state[payload.serviceId].serviceInfo, key, value)
-          } else {
-            for (const [key1, value1] of Object.entries(value)) {
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              Vue.set(state[payload.serviceId].serviceInfo[key], key1, value1)
-            }
-          }
-        }
-      }
     }
   },
 }
@@ -235,66 +208,37 @@ export const actions: ActionTree<State, RootState> = {
       name: string
       endpoint: string
       preRegistered: boolean
-      serviceInfo: ServiceInfo | undefined
+      serviceInfo: ServiceInfo
     }
   ): Promise<string> {
-    let serviceInfo: ServiceInfo = {
-      workflow_type_versions: {},
-      supported_wes_versions: [],
-      supported_filesystem_protocols: [],
-      workflow_engine_versions: {},
-      default_workflow_engine_parameters: [],
-      system_state_counts: {} as SystemStateCounts,
-      auth_instructions_url: '',
-      contact_info_url: '',
-      tags: {},
-      executable_workflows: [],
-    }
-    let state = 'Unknown'
-    if (payload.serviceInfo) {
-      serviceInfo = payload.serviceInfo
-      state = 'Available'
-    } else {
-      await getServiceInfo(payload.endpoint)
-        .then((fetchedServiceInfo) => {
-          serviceInfo = fetchedServiceInfo
-          state = 'Available'
-        })
-        .catch((_) => {
-          state = 'Disconnect'
-        })
-    }
     const serviceId: string = uuidv4()
-
     const workflowIds: string[] = []
-    if (serviceInfo.executable_workflows) {
-      for (const workflow of serviceInfo.executable_workflows) {
-        const workflowId: string = await dispatch(
-          'workflows/addWorkflow',
-          {
-            serviceId,
-            workflow,
-            preRegistered: true,
-          },
-          { root: true }
-        )
-        workflowIds.push(workflowId)
-      }
+    const executableWorkflows =
+      (await getExecutableWorkflows(payload.endpoint, payload.serviceInfo)) ||
+      []
+    for (const workflow of executableWorkflows) {
+      const workflowId: string = await dispatch(
+        'workflows/addWorkflow',
+        { serviceId, workflow, preRegistered: true },
+        { root: true }
+      )
+      workflowIds.push(workflowId)
     }
-
     const date = dayjs().utc().format()
-    commit('setService', {
+    const service: Service = {
       name: payload.name,
       endpoint: payload.endpoint,
-      state,
+      state: 'Available',
       addedDate: date,
-      updateDate: date,
+      updatedDate: date,
       preRegistered: payload.preRegistered,
       id: serviceId,
       workflowIds,
       runIds: [],
-      serviceInfo,
-    })
+      serviceInfo: payload.serviceInfo,
+    }
+
+    commit('setService', service)
     return serviceId
   },
 
@@ -334,82 +278,58 @@ export const actions: ActionTree<State, RootState> = {
             value: serviceInfo,
             serviceId,
           })
-          if (serviceInfo.executable_workflows) {
-            const fetchedWfNames = new Set(
-              serviceInfo.executable_workflows.map(
-                (workflow: WesWorkflow) => workflow.workflow_name
-              )
+          const executableWfs =
+            (await getExecutableWorkflows(service.endpoint, serviceInfo)) || []
+          const registeredWfs: Workflow[] = rootGetters[
+            'workflows/workflowsByIds'
+          ](service.workflowIds).filter((wf: Workflow) => wf.preRegistered)
+          const fetchedWfNames = new Set(
+            executableWfs.map((wf) => wf.workflow_name)
+          )
+          const registeredWfNames = new Set(
+            registeredWfs.map((wf: Workflow) => wf.name)
+          )
+          const allWfNames = new Set([...fetchedWfNames, ...registeredWfNames])
+          for (const wfName of allWfNames) {
+            const preWf = registeredWfs.find(
+              (wf: Workflow) => wf.name === wfName
             )
-            const registeredWfNames = new Set(
-              (
-                rootGetters['workflows/workflowsByIds'](
-                  service.workflowIds
-                ) as Workflow[]
-              )
-                .filter((workflow: Workflow) => workflow.preRegistered)
-                .map((workflow: Workflow) => workflow.name)
+            const newWf = executableWfs.find(
+              (wf) => wf.workflow_name === wfName
             )
-            for (const wfName of new Set([
-              ...fetchedWfNames,
-              ...registeredWfNames,
-            ])) {
-              if (fetchedWfNames.has(wfName) && registeredWfNames.has(wfName)) {
-                await dispatch(
-                  'workflows/updateWorkflow',
-                  {
-                    serviceId,
-                    workflowId: (
-                      rootGetters['workflows/workflowsByIds'](
-                        service.workflowIds
-                      ) as Workflow[]
-                    ).filter(
-                      (workflow: Workflow) => workflow.name === wfName
-                    )[0].id,
-                    workflow: serviceInfo.executable_workflows.filter(
-                      (workflow: WesWorkflow) =>
-                        workflow.workflow_name === wfName
-                    )[0],
-                  },
-                  { root: true }
-                )
-              } else if (
-                fetchedWfNames.has(wfName) &&
-                !registeredWfNames.has(wfName)
-              ) {
-                const workflowId: string = await dispatch(
-                  'workflows/addWorkflow',
-                  {
-                    serviceId,
-                    workflow: serviceInfo.executable_workflows.filter(
-                      (workflow: WesWorkflow) =>
-                        workflow.workflow_name === wfName
-                    )[0],
-                    preRegistered: true,
-                  },
-                  { root: true }
-                )
-                dispatch('addWorkflowId', { serviceId, workflowId })
-              } else if (
-                !fetchedWfNames.has(wfName) &&
-                registeredWfNames.has(wfName)
-              ) {
-                dispatch(
-                  'workflows/deleteWorkflows',
-                  {
-                    workflowIds: [
-                      (
-                        rootGetters['workflows/workflowsByIds'](
-                          service.workflowIds
-                        ) as Workflow[]
-                      ).filter(
-                        (workflow: Workflow) => workflow.name === wfName
-                      )[0].id,
-                    ],
-                    force: true,
-                  },
-                  { root: true }
-                )
-              }
+            if (preWf && newWf) {
+              // update
+              await dispatch(
+                'workflows/updateWorkflow',
+                {
+                  serviceId,
+                  workflowId: preWf.id,
+                  workflow: newWf,
+                },
+                { root: true }
+              )
+            } else if (newWf) {
+              // add
+              const workflowId: string = await dispatch(
+                'workflows/addWorkflow',
+                {
+                  serviceId,
+                  workflow: newWf,
+                  preRegistered: true,
+                },
+                { root: true }
+              )
+              dispatch('addWorkflowId', { serviceId, workflowId })
+            } else if (preWf) {
+              // remove
+              dispatch(
+                'workflows/deleteWorkflows',
+                {
+                  workflowIds: [preWf.id],
+                  force: true,
+                },
+                { root: true }
+              )
             }
           }
           commit('setProp', { key: 'state', value: 'Available', serviceId })
