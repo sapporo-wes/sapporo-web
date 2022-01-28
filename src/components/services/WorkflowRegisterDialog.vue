@@ -12,6 +12,7 @@
       </div>
       <div class="mx-12 my-2">
         <v-text-field
+          v-if="inspected"
           v-model="name"
           :persistent-hint="!name.length"
           :rules="nameRules"
@@ -20,6 +21,7 @@
           placeholder="Type a name"
         />
         <v-select
+          v-if="inspected"
           v-model="type"
           :items="types"
           :persistent-hint="!type.length"
@@ -29,6 +31,7 @@
           @change="changeType"
         />
         <v-select
+          v-if="inspected"
           v-model="version"
           :disabled="!type"
           :items="versions"
@@ -171,6 +174,7 @@ import Vue from 'vue'
 import { codeMirrorMode, validUrl, convertGitHubUrl } from '@/utils'
 import { WorkflowLanguages, Service } from '@/store/services'
 import { Workflow } from '@/store/workflows'
+import { WesVersions, parseWorkflow } from '@/utils/WESRequest'
 
 const changeQueue: NodeJS.Timeout[] = []
 
@@ -199,6 +203,8 @@ type Methods = {
 
 type Computed = {
   service: Service
+  wesVersion: WesVersions
+  inspected: boolean
   wfNames: string[]
   types: string[]
   versions: string[]
@@ -257,6 +263,21 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   computed: {
     service() {
       return this.$store.getters['services/service'](this.serviceId)
+    },
+
+    wesVersion() {
+      return this.$store.getters['services/wesVersion'](this.serviceId)
+    },
+
+    inspected() {
+      if (this.wesVersion === 'sapporo-1.0.1') {
+        if (this.wfContentFetch || this.wfContentUpload) {
+          return true
+        } else {
+          return false
+        }
+      }
+      return true
     },
 
     wfNames() {
@@ -390,6 +411,21 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       if (validUrl(url)) {
         convertGitHubUrl(this.url).then((url) => {
           this.url = url
+          // inspect workflow
+          if (this.wesVersion === 'sapporo-1.0.1') {
+            parseWorkflow(this.service.endpoint, {
+              workflow_location: url,
+              types_of_parsing: ['workflow_type', 'workflow_type_version'],
+            })
+              .then((result) => {
+                this.type = result.workflow_type || ''
+                this.version = result.workflow_type_version || ''
+              })
+              .catch((_) => {
+                this.type = ''
+                this.version = ''
+              })
+          }
           fetch(this.url)
             .then((res) => {
               if (!res.ok) {
@@ -399,6 +435,13 @@ const options: ThisTypedComponentOptionsWithRecordProps<
                 res.text().then((content) => {
                   this.fetchFailed = false
                   this.wfContentFetch = content
+                  // add for name auto complete
+                  if (!this.name) {
+                    this.name = (this.url.split('/').pop() || '').replace(
+                      /\.[^/.]+$/,
+                      ''
+                    )
+                  }
                 })
               }
             })
@@ -415,6 +458,13 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     setDragFileName(e: DragEvent) {
       if (e?.dataTransfer?.files?.[0]?.name) {
         this.fileName = e?.dataTransfer?.files[0].name
+        // add for name auto complete
+        if (!this.name) {
+          this.name = (this.fileName.split('/').pop() || '').replace(
+            /\.[^/.]+$/,
+            ''
+          )
+        }
       }
     },
 
@@ -466,18 +516,23 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
 
-    url() {
-      if (!this.name) {
-        this.name = (this.url.split('/').pop() || '').replace(/\.[^/.]+$/, '')
-      }
-    },
-
-    fileName() {
-      if (!this.name) {
-        this.name = (this.fileName.split('/').pop() || '').replace(
-          /\.[^/.]+$/,
-          ''
-        )
+    wfContentUpload() {
+      if (this.wesVersion === 'sapporo-1.0.1') {
+        if (this.wfContentUpload) {
+          // inspect workflow
+          parseWorkflow(this.service.endpoint, {
+            workflow_content: this.wfContentUpload,
+            types_of_parsing: ['workflow_type', 'workflow_type_version'],
+          })
+            .then((result) => {
+              this.type = result.workflow_type || ''
+              this.version = result.workflow_type_version || ''
+            })
+            .catch((_) => {
+              this.type = ''
+              this.version = ''
+            })
+        }
       }
     },
   },
