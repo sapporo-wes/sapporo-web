@@ -83,6 +83,7 @@
         :headers="tableHeaders"
         :items-per-page="Number(10)"
         :items="filteredTableContents"
+        :loading="loading"
         class="mx-12 my-2 workflow-table"
         item-key="idVersionType"
       >
@@ -198,6 +199,7 @@ type Computed = {
   trsEndpointRules: string[]
   tableHeaders: DataTableHeader[]
   filteredTableContents: TableContent[]
+  loading: boolean
 }
 
 type Props = {
@@ -333,6 +335,17 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         return true
       })
     },
+
+    loading() {
+      if (
+        this.trsEndpoint &&
+        this.tableContents.length === 0 &&
+        !this.fetchFailed
+      ) {
+        return true
+      }
+      return false
+    },
   },
 
   methods: {
@@ -370,9 +383,6 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     },
 
     importWorkflow(workflow: TableContent) {
-      const wfVersion =
-        this.wfLangs.find((lang) => lang.name === workflow.workflowType)
-          ?.versions[0] || ''
       this.$store
         .dispatch('workflows/importWorkflowFromTrs', {
           serviceId: this.serviceId,
@@ -381,7 +391,6 @@ const options: ThisTypedComponentOptionsWithRecordProps<
           trsWorkflowVersion: workflow.version,
           trsWorkflowType: workflow.workflowType,
           trsWorkflowName: `${workflow.workflowName}: ${workflow.workflowVersion}`,
-          workflowVersion: wfVersion,
         })
         .then((workflowId) => {
           this.$emit('close')

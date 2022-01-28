@@ -6,6 +6,7 @@ import { ActionTree, GetterTree, MutationTree } from 'vuex/types'
 
 import { RootState } from '@/store'
 import { Run } from '@/store/runs'
+import { Service, WorkflowLanguages } from '@/store/services'
 import { AttachedFile, Workflow as WesWorkflow } from '@/types/WES'
 import {
   generateWfAttachmentUrl,
@@ -14,7 +15,11 @@ import {
   WorkflowType,
   workflowTypeToDescriptorType,
 } from '@/utils/TRSRequest'
-import { fetchWorkflowContent } from '@/utils/WESRequest'
+import {
+  fetchWorkflowContent,
+  parseWorkflow,
+  WesVersions,
+} from '@/utils/WESRequest'
 
 dayjs.extend(utc)
 
@@ -319,7 +324,7 @@ export const actions: ActionTree<State, RootState> = {
   },
 
   async importWorkflowFromTrs(
-    { commit, dispatch },
+    { commit, dispatch, rootGetters },
     payload: {
       serviceId: string
       trsEndpoint: string
@@ -327,7 +332,6 @@ export const actions: ActionTree<State, RootState> = {
       trsWorkflowVersion: string
       trsWorkflowType: WorkflowType
       trsWorkflowName: string
-      workflowVersion: string
     }
   ) {
     const descriptorType = workflowTypeToDescriptorType(payload.trsWorkflowType)
@@ -347,6 +351,36 @@ export const actions: ActionTree<State, RootState> = {
       throw new Error(`Failed to fetch workflow from ${url}`)
     }
     const content = await res.text()
+
+    // attach as file except for CWL
+    let strUrl = url.toString()
+    if (descriptorType !== 'CWL') {
+      strUrl = url.pathname.split('/').pop() || url.toString()
+    }
+
+    // inspect wf version
+    const service: Service = rootGetters['services/service'](payload.serviceId)
+    const wesVersion: WesVersions = rootGetters['services/wesVersion'](
+      payload.serviceId
+    )
+    const wfLangs: WorkflowLanguages = rootGetters[
+      'services/workflowLanguages'
+    ](payload.serviceId)
+    let wfVersion =
+      wfLangs.find((wfLang) => wfLang.name === payload.trsWorkflowType)
+        ?.versions[0] || descriptorType === 'CWL'
+        ? 'v1.0'
+        : '1.0'
+    if (wesVersion === 'sapporo-1.0.1') {
+      parseWorkflow(service.endpoint, {
+        workflow_location: url.toString(),
+        types_of_parsing: ['workflow_type_version'],
+      }).then((res) => {
+        wfVersion =
+          res.workflow_type_version || descriptorType === 'CWL' ? 'v1.0' : '1.0'
+      })
+    }
+
     const files = await getFiles(
       payload.trsEndpoint,
       payload.trsWorkflowId,
@@ -369,20 +403,13 @@ export const actions: ActionTree<State, RootState> = {
       }
     }
     const workflowId: string = uuidv4()
-    dispatch(
-      'services/addWorkflowId',
-      {
-        serviceId: payload.serviceId,
-        workflowId,
-      },
-      { root: true }
-    )
     const date = dayjs().utc().format()
+
     const workflow: Workflow = {
       name: payload.trsWorkflowName,
       type: payload.trsWorkflowType,
-      version: payload.workflowVersion,
-      url: url.toString(),
+      version: wfVersion,
+      url: strUrl,
       content,
       addedDate: date,
       updatedDate: date,
@@ -394,6 +421,15 @@ export const actions: ActionTree<State, RootState> = {
     }
 
     commit('setWorkflow', workflow)
+    dispatch(
+      'services/addWorkflowId',
+      {
+        serviceId: payload.serviceId,
+        workflowId,
+      },
+      { root: true }
+    )
+
     return workflowId
   },
 }
