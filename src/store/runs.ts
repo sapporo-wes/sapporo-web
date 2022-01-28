@@ -8,14 +8,15 @@ import { RootState } from '@/store'
 import { Service } from '@/store/services'
 import { Workflow } from '@/store/workflows'
 import {
-  AttachedFile,
   RunListResponse,
   RunLog,
+  RunRequest,
+  RunRquSpr,
   RunStatus,
   State as WesState,
 } from '@/types/WES'
-import { validUrl } from '@/utils'
 import {
+  Attachment,
   getRuns,
   getRunsId,
   getRunsIdStatus,
@@ -95,11 +96,11 @@ export const getters: GetterTree<State, RootState> = {
           runId: run.id,
           runName: run.name,
           serviceId: run.serviceId,
-          serviceName: service ? service.name : '',
+          serviceName: service?.name || '',
           workflowId: run.workflowId,
-          workflowName: workflow ? workflow.name : '',
-          workflowType: workflow ? workflow.type : '',
-          workflowVersion: workflow ? workflow.version : '',
+          workflowName: workflow?.name || '',
+          workflowType: workflow?.type || '',
+          workflowVersion: workflow?.version || '',
           addedDate: dayjs(run.addedDate).local().format('YYYY-MM-DD HH:mm:ss'),
           state: run.state,
           stateColor: getters.stateColor(run.id),
@@ -112,29 +113,36 @@ export const getters: GetterTree<State, RootState> = {
     (_state, getters) =>
     (runId: string): string => {
       const run: Run | undefined = getters.run(runId)
-      if (run) {
-        const runState = run.state
-        if (runState === 'UNKNOWN') return colors.grey.darken1
-        else if (runState === 'QUEUED') return colors.lightBlue.darken1
-        else if (runState === 'INITIALIZING') return colors.lightBlue.darken1
-        else if (runState === 'RUNNING') return colors.indigo.darken1
-        else if (runState === 'PAUSED') return colors.lightBlue.darken1
-        else if (runState === 'COMPLETE') return colors.green.darken1
-        else if (runState === 'EXECUTOR_ERROR') return colors.red.darken1
-        else if (runState === 'SYSTEM_ERROR') return colors.red.darken1
-        else if (runState === 'CANCELED') return colors.amber.darken1
-        else if (runState === 'CANCELING') return colors.amber.darken1
+      const runState = run?.state || 'UNKNOWN'
+      switch (runState) {
+        case 'QUEUED':
+          return colors.lightBlue.darken1
+        case 'INITIALIZING':
+          return colors.lightBlue.darken1
+        case 'RUNNING':
+          return colors.indigo.darken1
+        case 'PAUSED':
+          return colors.lightBlue.darken1
+        case 'COMPLETE':
+          return colors.green.darken1
+        case 'EXECUTOR_ERROR':
+          return colors.red.darken1
+        case 'SYSTEM_ERROR':
+          return colors.red.darken1
+        case 'CANCELED':
+          return colors.amber.darken1
+        case 'CANCELING':
+          return colors.amber.darken1
+        default:
+          return colors.grey.darken1
       }
-      return colors.grey.darken1
     },
 }
 
 export const mutations: MutationTree<State> = {
   clearRuns(state) {
     for (const runId of Object.keys(state)) {
-      if (runId in state) {
-        Vue.delete(state, runId)
-      }
+      Vue.delete(state, runId)
     }
   },
 
@@ -158,21 +166,6 @@ export const mutations: MutationTree<State> = {
   ) {
     if (payload.runId in state) {
       Vue.set(state[payload.runId], payload.key, payload.value)
-      if (typeof payload.value === 'object' && 'run_id' in payload.value) {
-        // For reactivity
-        const runLog = payload.value
-        for (const [key, value] of Object.entries(runLog)) {
-          if (value === null || typeof value !== 'object') {
-            Vue.set(state[payload.runId].runLog, key, value)
-          } else {
-            for (const [key1, value1] of Object.entries(value)) {
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              Vue.set(state[payload.runId].runLog[key], key1, value1)
-            }
-          }
-        }
-      }
     }
   },
 }
@@ -192,76 +185,40 @@ export const actions: ActionTree<State, RootState> = {
       wfEngineParams: string
       tags: string
       wfAttachmentText: string
-      workflowAttachment: Array<File | null>
-      fileNames: Array<string | null>
+      workflowAttachment: (File | null)[]
+      fileNames: (string | null)[]
       wfParams: string
     }
   ): Promise<string> {
-    const data = new FormData()
-    if (payload.workflow.preRegistered) {
-      data.append('workflow_name', payload.workflow.name)
-      data.append('tags', payload.tags)
-    } else {
-      data.append('workflow_url', payload.workflow.url)
-      data.append('workflow_type', payload.workflow.type)
-      data.append('workflow_type_version', payload.workflow.version)
-      const tags = JSON.parse(payload.tags)
-      if (!('workflow_name' in tags)) {
-        tags.workflow_name = payload.workflow.name
-      }
-      data.append('tags', JSON.stringify(tags))
+    const wesVersion = rootGetters['services/wesVersion'](payload.service.id)
+    const runRequest: RunRequest = {
+      workflow_params: payload.wfParams,
+      workflow_type: payload.workflow.type,
+      workflow_type_version: payload.workflow.version,
+      tags: payload.tags,
+      workflow_engine_parameters: payload.wfEngineParams,
+      workflow_url: payload.workflow.url,
     }
-    if (
-      payload.service.serviceInfo.supported_wes_versions.includes(
-        'sapporo-wes-1.0.0'
-      )
-    ) {
-      data.append('workflow_engine_name', payload.wfEngineName)
-    }
-    data.append('workflow_engine_parameters', payload.wfEngineParams)
-    data.append('workflow_params', payload.wfParams)
-    data.append('workflow_attachment', payload.wfAttachmentText)
-
-    if (
-      !validUrl(payload.workflow.url) &&
-      rootGetters['services/workflowAttachment'](payload.service.id)
-    ) {
-      const wfFileName = payload.workflow.url.split('/').slice(-1)[0]
-      const attachedFileNames = [
-        ...JSON.parse(payload.wfAttachmentText)
-          .map((attachedFile: AttachedFile) => attachedFile.file_name)
-          .map((fileName: string) => fileName.split('/').slice(-1)[0]),
-        ...(payload.fileNames.filter((fileName) => fileName) as string[]).map(
-          (fileName: string) => fileName.split('/').slice(-1)[0]
-        ),
-      ]
-      if (!attachedFileNames.includes(wfFileName)) {
-        data.append(
-          'workflow_attachment[]',
-          new Blob([payload.workflow.content]),
-          payload.workflow.url
-        )
+    if (wesVersion === 'sapporo-1.0.0' || wesVersion === 'sapporo-1.0.1') {
+      ;(runRequest as RunRquSpr).workflow_engine_name = payload.wfEngineName
+      ;(runRequest as RunRquSpr).workflow_attachment = payload.wfAttachmentText
+      if (payload.workflow.preRegistered) {
+        ;(runRequest as RunRquSpr).workflow_name = payload.workflow.name
       }
     }
-
-    if (rootGetters['services/workflowAttachment'](payload.service.id)) {
-      for (let i = 0; i < payload.workflowAttachment.length; i++) {
-        const file: File | null = payload.workflowAttachment[i]
-        if (file) {
-          const fileName: string | null = payload.fileNames[i]
-          if (fileName) {
-            data.append('workflow_attachment[]', file, fileName)
-          } else {
-            data.append('workflow_attachment[]', file)
-          }
-        }
+    const attachments: Attachment[] = []
+    for (const [i, file] of payload.workflowAttachment.entries()) {
+      if (file) {
+        const name = payload.fileNames[i] || file.name
+        attachments.push({
+          file,
+          name,
+        })
       }
     }
-
-    const runId = (await postRuns(payload.service.endpoint, data)).run_id
-
-    const runStatus = await getRunsIdStatus(payload.service.endpoint, runId)
-    const runLog = await getRunsId(payload.service.endpoint, runId)
+    const runId = (
+      await postRuns(payload.service.endpoint, runRequest, attachments)
+    ).run_id as string
 
     dispatch(
       'services/addRunId',
@@ -275,16 +232,17 @@ export const actions: ActionTree<State, RootState> = {
     )
 
     const date = dayjs().utc().format()
-    commit('addRun', {
+    const run: Run = {
       name: payload.runName,
-      state: runStatus.state,
+      state: 'QUEUED',
       addedDate: date,
       updatedDate: date,
       serviceId: payload.service.id,
       workflowId: payload.workflow.id,
       id: runId,
-      runLog,
-    })
+      runLog: {},
+    }
+    commit('addRun', run)
 
     return runId
   },
@@ -332,16 +290,17 @@ export const actions: ActionTree<State, RootState> = {
       { root: true }
     )
     const date = dayjs().utc().format()
-    commit('addRun', {
+    const run: Run = {
       name: payload.runName,
-      state: payload.runLog.state,
+      state: payload.runLog.state || 'UNKNOWN',
       addedDate: date,
       updatedDate: date,
       serviceId: payload.serviceId,
       workflowId: payload.workflowId,
       id: payload.runId,
       runLog: payload.runLog,
-    })
+    }
+    commit('addRun', run)
   },
 
   async updateRun(
@@ -381,7 +340,7 @@ export const actions: ActionTree<State, RootState> = {
       if (rootGetters['services/getRuns'](service.id)) {
         const runListRes: RunListResponse = await getRuns(service.endpoint)
         const runsMap: Record<string, RunStatus> = {}
-        for (const run of runListRes.runs) {
+        for (const run of runListRes.runs || []) {
           runsMap[run.run_id] = run
         }
         for (const runId of service.runIds) {
@@ -406,11 +365,9 @@ export const actions: ActionTree<State, RootState> = {
         }
       } else {
         for (const runId of service.runIds) {
-          const state = (
-            await getRunsIdStatus(service.endpoint, runId).catch((_) => ({
-              state: 'UNKNOWN',
-            }))
-          ).state
+          const state = await getRunsIdStatus(service.endpoint, runId)
+            .then((res) => res.state)
+            .catch((_) => 'UNKNOWN')
           commit('setProp', {
             key: 'state',
             value: state,

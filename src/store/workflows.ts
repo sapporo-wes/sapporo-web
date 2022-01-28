@@ -7,7 +7,6 @@ import { ActionTree, GetterTree, MutationTree } from 'vuex/types'
 import { RootState } from '@/store'
 import { Run } from '@/store/runs'
 import { AttachedFile, Workflow as WesWorkflow } from '@/types/WES'
-import { convertGitHubUrl, validUrl } from '@/utils'
 import {
   generateWfAttachmentUrl,
   generateWfContentUrl,
@@ -15,6 +14,7 @@ import {
   WorkflowType,
   workflowTypeToDescriptorType,
 } from '@/utils/TRSRequest'
+import { fetchWorkflowContent } from '@/utils/WESRequest'
 
 dayjs.extend(utc)
 
@@ -75,9 +75,7 @@ export const getters: GetterTree<State, RootState> = {
     (_state, getters, _rootState, rootGetters) =>
     (runId: string): Workflow | undefined => {
       const run: Run | undefined = rootGetters['runs/run'](runId)
-      if (run) {
-        return getters.workflow(run.workflowId)
-      }
+      return getters.workflow(run?.workflowId || '')
     },
 
   tableItems: (_state, getters) => (workflowIds: string[]) => {
@@ -102,7 +100,12 @@ export const getters: GetterTree<State, RootState> = {
 export const mutations: MutationTree<State> = {
   clearWorkflows(state, force: boolean) {
     for (const workflowId of Object.keys(state)) {
-      if (workflowId in state && (force || !state[workflowId].preRegistered)) {
+      const workflow: Workflow = state[workflowId]
+      if (workflow.preRegistered) {
+        if (force) {
+          Vue.delete(state, workflowId)
+        }
+      } else {
         Vue.delete(state, workflowId)
       }
     }
@@ -156,8 +159,8 @@ export const actions: ActionTree<State, RootState> = {
       },
       { root: true }
     )
-    const date = dayjs()
-    commit('setWorkflow', {
+    const date = dayjs().utc().format()
+    const workflow: Workflow = {
       name: payload.name,
       type: payload.type,
       version: payload.version,
@@ -170,7 +173,9 @@ export const actions: ActionTree<State, RootState> = {
       serviceId: payload.serviceId,
       id: workflowId,
       runIds: [],
-    })
+    }
+
+    commit('setWorkflow', workflow)
     return workflowId
   },
 
@@ -183,32 +188,9 @@ export const actions: ActionTree<State, RootState> = {
     }
   ): Promise<string> {
     const workflowId: string = uuidv4()
-    let content = ''
-    if (validUrl(payload.workflow.workflow_url)) {
-      const url = await convertGitHubUrl(payload.workflow.workflow_url)
-      const res = await fetch(url, { method: 'GET' })
-      if (!res.ok) {
-        throw new Error(`Failed to fetch workflow from ${url}`)
-      }
-      content = await res.text()
-    } else {
-      const fileName = payload.workflow.workflow_url.split('/').slice(-1)[0]
-      for (const file of payload.workflow.workflow_attachment) {
-        const attachedFileName = file.file_name.split('/').slice(-1)[0]
-        if (fileName === attachedFileName) {
-          const url = await convertGitHubUrl(file.file_url)
-          const res = await fetch(url, { method: 'GET' })
-          if (!res.ok) {
-            throw new Error(`Failed to fetch workflow from ${url}`)
-          }
-          content = await res.text()
-          break
-        }
-      }
-    }
-
-    const date = dayjs()
-    commit('setWorkflow', {
+    const content = await fetchWorkflowContent(payload.workflow)
+    const date = dayjs().utc().format()
+    const workflow: Workflow = {
       name: payload.workflow.workflow_name,
       type: payload.workflow.workflow_type,
       version: payload.workflow.workflow_type_version,
@@ -217,11 +199,14 @@ export const actions: ActionTree<State, RootState> = {
       addedDate: date,
       updatedDate: date,
       preRegistered: payload.preRegistered,
-      preRegisteredWorkflowAttachment: payload.workflow.workflow_attachment,
+      preRegisteredWorkflowAttachment: payload.workflow
+        .workflow_attachment as AttachedFile[],
       serviceId: payload.serviceId,
       id: workflowId,
       runIds: [],
-    })
+    }
+
+    commit('setWorkflow', workflow)
     return workflowId
   },
 
@@ -233,29 +218,7 @@ export const actions: ActionTree<State, RootState> = {
       workflow: WesWorkflow
     }
   ): Promise<void> {
-    let content = ''
-    if (validUrl(payload.workflow.workflow_url)) {
-      const url = await convertGitHubUrl(payload.workflow.workflow_url)
-      const res = await fetch(url, { method: 'GET' })
-      if (!res.ok) {
-        throw new Error(`Failed to fetch workflow from ${url}`)
-      }
-      content = await res.text()
-    } else {
-      const fileName = payload.workflow.workflow_url.split('/').slice(-1)[0]
-      for (const file of payload.workflow.workflow_attachment) {
-        const attachedFileName = file.file_name.split('/').slice(-1)[0]
-        if (fileName === attachedFileName) {
-          const url = await convertGitHubUrl(file.file_url)
-          const res = await fetch(url, { method: 'GET' })
-          if (!res.ok) {
-            throw new Error(`Failed to fetch workflow from ${url}`)
-          }
-          content = await res.text()
-          break
-        }
-      }
-    }
+    const content = await fetchWorkflowContent(payload.workflow)
 
     commit('setProp', {
       key: 'type',
@@ -279,7 +242,7 @@ export const actions: ActionTree<State, RootState> = {
     })
     commit('setProp', {
       key: 'updatedDate',
-      value: dayjs(),
+      value: dayjs().utc().format(),
       workflowId: payload.workflowId,
     })
     commit('setProp', {
@@ -295,10 +258,8 @@ export const actions: ActionTree<State, RootState> = {
   ) {
     const deletableWorkflows: Workflow[] = payload.workflowIds
       .map((workflowId: string) => getters.workflow(workflowId))
-      .filter(
-        (workflow: Workflow | undefined) =>
-          workflow && (!!payload.force || !workflow.preRegistered)
-      )
+      .filter((workflow: Workflow | undefined) => workflow)
+      .filter((workflow: Workflow) => payload.force || !workflow.preRegistered)
     const runIds = deletableWorkflows.flatMap(
       (workflow: Workflow) => workflow.runIds
     )
@@ -376,7 +337,12 @@ export const actions: ActionTree<State, RootState> = {
       payload.trsWorkflowVersion,
       descriptorType
     )
-    const res = await fetch(url.toString(), { method: 'GET' })
+    const res = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'plain/text',
+      },
+    })
     if (!res.ok) {
       throw new Error(`Failed to fetch workflow from ${url}`)
     }
@@ -411,8 +377,8 @@ export const actions: ActionTree<State, RootState> = {
       },
       { root: true }
     )
-    const date = dayjs()
-    commit('setWorkflow', {
+    const date = dayjs().utc().format()
+    const workflow: Workflow = {
       name: payload.trsWorkflowName,
       type: payload.trsWorkflowType,
       version: payload.workflowVersion,
@@ -425,7 +391,9 @@ export const actions: ActionTree<State, RootState> = {
       serviceId: payload.serviceId,
       id: workflowId,
       runIds: [],
-    })
+    }
+
+    commit('setWorkflow', workflow)
     return workflowId
   },
 }
