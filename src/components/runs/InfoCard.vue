@@ -1,46 +1,7 @@
 <template>
   <v-card max-width="1200">
     <div class="d-flex align-center mx-6 pt-4">
-      <v-tooltip top>
-        <template #activator="{ on }">
-          <img
-            v-if="workflow.type.toLowerCase() === 'cwl'"
-            src="~/assets/icon/cwl-icon.png"
-            height="36"
-            class="mr-2"
-            v-on="on"
-          />
-          <img
-            v-else-if="workflow.type.toLowerCase() === 'wdl'"
-            src="~/assets/icon/wdl-icon.png"
-            height="36"
-            class="mr-2"
-            v-on="on"
-          />
-          <img
-            v-else-if="workflow.type.toLowerCase() === 'nextflow'"
-            src="~/assets/icon/nextflow-icon.png"
-            height="36"
-            class="mr-4"
-            v-on="on"
-          />
-          <img
-            v-else-if="workflow.type.toLowerCase() === 'snakemake'"
-            src="~/assets/icon/snakemake-icon.png"
-            height="36"
-            class="mr-4"
-            v-on="on"
-          />
-          <v-icon
-            v-else
-            left
-            color="black"
-            v-on="on"
-            v-text="'mdi-graph-outline'"
-          />
-        </template>
-        <span v-text="`${workflow.type} ${workflow.version}`" />
-      </v-tooltip>
+      <workflow-icon :size="36" :top-margin="false" :wf-type="workflow.type" />
       <div class="card-header" v-text="run.name" />
       <v-spacer />
       <v-chip
@@ -156,12 +117,13 @@ import { codemirror } from 'vue-codemirror'
 import { DataTableHeader } from 'vuetify/types'
 import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
 import Vue from 'vue'
+import { AttachedFile, RunLogSpr } from '@/types/WES'
 import { codeMirrorMode, validUrl } from '@/utils'
 import { Run } from '@/store/runs'
 import { Service } from '@/store/services'
-import { Workflow } from '@/store/workflows'
 import { WesVersions } from '@/utils/WESRequest'
-import { AttachedFile, RunLogSpr } from '@/types/WES'
+import { Workflow } from '@/store/workflows'
+import WorkflowIcon from '@/components/WorkflowIcon.vue'
 
 type Data = {
   runInfoHeaders: DataTableHeader[]
@@ -206,6 +168,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 > = {
   components: {
     codemirror,
+    WorkflowIcon,
   },
 
   props: {

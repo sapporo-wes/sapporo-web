@@ -44,9 +44,7 @@
         <v-tab-item v-for="tabItem in tabItems" :key="tabItem.key">
           <v-list
             v-if="
-              service.serviceInfo.supported_wes_versions.includes(
-                'sapporo-wes-1.0.0'
-              ) &&
+              isSapporo &&
               tabItem.key === 'Outputs' &&
               JSON.parse(tabItem.value) !== null &&
               JSON.parse(tabItem.value).length !== 0
@@ -126,6 +124,7 @@ type Methods = {
 type Computed = {
   service: Service
   wesVersion: WesVersions
+  isSapporo: boolean
   run: Run
   logInfoContents: {
     key: string
@@ -133,7 +132,7 @@ type Computed = {
   }[]
   tabItems: {
     key: string
-    value: string
+    value: string | null
   }[]
 }
 
@@ -178,6 +177,13 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return this.$store.getters['services/wesVersion'](this.run.serviceId)
     },
 
+    isSapporo(): boolean {
+      return (
+        this.wesVersion === 'sapporo-1.0.0' ||
+        this.wesVersion === 'sapporo-1.0.1'
+      )
+    },
+
     run(): Run {
       return this.$store.getters['runs/run'](this.runId)
     },
@@ -207,18 +213,27 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
       const exitCode = this.run.runLog.run_log?.exit_code
 
+      let startTimeStr = this.$dayjs(startTime)
+        .local()
+        .format('YYYY-MM-DD HH:mm:ss')
+      if (startTimeStr === 'Invalid Date') {
+        startTimeStr = startTime
+      }
+      let endTimeStr = this.$dayjs(endTime)
+        .local()
+        .format('YYYY-MM-DD HH:mm:ss')
+      if (endTimeStr === 'Invalid Date') {
+        endTimeStr = endTime
+      }
+
       const contents = [
         {
           key: 'Start Time',
-          value:
-            this.$dayjs(startTime).local().format('YYYY-MM-DD HH:mm:ss') ||
-            startTime,
+          value: startTimeStr,
         },
         {
           key: 'End Time',
-          value:
-            this.$dayjs(endTime).local().format('YYYY-MM-DD HH:mm:ss') ||
-            endTime,
+          value: endTimeStr,
         },
       ]
       if (Number.isInteger(exitCode)) {
@@ -259,23 +274,23 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return [
         {
           key: 'Command',
-          value: command,
+          value: command || null,
         },
         {
           key: 'Stdout',
-          value: stdout,
+          value: stdout || null,
         },
         {
           key: 'Stderr',
-          value: stderr,
+          value: stderr || null,
         },
         {
           key: 'Task Logs',
-          value: taskLogs,
+          value: taskLogs || null,
         },
         {
           key: 'Outputs',
-          value: outputs,
+          value: outputs || null,
         },
       ]
     },

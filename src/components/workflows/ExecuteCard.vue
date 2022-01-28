@@ -38,7 +38,7 @@
           </template>
           <span
             v-text="
-              '[Optional] A set of files to be downloaded/uploaded to the execution directory. You can create a directory structure by writing like `dirname/filename` in the file name field.'
+              '[Optional] A set of files to be fetched/uploaded to the execution directory. You can create a directory structure by writing like `dirname/filename` in the file name field.'
             "
           />
         </v-tooltip>
@@ -48,7 +48,7 @@
               <div v-on="!serviceWorkflowAttachment && on">
                 <v-chip
                   :disabled="!serviceWorkflowAttachment"
-                  :value="'download'"
+                  :value="'fetch'"
                   class="my-0 py-0"
                   label
                   outlined
@@ -107,7 +107,7 @@
           <span v-text="'Remove'" />
         </v-btn>
       </div>
-      <div v-if="attachmentMode === 'download'" class="d-flex flex-column">
+      <div v-if="attachmentMode === 'fetch'" class="d-flex flex-column">
         <div
           v-for="ind in wfAttachment[attachmentMode].names.length"
           :key="ind"
@@ -363,7 +363,7 @@ import { AttachedFile } from '@/types/WES'
 type StringAttachments = (string | null)[]
 type FileAttachments = (File | null)[]
 type WfAttachment = {
-  download: {
+  fetch: {
     urls: StringAttachments
     names: StringAttachments
   }
@@ -373,7 +373,7 @@ type WfAttachment = {
   }
 }
 type WfAttachmentRules = {
-  download: {
+  fetch: {
     urls: string[][]
     names: string[][]
   }
@@ -449,7 +449,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       wfEngine: '',
       attachmentMode: undefined,
       wfAttachment: {
-        download: {
+        fetch: {
           urls: [null],
           names: [null],
         },
@@ -515,7 +515,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     wfAttachmentRules(): WfAttachmentRules {
       const rules: WfAttachmentRules = {
-        download: {
+        fetch: {
           urls: [],
           names: [],
         },
@@ -524,22 +524,22 @@ const options: ThisTypedComponentOptionsWithRecordProps<
           names: [],
         },
       }
-      for (let i = 0; i < this.wfAttachment.download.names.length; i++) {
+      for (let i = 0; i < this.wfAttachment.fetch.names.length; i++) {
         if (
-          !!this.wfAttachment.download.urls[i] !==
-          !!this.wfAttachment.download.names[i]
+          !!this.wfAttachment.fetch.urls[i] !==
+          !!this.wfAttachment.fetch.names[i]
         ) {
-          if (!this.wfAttachment.download.urls[i]) {
-            rules.download.urls.push(['No value in this field'])
-            rules.download.names.push([] as string[])
+          if (!this.wfAttachment.fetch.urls[i]) {
+            rules.fetch.urls.push(['No value in this field'])
+            rules.fetch.names.push([] as string[])
           }
-          if (!this.wfAttachment.download.names[i]) {
-            rules.download.urls.push([] as string[])
-            rules.download.names.push(['No value in this field'])
+          if (!this.wfAttachment.fetch.names[i]) {
+            rules.fetch.urls.push([] as string[])
+            rules.fetch.names.push(['No value in this field'])
           }
         } else {
-          rules.download.urls.push([] as string[])
-          rules.download.names.push([] as string[])
+          rules.fetch.urls.push([] as string[])
+          rules.fetch.names.push([] as string[])
         }
       }
       for (let i = 0; i < this.wfAttachment.upload.names.length; i++) {
@@ -589,10 +589,10 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     formValid(): boolean {
       const wfAttachmentValid =
-        !this.wfAttachmentRules.download.urls
+        !this.wfAttachmentRules.fetch.urls
           .map((rules) => rules.length)
           .reduce((a, b) => a + b, 0) &&
-        !this.wfAttachmentRules.download.names
+        !this.wfAttachmentRules.fetch.names
           .map((rules) => rules.length)
           .reduce((a, b) => a + b, 0) &&
         !this.wfAttachmentRules.upload.files
@@ -620,14 +620,14 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       this.wfEngine = this.wfEngines[0]
     }
     if (this.workflow.preRegisteredWorkflowAttachment.length) {
-      this.wfAttachment.download.urls.pop()
-      this.wfAttachment.download.names.pop()
+      this.wfAttachment.fetch.urls.pop()
+      this.wfAttachment.fetch.names.pop()
       for (const attachedFile of this.workflow
         .preRegisteredWorkflowAttachment) {
-        this.wfAttachment.download.urls.push(attachedFile.file_url)
-        this.wfAttachment.download.names.push(attachedFile.file_name)
+        this.wfAttachment.fetch.urls.push(attachedFile.file_url)
+        this.wfAttachment.fetch.names.push(attachedFile.file_name)
       }
-      this.attachmentMode = 'download'
+      this.attachmentMode = 'fetch'
     }
   },
 
@@ -640,11 +640,11 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       ) {
         this.executeButton = false
         const wfAttachmentObj: AttachedFile[] = []
-        for (let i = 0; i < this.wfAttachment.download.urls.length; i++) {
-          if (this.wfAttachment.download.urls[i]) {
+        for (let i = 0; i < this.wfAttachment.fetch.urls.length; i++) {
+          if (this.wfAttachment.fetch.urls[i]) {
             wfAttachmentObj.push({
-              file_url: this.wfAttachment.download.urls[i] as string,
-              file_name: this.wfAttachment.download.names[i] as string,
+              file_url: this.wfAttachment.fetch.urls[i] as string,
+              file_name: this.wfAttachment.fetch.names[i] as string,
             })
           }
         }
@@ -672,12 +672,12 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     },
 
     updateWfAttachmentUrl(url: string | null, ind: number) {
-      Vue.set(this.wfAttachment.download.urls, ind, url)
+      Vue.set(this.wfAttachment.fetch.urls, ind, url)
       if (url) {
         try {
           const tmpUrl = new URL(url)
           const fileName = tmpUrl.pathname.split('/').pop() || ''
-          Vue.set(this.wfAttachment.download.names, ind, fileName)
+          Vue.set(this.wfAttachment.fetch.names, ind, fileName)
         } catch {
           // do nothing
         }
@@ -686,7 +686,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     updateWfAttachmentName(name: string | null, ind: number) {
       Vue.set(
-        this.wfAttachment[this.attachmentMode as 'download' | 'upload'].names,
+        this.wfAttachment[this.attachmentMode as 'fetch' | 'upload'].names,
         ind,
         name
       )
@@ -705,9 +705,9 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     },
 
     addWfAttachment() {
-      if (this.attachmentMode === 'download') {
-        this.wfAttachment.download.urls.push(null)
-        this.wfAttachment.download.names.push(null)
+      if (this.attachmentMode === 'fetch') {
+        this.wfAttachment.fetch.urls.push(null)
+        this.wfAttachment.fetch.names.push(null)
       } else if (this.attachmentMode === 'upload') {
         this.wfAttachment.upload.files.push(null)
         this.wfAttachment.upload.names.push(null)
@@ -716,14 +716,14 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     removeWfAttachment() {
       if (
-        this.attachmentMode === 'download' &&
-        this.wfAttachment.download.names.length > 1
+        this.attachmentMode === 'fetch' &&
+        this.wfAttachment.fetch.names.length > 1
       ) {
-        this.wfAttachment.download.urls.pop()
-        this.wfAttachment.download.names.pop()
+        this.wfAttachment.fetch.urls.pop()
+        this.wfAttachment.fetch.names.pop()
       } else if (
         this.attachmentMode === 'upload' &&
-        this.wfAttachment.download.names.length > 1
+        this.wfAttachment.fetch.names.length > 1
       ) {
         this.wfAttachment.upload.files.pop()
         this.wfAttachment.upload.names.pop()

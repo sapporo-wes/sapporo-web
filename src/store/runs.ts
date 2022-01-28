@@ -7,21 +7,14 @@ import { ActionTree, GetterTree, MutationTree } from 'vuex/types'
 import { RootState } from '@/store'
 import { Service } from '@/store/services'
 import { Workflow } from '@/store/workflows'
-import {
-  RunListResponse,
-  RunLog,
-  RunRequest,
-  RunRquSpr,
-  RunStatus,
-  State as WesState,
-} from '@/types/WES'
+import { RunLog, RunRequest, RunRquSpr, State as WesState } from '@/types/WES'
 import {
   Attachment,
-  getRuns,
   getRunsId,
   getRunsIdStatus,
   postRuns,
   postRunsIdCancel,
+  WesVersions,
 } from '@/utils/WESRequest'
 
 dayjs.extend(utc)
@@ -190,7 +183,9 @@ export const actions: ActionTree<State, RootState> = {
       wfParams: string
     }
   ): Promise<string> {
-    const wesVersion = rootGetters['services/wesVersion'](payload.service.id)
+    const wesVersion: WesVersions = rootGetters['services/wesVersion'](
+      payload.service.id
+    )
     const runRequest: RunRequest = {
       workflow_params: payload.wfParams,
       workflow_type: payload.workflow.type,
@@ -337,48 +332,20 @@ export const actions: ActionTree<State, RootState> = {
       rootGetters['services/service'](serviceId)
     if (service) {
       const date = dayjs().utc().format()
-      if (rootGetters['services/getRuns'](service.id)) {
-        const runListRes: RunListResponse = await getRuns(service.endpoint)
-        const runsMap: Record<string, RunStatus> = {}
-        for (const run of runListRes.runs || []) {
-          runsMap[run.run_id] = run
-        }
-        for (const runId of service.runIds) {
-          if (runId in runsMap) {
-            commit('setProp', {
-              key: 'state',
-              value: runsMap[runId].state,
-              runId,
-            })
-          } else {
-            commit('setProp', {
-              key: 'state',
-              value: 'UNKNOWN',
-              runId,
-            })
-          }
-          commit('setProp', {
-            key: 'updatedDate',
-            value: date,
-            runId,
-          })
-        }
-      } else {
-        for (const runId of service.runIds) {
-          const state = await getRunsIdStatus(service.endpoint, runId)
-            .then((res) => res.state)
-            .catch((_) => 'UNKNOWN')
-          commit('setProp', {
-            key: 'state',
-            value: state,
-            runId,
-          })
-          commit('setProp', {
-            key: 'updatedDate',
-            value: date,
-            runId,
-          })
-        }
+      for (const runId of service.runIds) {
+        const state = await getRunsIdStatus(service.endpoint, runId)
+          .then((res) => res.state)
+          .catch((_) => 'UNKNOWN')
+        commit('setProp', {
+          key: 'state',
+          value: state,
+          runId,
+        })
+        commit('setProp', {
+          key: 'updatedDate',
+          value: date,
+          runId,
+        })
       }
     }
   },
