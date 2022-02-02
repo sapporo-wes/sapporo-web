@@ -681,6 +681,29 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       this.wfEngine = this.wfEngines[0]
     }
 
+    // set default wfEngine
+    if (this.workflow.type === 'CWL') {
+      this.wfEngine =
+        this.wfEngines.find((wfEngine) => {
+          return wfEngine.includes('cwltool')
+        }) || ''
+    } else if (this.workflow.type === 'WDL') {
+      this.wfEngine =
+        this.wfEngines.find((wfEngine) => {
+          return wfEngine.includes('cromwell')
+        }) || ''
+    } else if (this.workflow.type === 'NFL') {
+      this.wfEngine =
+        this.wfEngines.find((wfEngine) => {
+          return wfEngine.includes('nextflow')
+        }) || ''
+    } else if (this.workflow.type === 'SMK') {
+      this.wfEngine =
+        this.wfEngines.find((wfEngine) => {
+          return wfEngine.includes('snakemake')
+        }) || ''
+    }
+
     if (this.workflow.preRegisteredWorkflowAttachment.length) {
       this.wfAttachment.fetch.urls.pop()
       this.wfAttachment.fetch.names.pop()
