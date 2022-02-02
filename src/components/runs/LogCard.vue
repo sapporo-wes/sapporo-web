@@ -43,13 +43,7 @@
         />
         <v-tab-item v-for="tabItem in tabItems" :key="tabItem.key">
           <v-list
-            v-if="
-              isSapporo &&
-              tabItem.key === 'Outputs' &&
-              tabItem.value !== '' &&
-              JSON.parse(tabItem.value) !== null &&
-              JSON.parse(tabItem.value).length !== 0
-            "
+            v-if="isSapporo && tabItem.key === 'Outputs' && outputs.length > 0"
             class="ml-6 mt-2 mb-6 mr-1"
             dense
             elevation="2"
@@ -63,7 +57,7 @@
           >
             <v-list-item-group color="primary" disable>
               <v-list-item
-                v-for="(file, ind) in JSON.parse(tabItem.value)"
+                v-for="(file, ind) in outputs"
                 :key="ind"
                 @click="downloadOutputFile(file)"
               >
@@ -114,6 +108,7 @@ import { WesVersions } from '@/utils/WESRequest'
 type Data = {
   logInfoHeaders: DataTableHeader[]
   tab: number | null
+  outputs: Array<unknown>
 }
 
 type Methods = {
@@ -166,6 +161,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         { text: 'Value', value: 'value' },
       ],
       tab: null,
+      outputs: [],
     }
   },
 
@@ -253,6 +249,14 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       const stderr = formatResponse(this.run.runLog.run_log?.stderr)
       const taskLogs = formatResponse(this.run.runLog.task_logs)
       const outputs = formatResponse(this.run.runLog.outputs)
+      try {
+        const outputsArr = JSON.parse(outputs)
+        if (this.isSapporo && Array.isArray(outputsArr)) {
+          this.outputs = outputsArr
+        }
+      } catch (_) {
+        this.outputs = []
+      }
 
       return [
         {

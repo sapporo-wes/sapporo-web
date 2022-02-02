@@ -195,8 +195,32 @@
             "
           />
         </v-tooltip>
+        <v-chip-group
+          v-if="inputsParsable"
+          v-model="wfParamsMode"
+          class="ml-6"
+          color="primary"
+        >
+          <v-chip
+            :value="'form'"
+            class="my-0 py-0"
+            label
+            outlined
+            :disabled="!wfParamsInputs.length"
+          >
+            <v-icon left v-text="'mdi-form-select'" />
+            <span v-text="'Form'" />
+          </v-chip>
+          <v-chip :value="'text'" class="my-0 py-0" label outlined>
+            <v-icon left v-text="'mdi-format-text'" />
+            <span v-text="'Text'" />
+          </v-chip>
+        </v-chip-group>
       </div>
-      <div class="d-flex flex-column ml-8 mt-4">
+      <div v-if="showWfParamsForm" class="mx-6">
+        <wf-params-form ref="wfParamsForm" :inputs="wfParamsInputs" />
+      </div>
+      <div v-if="showWfParamsText" class="d-flex flex-column ml-8 mt-4">
         <codemirror
           v-model="wfParams"
           :options="{
@@ -358,8 +382,9 @@ import { codeMirrorMode, isJson, isYaml, yamlToJson } from '@/utils'
 import { Run } from '@/store/runs'
 import { Service, WorkflowEngine } from '@/store/services'
 import { Workflow } from '@/store/workflows'
-import { AttachedFile, SvcInfSpr101 } from '@/types/WES'
+import { AttachedFile, ParseResult } from '@/types/WES'
 import { parseWorkflow, WesVersions } from '@/utils/WESRequest'
+import WfParamsForm from '@/components/workflows/WfParamsForm.vue'
 
 type StringAttachments = (string | null)[]
 type FileAttachments = (File | null)[]
@@ -389,6 +414,8 @@ type Data = {
   wfEngine: string
   attachmentMode: string | undefined
   wfAttachment: WfAttachment
+  wfParamsMode: 'form' | 'text' | null
+  wfParamsInputs: ParseResult['inputs']
   wfParams: string
   wfEngineParams: string
   wfEngineParamsExpand: boolean
@@ -410,6 +437,9 @@ type Methods = {
 type Computed = {
   service: Service
   wesVersion: WesVersions
+  inputsParsable: boolean
+  showWfParamsText: boolean
+  showWfParamsForm: boolean
   serviceWorkflowAttachment: boolean
   workflow: Workflow
   runNames: string[]
@@ -436,6 +466,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 > = {
   components: {
     codemirror,
+    WfParamsForm,
   },
 
   props: {
@@ -460,6 +491,8 @@ const options: ThisTypedComponentOptionsWithRecordProps<
           names: [null],
         },
       },
+      wfParamsMode: null,
+      wfParamsInputs: [],
       wfParams: '{}',
       wfEngineParams: '{}',
       wfEngineParamsExpand: false,
@@ -476,6 +509,18 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
     wesVersion() {
       return this.$store.getters['services/wesVersion'](this.workflow.serviceId)
+    },
+
+    inputsParsable() {
+      return this.wesVersion === 'sapporo-1.0.1' && this.workflow.type === 'CWL'
+    },
+
+    showWfParamsText() {
+      return this.inputsParsable ? this.wfParamsMode === 'text' : true
+    },
+
+    showWfParamsForm() {
+      return this.inputsParsable ? this.wfParamsMode === 'form' : false
     },
 
     serviceWorkflowAttachment() {
@@ -607,13 +652,22 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         !this.wfAttachmentRules.upload.names
           .map((rules) => rules.length)
           .reduce((a, b) => a + b, 0)
+      let wfParamsFormValid = true
+      if (this.wfParamsMode === 'form') {
+        if (this.$refs.wfParamsForm) {
+          wfParamsFormValid = (
+            this.$refs.wfParamsForm as unknown as { validate(): boolean }
+          ).validate()
+        }
+      }
       return (
         !this.runNameRules.length &&
         !this.wfEngineRules.length &&
         !this.wfParamsError &&
         !this.wfEngineParamsError &&
         !this.tagsError &&
-        wfAttachmentValid
+        wfAttachmentValid &&
+        wfParamsFormValid
       )
     },
   },
@@ -638,20 +692,33 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       this.attachmentMode = 'fetch'
     }
 
-    if (this.wesVersion === 'sapporo-1.0.1') {
-      if (this.workflow.type === 'CWL') {
-        this.wfParams = 'Making template by cwltool...'
-        parseWorkflow(this.service.endpoint, {
-          workflow_content: this.workflow.content,
-          types_of_parsing: ['make_template'],
+    if (this.inputsParsable) {
+      this.wfParamsMode = 'form'
+
+      // for form
+      parseWorkflow(this.service.endpoint, {
+        workflow_content: this.workflow.content,
+        types_of_parsing: ['inputs'],
+      })
+        .then((res) => {
+          this.wfParamsInputs = res.inputs || []
         })
-          .then((res) => {
-            this.wfParams = res.inputs as string
-          })
-          .catch((_) => {
-            this.wfParams = '{}'
-          })
-      }
+        .catch((_) => {
+          this.wfParamsMode = 'text'
+        })
+
+      // for text
+      this.wfParams = 'Making template by cwltool...'
+      parseWorkflow(this.service.endpoint, {
+        workflow_content: this.workflow.content,
+        types_of_parsing: ['make_template'],
+      })
+        .then((res) => {
+          this.wfParams = res.inputs as string
+        })
+        .catch((_) => {
+          this.wfParams = '{}'
+        })
     }
   },
 
@@ -696,6 +763,25 @@ const options: ThisTypedComponentOptionsWithRecordProps<
             })
           }
         }
+
+        const wfParams = (() => {
+          if (this.wfParamsMode === 'form') {
+            if (this.$refs.wfParamsForm) {
+              return (
+                this.$refs.wfParamsForm as unknown as {
+                  toParams(): string
+                }
+              ).toParams()
+            } else {
+              return '{}'
+            }
+          } else {
+            return isYaml(this.wfParams)
+              ? yamlToJson(this.wfParams)
+              : this.wfParams
+          }
+        })()
+
         this.$store
           .dispatch('runs/executeRun', {
             service: this.service,
@@ -709,9 +795,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
             wfAttachmentText: JSON.stringify(wfAttachmentObj, null, 2),
             workflowAttachment: this.wfAttachment.upload.files,
             fileNames: this.wfAttachment.upload.names,
-            wfParams: isYaml(this.wfParams)
-              ? yamlToJson(this.wfParams)
-              : this.wfParams,
+            wfParams,
           })
           .then((runId) => {
             this.$router.push({ path: '/runs', query: { runId } })

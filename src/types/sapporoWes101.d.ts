@@ -138,7 +138,7 @@ export interface components {
       /** The label for the input */
       label?: string | null
       /** The type of the input */
-      type?: 'file' | 'directory' | 'any' | 'string' | 'number' | 'boolean'
+      type?: 'File' | 'Directory' | 'Any' | 'string' | 'int' | 'boolean'
       /** Whether the input is an array */
       array?: boolean
       /** Whether the input is required */
