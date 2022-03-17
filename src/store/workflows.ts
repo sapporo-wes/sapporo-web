@@ -128,7 +128,7 @@ export const mutations: MutationTree<State> = {
     state,
     payload: {
       key: keyof Workflow
-      value: AttachedFile[] | boolean | string | string | string[]
+      value: AttachedFile[] | boolean | string | string[]
       workflowId: string
     }
   ) {

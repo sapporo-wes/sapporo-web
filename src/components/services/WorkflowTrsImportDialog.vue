@@ -28,7 +28,7 @@
           :key="item.name"
           :class="{
             'text-capitalize': true,
-            'mr-2': index != defaultEndpoints.length - 1,
+            'mr-2': index !== defaultEndpoints.length - 1,
           }"
           outlined
           width="110"
