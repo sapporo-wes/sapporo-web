@@ -187,7 +187,7 @@ export const mutations: MutationTree<State> = {
     state,
     payload: {
       key: keyof Service
-      value: boolean | string | ServiceInfo | ServiceState | string | string[]
+      value: boolean | string | ServiceInfo | ServiceState | string[]
       serviceId: string
     }
   ) {
