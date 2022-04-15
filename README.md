@@ -1,5 +1,6 @@
 # sapporo-web
 
+[![DOI](https://zenodo.org/badge/220937634.svg)](https://zenodo.org/badge/latestdoi/220937634)
 [![Apache License](https://img.shields.io/badge/license-Apache%202.0-orange.svg?style=flat&color=important)](http://www.apache.org/licenses/LICENSE-2.0)
 
 <img src="https://raw.githubusercontent.com/sapporo-wes/sapporo/main/logo/sapporo-web.svg" width="400" style="display: block; margin-left: auto; margin-right: auto; margin-top: 30px; margin-bottom: 30px;" alt="sapporo-web logo">
