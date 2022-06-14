@@ -75,7 +75,7 @@
             :options="{
               lineNumbers: true,
               mode: codeMirrorMode(tabItem.value),
-              readOnly: 'nocursor',
+              readOnly: true,
               lineWrapping: tabItem.key === 'Command',
               tabSize: 2,
             }"

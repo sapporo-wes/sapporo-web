@@ -72,7 +72,7 @@
             lineNumbers: true,
             tabSize: 2,
             mode: codeMirrorMode(workflowContent),
-            readOnly: 'nocursor',
+            readOnly: true,
           }"
           :style="{
             outline: `solid 1px ${$colors.grey.lighten1}`,
