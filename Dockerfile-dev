@@ -1,5 +1,4 @@
-# FROM node:15.11.0-buster
-FROM node@sha256:bbb082a223035cee9f7a6a60154ad4d98e15d417ba89f16f81e2ae15fb70ad4d
+FROM node:18.4.0-buster-slim
 
 RUN apt update && \
   apt install -y --no-install-recommends \

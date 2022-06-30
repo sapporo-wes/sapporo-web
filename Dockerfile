@@ -1,12 +1,10 @@
-# FROM node:15.11.0-buster
-FROM node@sha256:bbb082a223035cee9f7a6a60154ad4d98e15d417ba89f16f81e2ae15fb70ad4d as builder
+FROM node:18.4.0-buster
 
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# FROM node:15.11.0-buster-slim
-FROM node@sha256:9eec4779831fa9b577b30aa55ae231d09ea3fecc01ac5f97510f7c785ea0e58f
+FROM node:18.4.0-buster-slim
 
 LABEL org.opencontainers.image.authors="DDBJ(DNA Data Bank of Japan) <t.ohta@nig.ac.jp>"
 LABEL org.opencontainers.image.url="https://github.com/sapporo-wes/sapporo-web"
