@@ -23,10 +23,10 @@ jobs:
           node-version: '15'
 
       - name: 'Install dependencies'
-        run: yarn install
+        run: npm install
 
       - name: 'Generate static web page'
-        run: SAPPORO_URL_PREFIX=/sapporo-web/ yarn generate
+        run: SAPPORO_URL_PREFIX=/sapporo-web/ npm run generate
 
       - name: 'Deploy to gh-pages branch'
         uses: peaceiris/actions-gh-pages@v3

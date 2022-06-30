@@ -10,7 +10,7 @@
     "start": "nuxt start",
     "generate": "nuxt generate",
     "lint": "eslint --ext .ts,.js,.vue ./src",
-    "deploy": "SAPPORO_URL_PREFIX=/sapporo-web/ yarn generate && push-dir --dir=dist --branch=gh-pages --cleanup"
+    "deploy": "SAPPORO_URL_PREFIX=/sapporo-web/ npm run generate && push-dir --dir=dist --branch=gh-pages --cleanup"
   },
   "dependencies": {
     "nuxt": "^2.15.8"

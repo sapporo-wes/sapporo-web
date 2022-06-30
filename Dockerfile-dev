@@ -10,8 +10,8 @@ RUN apt update && \
 
 WORKDIR /app
 
-COPY package*.json yarn.lock ./
-RUN yarn install --flozen-lock
+COPY package*.json ./
+RUN npm ci
 
 COPY . .
 
