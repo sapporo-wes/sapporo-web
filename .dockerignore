@@ -6,6 +6,7 @@
 !LICENSE
 !nuxt.config.ts
 !package.json
+!package-lock.json
 !README.md
 !src
 !tsconfig.json
