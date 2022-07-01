@@ -1,4 +1,4 @@
-import dayjs from 'dayjs'
+import dayjs, { extend as dayjsExtend } from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import { v4 as uuidv4 } from 'uuid'
 import Vue from 'vue'
@@ -21,7 +21,7 @@ import {
   WesVersions,
 } from '@/utils/WESRequest'
 
-dayjs.extend(utc)
+dayjsExtend(utc)
 
 export interface Workflow {
   name: string
