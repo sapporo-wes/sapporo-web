@@ -19,24 +19,7 @@
 </template>
 
 <script lang="ts">
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import Vue from 'vue'
+import { defineComponent } from 'vue'
 
-type Data = Record<string, unknown>
-
-type Methods = Record<string, unknown>
-
-type Computed = Record<string, unknown>
-
-type Props = Record<string, unknown>
-
-const options: ThisTypedComponentOptionsWithRecordProps<
-  Vue,
-  Data,
-  Methods,
-  Computed,
-  Props
-> = {}
-
-export default Vue.extend(options)
+export default defineComponent({})
 </script>

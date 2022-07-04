@@ -26,8 +26,10 @@
   <v-icon v-else class="my-2 mr-2" v-text="'mdi-graph-outline'" />
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+export default defineComponent({
   props: {
     wfType: {
       type: String,
@@ -43,5 +45,5 @@ export default {
       default: true,
     },
   },
-}
+})
 </script>

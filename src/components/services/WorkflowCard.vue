@@ -166,8 +166,7 @@
 
 <script lang="ts">
 import { DataTableHeader } from 'vuetify/types'
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import Vue from 'vue'
+import { defineComponent } from 'vue'
 import { Service } from '@/store/services'
 import { WorkflowTableItem } from '@/store/workflows'
 import WorkflowDeleteDialog from '@/components/services/WorkflowDeleteDialog.vue'
@@ -175,37 +174,7 @@ import WorkflowIcon from '@/components/WorkflowIcon.vue'
 import WorkflowRegisterDialog from '@/components/services/WorkflowRegisterDialog.vue'
 import WorkflowTrsImportDialog from '@/components/services/WorkflowTrsImportDialog.vue'
 
-type Data = {
-  workflowHeaders: DataTableHeader[]
-  selectedWorkflows: WorkflowTableItem[]
-  registerDialogShow: boolean
-  importDialogShow: boolean
-  deleteDialogShow: boolean
-  filterType: string
-  filterName: string
-}
-
-type Methods = Record<string, unknown>
-
-type Computed = {
-  service: Service
-  workflowTableItems: WorkflowTableItem[]
-  filteredItems: WorkflowTableItem[]
-  registeredOnlyMode: boolean
-  workflowTypes: string[]
-}
-
-type Props = {
-  serviceId: string
-}
-
-const options: ThisTypedComponentOptionsWithRecordProps<
-  Vue,
-  Data,
-  Methods,
-  Computed,
-  Props
-> = {
+export default defineComponent({
   components: {
     WorkflowDeleteDialog,
     WorkflowIcon,
@@ -246,8 +215,8 @@ const options: ThisTypedComponentOptionsWithRecordProps<
           align: 'center',
           width: '64px',
         },
-      ],
-      selectedWorkflows: [],
+      ] as DataTableHeader[],
+      selectedWorkflows: [] as WorkflowTableItem[],
       registerDialogShow: false,
       importDialogShow: false,
       deleteDialogShow: false,
@@ -257,17 +226,17 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   },
 
   computed: {
-    service() {
+    service(): Service {
       return this.$store.getters['services/service'](this.serviceId)
     },
 
-    workflowTableItems() {
+    workflowTableItems(): WorkflowTableItem[] {
       return this.$store.getters['workflows/tableItems'](
         this.service.workflowIds
       )
     },
 
-    filteredItems() {
+    filteredItems(): WorkflowTableItem[] {
       return this.workflowTableItems.filter((item: WorkflowTableItem) => {
         if (this.filterType && item.workflowType !== this.filterType) {
           return false
@@ -279,19 +248,17 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       })
     },
 
-    registeredOnlyMode() {
+    registeredOnlyMode(): boolean {
       return this.$store.getters['services/registeredOnlyMode'](this.serviceId)
     },
 
-    workflowTypes() {
+    workflowTypes(): string[] {
       return Array.from(
         new Set(this.workflowTableItems.map((item) => item.workflowType))
       )
     },
   },
-}
-
-export default Vue.extend(options)
+})
 </script>
 
 <style scoped>

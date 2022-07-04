@@ -13,36 +13,12 @@
 </template>
 
 <script lang="ts">
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import Vue from 'vue'
+import { defineComponent } from 'vue'
 import { Run } from '@/store/runs'
 import { Service } from '@/store/services'
 import { Workflow } from '@/store/workflows'
 
-type Data = {
-  type: string
-  id: string
-}
-
-type Methods = Record<string, unknown>
-
-type Computed = {
-  items: {
-    text: string
-    nuxt: boolean
-    to: string
-  }[]
-}
-
-type Props = Record<string, unknown>
-
-const options: ThisTypedComponentOptionsWithRecordProps<
-  Vue,
-  Data,
-  Methods,
-  Computed,
-  Props
-> = {
+export default defineComponent({
   data() {
     return {
       type: '',
@@ -146,7 +122,5 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     }
   },
-}
-
-export default Vue.extend(options)
+})
 </script>

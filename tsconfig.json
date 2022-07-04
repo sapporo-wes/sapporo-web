@@ -17,7 +17,13 @@
       "~/*": ["src/*"],
       "@/*": ["src/*"]
     },
-    "types": ["@nuxt/types", "@types/node", "vuetify"]
+    "typeRoots": [
+      "./node_modules/@types",
+      "./node_modules/@nuxt/types",
+      "./node_modules/vuetify/types",
+      "./node_modules/vuex/types",
+      "./src/types"
+    ]
   },
   "exclude": ["node_modules", ".nuxt", "dist"]
 }

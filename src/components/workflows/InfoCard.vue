@@ -88,46 +88,13 @@ import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/mode/yaml/yaml.js'
 import { codemirror } from 'vue-codemirror'
 import { DataTableHeader } from 'vuetify/types'
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import Vue from 'vue'
+import { defineComponent } from 'vue'
 import { codeMirrorMode, validUrl } from '@/utils'
 import { Service } from '@/store/services'
 import { Workflow } from '@/store/workflows'
 import WorkflowIcon from '@/components/WorkflowIcon.vue'
 
-type Data = {
-  workflowInfoHeaders: DataTableHeader[]
-  copyTooltip: boolean
-  copied: boolean
-}
-
-type Methods = {
-  validUrl: (val: string) => ReturnType<typeof validUrl>
-  codeMirrorMode: (content: string) => ReturnType<typeof codeMirrorMode>
-  copyWorkflowContent: () => void
-  downloadWorkflowContent: () => void
-}
-
-type Computed = {
-  service: Service
-  workflow: Workflow
-  workflowInfoContents: {
-    key: string
-    value: string
-  }[]
-}
-
-type Props = {
-  workflowId: string
-}
-
-const options: ThisTypedComponentOptionsWithRecordProps<
-  Vue,
-  Data,
-  Methods,
-  Computed,
-  Props
-> = {
+export default defineComponent({
   components: {
     codemirror,
     WorkflowIcon,
@@ -145,22 +112,22 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       workflowInfoHeaders: [
         { text: 'Key', value: 'key' },
         { text: 'Value', value: 'value' },
-      ],
+      ] as DataTableHeader[],
       copyTooltip: false,
       copied: false,
     }
   },
 
   computed: {
-    workflow() {
-      return this.$store.getters['workflows/workflow'](this.workflowId)
-    },
-
-    service() {
+    service(): Service {
       return this.$store.getters['services/service'](this.workflow.serviceId)
     },
 
-    workflowInfoContents() {
+    workflow(): Workflow {
+      return this.$store.getters['workflows/workflow'](this.workflowId)
+    },
+
+    workflowInfoContents(): { key: string; value: string }[] {
       return [
         { key: 'URL', value: this.workflow.url },
         {
@@ -178,15 +145,15 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   },
 
   methods: {
-    validUrl(val) {
+    validUrl(val: string): ReturnType<typeof validUrl> {
       return validUrl(val)
     },
 
-    codeMirrorMode(content) {
+    codeMirrorMode(content: string): ReturnType<typeof codeMirrorMode> {
       return codeMirrorMode(content)
     },
 
-    copyWorkflowContent() {
+    copyWorkflowContent(): void {
       this.copyTooltip = false
       this.$copyText(this.workflow.content)
       setTimeout(() => {
@@ -201,7 +168,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }, 300)
     },
 
-    downloadWorkflowContent() {
+    downloadWorkflowContent(): void {
       const blob = new Blob([this.workflow.content], { type: 'text/plane' })
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
@@ -212,9 +179,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       window.URL.revokeObjectURL(url)
     },
   },
-}
-
-export default Vue.extend(options)
+})
 </script>
 
 <style scoped>

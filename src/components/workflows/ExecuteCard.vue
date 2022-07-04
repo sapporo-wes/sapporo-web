@@ -376,8 +376,7 @@ import 'codemirror/lib/codemirror.css'
 import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/mode/yaml/yaml.js'
 import { codemirror } from 'vue-codemirror'
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import Vue from 'vue'
+import Vue, { defineComponent } from 'vue'
 import { codeMirrorMode, isJson, isYaml, yamlToJson } from '@/utils'
 import { Run } from '@/store/runs'
 import { Service, WorkflowEngine } from '@/store/services'
@@ -409,61 +408,7 @@ type WfAttachmentRules = {
   }
 }
 
-type Data = {
-  runName: string
-  wfEngine: string
-  attachmentMode: string | undefined
-  wfAttachment: WfAttachment
-  wfParamsMode: 'form' | 'text' | null
-  wfParamsInputs: ParseResult['inputs']
-  wfParams: string
-  wfEngineParams: string
-  wfEngineParamsExpand: boolean
-  tags: string
-  tagsExpand: boolean
-  executeButton: boolean
-}
-
-type Methods = {
-  executeRun: () => void
-  updateWfAttachmentUrl: (url: string | null, ind: number) => void
-  updateWfAttachmentName: (name: string | null, ind: number) => void
-  updateWfAttachmentFile: (file: File | null, ind: number) => void
-  addWfAttachment: () => void
-  removeWfAttachment: () => void
-  codeMirrorMode: (content: string) => ReturnType<typeof codeMirrorMode>
-}
-
-type Computed = {
-  service: Service
-  wesVersion: WesVersions
-  inputsParsable: boolean
-  showWfParamsText: boolean
-  showWfParamsForm: boolean
-  serviceWorkflowAttachment: boolean
-  workflow: Workflow
-  runNames: string[]
-  runNameRules: string[]
-  wfEngines: string[]
-  wfEngineRules: string[]
-  wfAttachmentRules: WfAttachmentRules
-  wfParamsError: string
-  wfEngineParamsError: string
-  tagsError: string
-  formValid: boolean
-}
-
-type Props = {
-  workflowId: string
-}
-
-const options: ThisTypedComponentOptionsWithRecordProps<
-  Vue,
-  Data,
-  Methods,
-  Computed,
-  Props
-> = {
+export default defineComponent({
   components: {
     codemirror,
     WfParamsForm,
@@ -480,7 +425,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     return {
       runName: '',
       wfEngine: '',
-      attachmentMode: undefined,
+      attachmentMode: undefined as string | undefined,
       wfAttachment: {
         fetch: {
           urls: [null],
@@ -490,9 +435,9 @@ const options: ThisTypedComponentOptionsWithRecordProps<
           files: [null],
           names: [null],
         },
-      },
-      wfParamsMode: null,
-      wfParamsInputs: [],
+      } as WfAttachment,
+      wfParamsMode: null as 'form' | 'text' | null,
+      wfParamsInputs: [] as ParseResult['inputs'],
       wfParams: '{}',
       wfEngineParams: '{}',
       wfEngineParamsExpand: false,
@@ -507,39 +452,39 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return this.$store.getters['services/service'](this.workflow.serviceId)
     },
 
-    wesVersion() {
+    wesVersion(): WesVersions {
       return this.$store.getters['services/wesVersion'](this.workflow.serviceId)
     },
 
-    inputsParsable() {
+    inputsParsable(): boolean {
       return this.wesVersion === 'sapporo-1.0.1' && this.workflow.type === 'CWL'
     },
 
-    showWfParamsText() {
+    showWfParamsText(): boolean {
       return this.inputsParsable ? this.wfParamsMode === 'text' : true
     },
 
-    showWfParamsForm() {
+    showWfParamsForm(): boolean {
       return this.inputsParsable ? this.wfParamsMode === 'form' : false
     },
 
-    serviceWorkflowAttachment() {
+    serviceWorkflowAttachment(): boolean {
       return this.$store.getters['services/workflowAttachment'](
         this.workflow.serviceId
       )
     },
 
-    workflow() {
+    workflow(): Workflow {
       return this.$store.getters['workflows/workflow'](this.workflowId)
     },
 
-    runNames() {
+    runNames(): string[] {
       return this.$store.getters['runs/runsByIds'](this.service.runIds).map(
         (run: Run) => run.name
       )
     },
 
-    runNameRules() {
+    runNameRules(): string[] {
       if (!this.runName) {
         return ['Required']
       }
@@ -557,7 +502,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       )
     },
 
-    wfEngineRules() {
+    wfEngineRules(): string[] {
       if (!this.wfEngine) {
         return ['Required']
       }
@@ -672,6 +617,30 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     },
   },
 
+  watch: {
+    wfEngine() {
+      if (this.wesVersion === 'sapporo-1.0.1') {
+        const wfEngineName = this.wfEngine.split(' ')[0] || ''
+        const defaultWfEngineParams = this.service.serviceInfo
+          .default_workflow_engine_parameters as {
+          // eslint-disable-next-line camelcase
+          [key: string]: { name: string; default_value: string }[]
+        }
+        if (wfEngineName in defaultWfEngineParams) {
+          const paramsObj: { [key: string]: string } = {}
+          for (const param of defaultWfEngineParams[wfEngineName]) {
+            paramsObj[param.name] = param.default_value
+          }
+          this.wfEngineParams = JSON.stringify(paramsObj, null, 2)
+          this.wfEngineParamsExpand = true
+        } else {
+          this.wfEngineParams = ''
+          this.wfEngineParamsExpand = false
+        }
+      }
+    },
+  },
+
   created() {
     this.runName = `${this.workflow.name} ${this.$dayjs()
       .local()
@@ -743,30 +712,6 @@ const options: ThisTypedComponentOptionsWithRecordProps<
           this.wfParams = '{}'
         })
     }
-  },
-
-  watch: {
-    wfEngine() {
-      if (this.wesVersion === 'sapporo-1.0.1') {
-        const wfEngineName = this.wfEngine.split(' ')[0] || ''
-        const defaultWfEngineParams = this.service.serviceInfo
-          .default_workflow_engine_parameters as {
-          // eslint-disable-next-line camelcase
-          [key: string]: { name: string; default_value: string }[]
-        }
-        if (wfEngineName in defaultWfEngineParams) {
-          const paramsObj: { [key: string]: string } = {}
-          for (const param of defaultWfEngineParams[wfEngineName]) {
-            paramsObj[param.name] = param.default_value
-          }
-          this.wfEngineParams = JSON.stringify(paramsObj, null, 2)
-          this.wfEngineParamsExpand = true
-        } else {
-          this.wfEngineParams = ''
-          this.wfEngineParamsExpand = false
-        }
-      }
-    },
   },
 
   methods: {
@@ -859,7 +804,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
 
-    addWfAttachment() {
+    addWfAttachment(): void {
       if (this.attachmentMode === 'fetch') {
         this.wfAttachment.fetch.urls.push(null)
         this.wfAttachment.fetch.names.push(null)
@@ -869,7 +814,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
 
-    removeWfAttachment() {
+    removeWfAttachment(): void {
       if (
         this.attachmentMode === 'fetch' &&
         this.wfAttachment.fetch.names.length > 1
@@ -885,13 +830,11 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
 
-    codeMirrorMode(content) {
+    codeMirrorMode(content: string): ReturnType<typeof codeMirrorMode> {
       return codeMirrorMode(content)
     },
   },
-}
-
-export default Vue.extend(options)
+})
 </script>
 
 <style scoped>

@@ -92,42 +92,11 @@ import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/mode/yaml/yaml.js'
 import { codemirror } from 'vue-codemirror'
 import { DataTableHeader } from 'vuetify/types'
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import Vue from 'vue'
+import { defineComponent } from 'vue'
 import { Service } from '@/store/services'
 import { codeMirrorMode, validUrl } from '@/utils'
 
-type Data = {
-  serviceInfoHeaders: DataTableHeader[]
-  tab: number | null
-}
-
-type Methods = {
-  reloadService: () => Promise<void>
-  codeMirrorMode: (content: string) => ReturnType<typeof codeMirrorMode>
-  validUrl: (val: string) => ReturnType<typeof validUrl>
-}
-
-type Computed = {
-  service: Service
-  serviceInfoContents: { key: string; value: string }[]
-  tabItems: {
-    key: string
-    value: string
-  }[]
-}
-
-type Props = {
-  serviceId: string
-}
-
-const options: ThisTypedComponentOptionsWithRecordProps<
-  Vue,
-  Data,
-  Methods,
-  Computed,
-  Props
-> = {
+export default defineComponent({
   components: {
     codemirror,
   },
@@ -144,17 +113,17 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       serviceInfoHeaders: [
         { text: 'Key', value: 'key' },
         { text: 'Value', value: 'value' },
-      ],
-      tab: 1,
+      ] as DataTableHeader[],
+      tab: 1 as number | null,
     }
   },
 
   computed: {
-    service() {
+    service(): Service {
       return this.$store.getters['services/service'](this.serviceId)
     },
 
-    serviceInfoContents() {
+    serviceInfoContents(): { key: string; value: string }[] {
       return [
         {
           key: 'Service Endpoint',
@@ -169,12 +138,12 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       ]
     },
 
-    tabItems() {
+    tabItems(): { key: string; value: string }[] {
       return [
         {
           key: 'Workflow Type Versions',
           value: JSON.stringify(
-            this.service?.serviceInfo?.workflow_type_versions || '',
+            this.service.serviceInfo?.workflow_type_versions || '',
             null,
             2
           ),
@@ -182,7 +151,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         {
           key: 'Workflow Engine Versions',
           value: JSON.stringify(
-            this.service?.serviceInfo?.workflow_engine_versions || '',
+            this.service.serviceInfo?.workflow_engine_versions || '',
             null,
             2
           ),
@@ -218,17 +187,15 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       await this.$store.dispatch('services/updateService', this.serviceId)
     },
 
-    codeMirrorMode(content) {
+    codeMirrorMode(content: string): ReturnType<typeof codeMirrorMode> {
       return codeMirrorMode(content)
     },
 
-    validUrl(val) {
+    validUrl(val: string): ReturnType<typeof validUrl> {
       return validUrl(val)
     },
   },
-}
-
-export default Vue.extend(options)
+})
 </script>
 
 <style scoped>

@@ -114,9 +114,8 @@ import 'codemirror/lib/codemirror.css'
 import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/mode/yaml/yaml.js'
 import { codemirror } from 'vue-codemirror'
+import { defineComponent } from 'vue'
 import { DataTableHeader } from 'vuetify/types'
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import Vue from 'vue'
 import { AttachedFile, RunLogSpr } from '@/types/WES'
 import { codeMirrorMode, validUrl, formatResponse } from '@/utils'
 import { Run } from '@/store/runs'
@@ -125,47 +124,7 @@ import { WesVersions } from '@/utils/WESRequest'
 import { Workflow } from '@/store/workflows'
 import WorkflowIcon from '@/components/WorkflowIcon.vue'
 
-type Data = {
-  runInfoHeaders: DataTableHeader[]
-  tab: number | null
-  tooltip: boolean
-  cancelButton: boolean
-}
-
-type Methods = {
-  reloadRunState: () => Promise<void>
-  codeMirrorMode: (content: string) => ReturnType<typeof codeMirrorMode>
-  validUrl: (val: string) => ReturnType<typeof validUrl>
-  cancelRun: () => Promise<void>
-  copyTooltip: () => void
-}
-
-type Computed = {
-  service: Service
-  wesVersion: WesVersions
-  workflow: Workflow
-  run: Run
-  runInfoContents: {
-    key: string
-    value: string
-  }[]
-  tabItems: {
-    key: string
-    value: string
-  }[]
-}
-
-type Props = {
-  runId: string
-}
-
-const options: ThisTypedComponentOptionsWithRecordProps<
-  Vue,
-  Data,
-  Methods,
-  Computed,
-  Props
-> = {
+export default defineComponent({
   components: {
     codemirror,
     WorkflowIcon,
@@ -183,8 +142,8 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       runInfoHeaders: [
         { text: 'Key', value: 'key' },
         { text: 'Value', value: 'value' },
-      ],
-      tab: 2,
+      ] as DataTableHeader[],
+      tab: 2 as number | null,
       tooltip: false,
       cancelButton: true,
     }
@@ -207,7 +166,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return this.$store.getters['runs/run'](this.runId)
     },
 
-    runInfoContents() {
+    runInfoContents(): { key: string; value: string }[] {
       const wfUrl = formatResponse(this.run.runLog?.request?.workflow_url)
       let wfEngineName = ''
       if (this.wesVersion !== '1.0.0') {
@@ -235,7 +194,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return contents
     },
 
-    tabItems() {
+    tabItems(): { key: string; value: string }[] {
       const wfEngineParams = formatResponse(
         this.run.runLog?.request?.workflow_engine_parameters
       )
@@ -277,19 +236,19 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   },
 
   methods: {
-    async reloadRunState() {
+    async reloadRunState(): Promise<void> {
       await this.$store.dispatch('runs/updateRun', this.runId)
     },
 
-    codeMirrorMode(content) {
+    codeMirrorMode(content: string): ReturnType<typeof codeMirrorMode> {
       return codeMirrorMode(content)
     },
 
-    validUrl(val) {
+    validUrl(val: string): ReturnType<typeof validUrl> {
       return validUrl(val)
     },
 
-    async cancelRun() {
+    async cancelRun(): Promise<void> {
       if (
         ['QUEUED', 'INITIALIZING', 'RUNNING', 'PAUSED'].includes(this.run.state)
       ) {
@@ -300,7 +259,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
 
-    copyTooltip() {
+    copyTooltip(): void {
       this.$copyText(this.runId)
       this.tooltip = true
       setTimeout(() => {
@@ -308,9 +267,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }, 1500)
     },
   },
-}
-
-export default Vue.extend(options)
+})
 </script>
 
 <style scoped>

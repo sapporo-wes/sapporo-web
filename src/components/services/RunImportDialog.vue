@@ -100,8 +100,7 @@ import 'codemirror/lib/codemirror.css'
 import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/mode/yaml/yaml.js'
 import { codemirror } from 'vue-codemirror'
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import Vue from 'vue'
+import { defineComponent } from 'vue'
 import {
   codeMirrorMode,
   convertGitHubUrl,
@@ -115,45 +114,7 @@ import { Workflow } from '@/store/workflows'
 
 const changeQueue: NodeJS.Timeout[] = []
 
-type Data = {
-  runId: string
-  getFailed: boolean
-  runLog?: RunLog
-  runName: string
-  workflowName: string
-  workflowType: string
-  workflowVersion: string
-  workflowUrl: string
-  workflowContent: string
-}
-
-type Methods = {
-  changeRunId: () => void
-  getRunsId: (runId: string) => void
-  clearState: () => void
-  codeMirrorMode: (content: string) => ReturnType<typeof codeMirrorMode>
-  importRun: () => void
-}
-
-type Computed = {
-  service: Service
-  workflows: Workflow[]
-  runIdRules: string[]
-  formValid: boolean
-}
-
-type Props = {
-  dialogShow: boolean
-  serviceId: string
-}
-
-const options: ThisTypedComponentOptionsWithRecordProps<
-  Vue,
-  Data,
-  Methods,
-  Computed,
-  Props
-> = {
+export default defineComponent({
   components: {
     codemirror,
   },
@@ -174,7 +135,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     return {
       runId: '',
       getFailed: true,
-      runLog: undefined,
+      runLog: undefined as RunLog | undefined,
       runName: '',
       workflowName: '',
       workflowType: '',
@@ -185,17 +146,17 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   },
 
   computed: {
-    service() {
+    service(): Service {
       return this.$store.getters['services/service'](this.serviceId)
     },
 
-    workflows() {
+    workflows(): Workflow[] {
       return this.$store.getters['workflows/workflowsByIds'](
         this.service.workflowIds
       )
     },
 
-    runIdRules() {
+    runIdRules(): string[] {
       if (!this.runId) {
         return ['Required']
       }
@@ -208,13 +169,13 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return []
     },
 
-    formValid() {
+    formValid(): boolean {
       return !this.runIdRules.length
     },
   },
 
   methods: {
-    changeRunId() {
+    changeRunId(): void {
       while (changeQueue.length) {
         const timeoutId = changeQueue.shift()
         if (timeoutId) {
@@ -231,7 +192,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       changeQueue.push(eventId)
     },
 
-    getRunsId(runId: string) {
+    getRunsId(runId: string): void {
       if (!this.service.runIds.includes(this.runId)) {
         getRunsId(this.service.endpoint, runId)
           .then((runLog) => {
@@ -314,7 +275,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
 
-    clearState() {
+    clearState(): void {
       this.runLog = undefined
       this.runName = ''
       this.workflowName = ''
@@ -324,11 +285,11 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       this.workflowContent = ''
     },
 
-    codeMirrorMode(content) {
+    codeMirrorMode(content: string): ReturnType<typeof codeMirrorMode> {
       return codeMirrorMode(content)
     },
 
-    importRun() {
+    importRun(): void {
       if (this.formValid) {
         const workflowId = this.workflows.filter(
           (wf) => wf.name === this.workflowName
@@ -380,9 +341,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
   },
-}
-
-export default Vue.extend(options)
+})
 </script>
 
 <style scoped>

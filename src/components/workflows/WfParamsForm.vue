@@ -94,29 +94,8 @@
 </template>
 
 <script lang="ts">
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import Vue from 'vue'
+import Vue, { defineComponent, PropType } from 'vue'
 import { ParseResult } from '@/types/WES'
-
-type Data = {
-  valObj: Record<string, Array<string | number | boolean | null>>
-  secondaryFilesObj: Record<string, Array<string | null>>
-}
-type Methods = {
-  updateValue(val: string, id: string, valInd: number): void
-  updateSecondaryFiles(val: string, id: string, fileInd: number): void
-  addArray(id: string): void
-  removeArray(id: string): void
-  validate(): boolean
-  toParams(): string
-}
-type Computed = {
-  values(id: string): Array<string | number | boolean | null>
-  formType(inputType: string): string
-  secondaryFiles(id: string): Array<{ pattern: string; required: boolean }>
-  secondaryFilesValue(id: string, fileInd: number): string | null
-  secondaryFilesRules(id: string, fileInd: number): Array<string>
-}
 
 type Inputs = Exclude<ParseResult['inputs'], string | null>
 type Unpacked<T> = T extends (infer U)[] ? U : T
@@ -124,35 +103,24 @@ type Input = Unpacked<Inputs>
 type RequiredInput = Required<Input>
 type RequiredInputs = RequiredInput[]
 
-type Props = {
-  inputs: RequiredInputs
-}
-
-const options: ThisTypedComponentOptionsWithRecordProps<
-  Vue,
-  Data,
-  Methods,
-  Computed,
-  Props
-> = {
+export default defineComponent({
   props: {
     inputs: {
-      type: Array,
+      type: Array as PropType<RequiredInputs>,
       required: true,
     },
   },
 
   data() {
     return {
-      valObj: {},
-      secondaryFilesObj: {},
-      foo: true,
+      valObj: {} as Record<string, Array<string | number | boolean | null>>,
+      secondaryFilesObj: {} as Record<string, Array<string | null>>,
     }
   },
 
   computed: {
-    values() {
-      return (id: string) => {
+    values(): (id: string) => Array<string | number | boolean | null> {
+      return (id) => {
         if (this.valObj[id]) {
           return this.valObj[id]
         } else {
@@ -165,8 +133,8 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
 
-    formType() {
-      return (inputType: string) => {
+    formType(): (inputType: string) => string {
+      return (inputType) => {
         switch (inputType) {
           case 'File':
           case 'Directory':
@@ -181,8 +149,10 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
 
-    secondaryFiles() {
-      return (id: string) => {
+    secondaryFiles(): (
+      id: string
+    ) => Array<{ pattern: string; required: boolean }> {
+      return (id) => {
         if (this.valObj[id]) {
           const secondaryFiles =
             this.inputs.find((input) => input.id === id)?.secondaryFiles || []
@@ -200,13 +170,13 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
 
-    secondaryFilesValue() {
+    secondaryFilesValue(): (id: string, fileInd: number) => string | null {
       return (id: string, fileInd: number) => {
         return this.secondaryFilesObj?.[id]?.[fileInd] || null
       }
     },
 
-    secondaryFilesRules() {
+    secondaryFilesRules(): (id: string, fileInd: number) => Array<string> {
       return (id: string, fileInd: number) => {
         const secondaryFiles = this.secondaryFiles(id)
         const secondaryFile = secondaryFiles[fileInd]
@@ -227,25 +197,25 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   },
 
   methods: {
-    updateValue(val: string, id: string, valInd: number) {
+    updateValue(val: string, id: string, valInd: number): void {
       if (this.valObj[id]) {
         Vue.set(this.valObj[id], valInd, val)
       }
     },
 
-    updateSecondaryFiles(val: string, id: string, fileInd: number) {
+    updateSecondaryFiles(val: string, id: string, fileInd: number): void {
       if (this.secondaryFilesObj[id]) {
         Vue.set(this.secondaryFilesObj[id], fileInd, val)
       }
     },
 
-    addArray(id: string) {
+    addArray(id: string): void {
       if (this.valObj[id]) {
         this.valObj[id].push(null)
       }
     },
 
-    removeArray(id: string) {
+    removeArray(id: string): void {
       if (this.valObj[id]) {
         if (this.valObj[id].length > 1) {
           this.valObj[id].pop()
@@ -253,7 +223,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
 
-    validate() {
+    validate(): boolean {
       if (this.$refs.form) {
         return (
           this.$refs.form as unknown as { validate: () => boolean }
@@ -262,7 +232,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return false
     },
 
-    toParams() {
+    toParams(): string {
       if (this.validate()) {
         const params: Record<string, unknown> = {}
         for (const input of this.inputs) {
@@ -335,9 +305,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return ''
     },
   },
-}
-
-export default Vue.extend(options)
+})
 </script>
 
 <style>

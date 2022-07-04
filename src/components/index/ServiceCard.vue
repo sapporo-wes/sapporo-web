@@ -121,36 +121,12 @@
 
 <script lang="ts">
 import { DataTableHeader } from 'vuetify/types'
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import Vue from 'vue'
+import { defineComponent } from 'vue'
 import { Service } from '@/store/services'
 import ServiceDeleteDialog from '@/components/index/ServiceDeleteDialog.vue'
 import ServiceRegisterDialog from '@/components/index/ServiceRegisterDialog.vue'
 
-type Data = {
-  serviceHeaders: DataTableHeader[]
-  selectedServices: Service[]
-  registerDialogShow: boolean
-  deleteDialogShow: boolean
-}
-
-type Methods = {
-  registrationError: (inputtedEndpoint: string) => void
-}
-
-type Computed = {
-  services: Service[]
-}
-
-type Props = Record<string, unknown>
-
-const options: ThisTypedComponentOptionsWithRecordProps<
-  Vue,
-  Data,
-  Methods,
-  Computed,
-  Props
-> = {
+export default defineComponent({
   components: {
     ServiceDeleteDialog,
     ServiceRegisterDialog,
@@ -188,8 +164,8 @@ const options: ThisTypedComponentOptionsWithRecordProps<
           align: 'center',
           width: '64px',
         },
-      ],
-      selectedServices: [],
+      ] as DataTableHeader[],
+      selectedServices: [] as Service[],
       registerDialogShow: false,
       deleteDialogShow: false,
     }
@@ -200,7 +176,5 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return this.$store.getters['services/services']
     },
   },
-}
-
-export default Vue.extend(options)
+})
 </script>

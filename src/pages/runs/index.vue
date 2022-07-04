@@ -1,9 +1,10 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <v-app>
     <app-bar />
     <v-main class="background">
       <v-container fluid>
-        <breadcrumbs />
+        <breadcrumbs-header />
         <template v-if="existRunId">
           <info-card :run-id="runId" class="mx-auto" />
           <log-card :run-id="runId" class="mt-8 mx-auto mb-4" />
@@ -16,39 +17,20 @@
 </template>
 
 <script lang="ts">
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import Vue from 'vue'
+import { defineComponent } from 'vue'
 import { MyWindow } from '@/plugins/localStorage'
 import { Run } from '@/store/runs'
 import AppBar from '@/components/AppBar.vue'
 import AppFooter from '@/components/AppFooter.vue'
-import Breadcrumbs from '@/components/Breadcrumbs.vue'
+import BreadcrumbsHeader from '@/components/BreadcrumbsHeader.vue'
 import InfoCard from '@/components/runs/InfoCard.vue'
 import LogCard from '@/components/runs/LogCard.vue'
 
-type Data = Record<string, unknown>
-
-type Methods = Record<string, unknown>
-
-type Computed = {
-  runId: string
-  existRunId: boolean
-  run: Run
-}
-
-type Props = Record<string, unknown>
-
-const options: ThisTypedComponentOptionsWithRecordProps<
-  Vue,
-  Data,
-  Methods,
-  Computed,
-  Props
-> = {
+export default defineComponent({
   components: {
     AppBar,
     AppFooter,
-    Breadcrumbs,
+    BreadcrumbsHeader,
     InfoCard,
     LogCard,
   },
@@ -64,7 +46,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   },
 
   computed: {
-    runId() {
+    runId(): string {
       const runId = this.$route.query.runId || ''
       if (Array.isArray(runId)) {
         return runId[0] || ''
@@ -84,6 +66,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
 
   created() {
     setInterval(async () => {
+      // eslint-disable-next-line nuxt/no-globals-in-created
       if (document.visibilityState === 'visible') {
         if (
           [
@@ -99,7 +82,5 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     }, 5000)
   },
-}
-
-export default Vue.extend(options)
+})
 </script>

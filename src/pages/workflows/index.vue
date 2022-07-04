@@ -1,9 +1,10 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <v-app>
     <app-bar />
     <v-main class="background">
       <v-container fluid>
-        <breadcrumbs />
+        <breadcrumbs-header />
         <template v-if="existWorkflowId">
           <info-card :workflow-id="workflowId" class="mx-auto" />
           <v-alert
@@ -27,41 +28,21 @@
 </template>
 
 <script lang="ts">
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import Vue from 'vue'
+import { defineComponent } from 'vue'
 import { MyWindow } from '@/plugins/localStorage'
 import { Service } from '@/store/services'
 import { Workflow } from '@/store/workflows'
 import AppBar from '@/components/AppBar.vue'
 import AppFooter from '@/components/AppFooter.vue'
-import Breadcrumbs from '@/components/Breadcrumbs.vue'
+import BreadcrumbsHeader from '@/components/BreadcrumbsHeader.vue'
 import ExecuteCard from '@/components/workflows/ExecuteCard.vue'
 import InfoCard from '@/components/workflows/InfoCard.vue'
 
-type Data = Record<string, unknown>
-
-type Methods = Record<string, unknown>
-
-type Computed = {
-  existWorkflowId: boolean
-  workflowId: string
-  service: Service
-  workflow: Workflow
-}
-
-type Props = Record<string, unknown>
-
-const options: ThisTypedComponentOptionsWithRecordProps<
-  Vue,
-  Data,
-  Methods,
-  Computed,
-  Props
-> = {
+export default defineComponent({
   components: {
     AppBar,
     AppFooter,
-    Breadcrumbs,
+    BreadcrumbsHeader,
     ExecuteCard,
     InfoCard,
   },
@@ -88,7 +69,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return this.$store.getters['workflows/workflow'](this.workflowId)
     },
 
-    workflowId() {
+    workflowId(): string {
       const workflowId = this.$route.query.workflowId || ''
       if (Array.isArray(workflowId)) {
         return workflowId[0] || ''
@@ -103,7 +84,5 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       )
     },
   },
-}
-
-export default Vue.extend(options)
+})
 </script>

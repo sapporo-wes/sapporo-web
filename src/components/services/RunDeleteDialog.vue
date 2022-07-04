@@ -29,30 +29,10 @@
 </template>
 
 <script lang="ts">
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import Vue from 'vue'
+import { defineComponent, PropType } from 'vue'
 import { RunTableItem } from '@/store/runs'
 
-type Data = Record<string, unknown>
-
-type Methods = {
-  deleteSelectedItems: () => Promise<void>
-}
-
-type Computed = Record<string, unknown>
-
-type Props = {
-  dialogShow: boolean
-  selectedItems: RunTableItem[]
-}
-
-const options: ThisTypedComponentOptionsWithRecordProps<
-  Vue,
-  Data,
-  Methods,
-  Computed,
-  Props
-> = {
+export default defineComponent({
   props: {
     dialogShow: {
       type: Boolean,
@@ -60,8 +40,8 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       required: true,
     },
     selectedItems: {
-      type: Array,
-      default: [],
+      type: Array as PropType<RunTableItem[]>,
+      default: [] as RunTableItem[],
       required: true,
     },
   },
@@ -75,7 +55,5 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       this.$emit('close')
     },
   },
-}
-
-export default Vue.extend(options)
+})
 </script>

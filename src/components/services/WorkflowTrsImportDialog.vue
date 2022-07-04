@@ -121,11 +121,8 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import Vue from 'vue'
 import { DataTableHeader } from 'vuetify/types'
-import AppFooter from '@/components/AppFooter.vue'
+import { defineComponent } from 'vue'
 import {
   getServiceInfo,
   ServiceInfoResponse,
@@ -136,7 +133,6 @@ import {
 } from '@/utils/TRSRequest'
 import { validUrl } from '@/utils'
 import { Service, WorkflowLanguage } from '@/store/services'
-import AppBar from '@/components/AppBar.vue'
 import WorkflowIcon from '@/components/WorkflowIcon.vue'
 
 const changeQueue: NodeJS.Timeout[] = []
@@ -174,49 +170,8 @@ const defaultEndpoints: DefaultEndpoint[] = [
   },
 ]
 
-type Data = {
-  trsEndpoint: string
-  defaultEndpoints: DefaultEndpoint[]
-  fetchFailed: boolean
-  serviceInfo: ServiceInfoResponse | null
-  filterType: WorkflowType | null
-  filterWorkflowName: string
-  filterOrganization: string
-  tableContents: TableContent[]
-}
-
-type Methods = {
-  changeTrsEndpoint: (event: Event) => void
-  fetchTrs: (trsEndpoint: string) => void
-  importWorkflow: (item: TableContent) => void
-  updateTableContents: () => void
-}
-
-type Computed = {
-  service: Service
-  wfLangs: WorkflowLanguage[]
-  wfTypes: string[]
-  trsEndpointRules: string[]
-  tableHeaders: DataTableHeader[]
-  filteredTableContents: TableContent[]
-  loading: boolean
-}
-
-type Props = {
-  dialogShow: boolean
-  serviceId: string
-}
-
-const options: ThisTypedComponentOptionsWithRecordProps<
-  Vue,
-  Data,
-  Methods,
-  Computed,
-  Props
-> = {
+export default defineComponent({
   components: {
-    AppBar,
-    AppFooter,
     WorkflowIcon,
   },
 
@@ -239,28 +194,28 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       )[0].endpoint,
       defaultEndpoints,
       fetchFailed: false,
-      serviceInfo: null,
-      filterType: null,
+      serviceInfo: null as ServiceInfoResponse | null,
+      filterType: null as WorkflowType | null,
       filterWorkflowName: '',
       filterOrganization: '',
-      tableContents: [],
+      tableContents: [] as TableContent[],
     }
   },
 
   computed: {
-    service() {
+    service(): Service {
       return this.$store.getters['services/service'](this.serviceId)
     },
 
-    wfLangs() {
+    wfLangs(): WorkflowLanguage[] {
       return this.$store.getters['services/workflowLanguages'](this.serviceId)
     },
 
-    wfTypes() {
+    wfTypes(): string[] {
       return this.wfLangs.map((lang) => lang.name)
     },
 
-    trsEndpointRules() {
+    trsEndpointRules(): string[] {
       if (!this.trsEndpoint) {
         return ['Required']
       }
@@ -281,7 +236,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return []
     },
 
-    tableHeaders() {
+    tableHeaders(): DataTableHeader[] {
       const tableHeaders = [
         {
           text: '',
@@ -315,7 +270,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return tableHeaders
     },
 
-    filteredTableContents() {
+    filteredTableContents(): TableContent[] {
       return this.tableContents.filter((item) => {
         if (this.filterType && item.workflowType !== this.filterType) {
           return false
@@ -336,7 +291,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       })
     },
 
-    loading() {
+    loading(): boolean {
       if (
         this.trsEndpoint &&
         this.tableContents.length === 0 &&
@@ -348,8 +303,12 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     },
   },
 
+  mounted() {
+    this.fetchTrs(this.trsEndpoint)
+  },
+
   methods: {
-    changeTrsEndpoint(_: Event) {
+    changeTrsEndpoint(_: Event): void {
       while (changeQueue.length) {
         const timeoutId = changeQueue.shift()
         if (timeoutId) {
@@ -366,7 +325,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       changeQueue.push(eventId)
     },
 
-    fetchTrs(trsEndpoint: string) {
+    fetchTrs(trsEndpoint: string): void {
       if (validUrl(trsEndpoint)) {
         this.trsEndpoint = trsEndpoint.replace(/\/$/, '')
         getServiceInfo(this.trsEndpoint)
@@ -382,7 +341,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
 
-    importWorkflow(workflow: TableContent) {
+    importWorkflow(workflow: TableContent): void {
       this.$store
         .dispatch('workflows/importWorkflowFromTrs', {
           serviceId: this.serviceId,
@@ -398,7 +357,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         })
     },
 
-    updateTableContents() {
+    updateTableContents(): void {
       this.tableContents = []
       if (
         this.serviceInfo &&
@@ -441,11 +400,5 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
   },
-
-  mounted() {
-    this.fetchTrs(this.trsEndpoint)
-  },
-}
-
-export default Vue.extend(options)
+})
 </script>

@@ -45,41 +45,12 @@
 </template>
 
 <script lang="ts">
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import Vue from 'vue'
+import { defineComponent } from 'vue'
 import { getServiceInfo } from '@/utils/WESRequest'
 import { Service } from '@/store/services'
 import { validUrl } from '@/utils'
 
-type Data = {
-  name: string
-  endpoint: string
-  connection: boolean
-  registerButton: boolean
-}
-
-type Methods = {
-  submitService: () => Promise<void>
-}
-
-type Computed = {
-  registerValid: boolean
-  serviceNames: string[]
-  nameRules: string[]
-  endpointRules: string[]
-}
-
-type Props = {
-  dialogShow: boolean
-}
-
-const options: ThisTypedComponentOptionsWithRecordProps<
-  Vue,
-  Data,
-  Methods,
-  Computed,
-  Props
-> = {
+export default defineComponent({
   props: {
     dialogShow: {
       type: Boolean,
@@ -98,19 +69,19 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   },
 
   computed: {
-    registerValid() {
+    registerValid(): boolean {
       return (
         !this.nameRules.length && !this.endpointRules.length && this.connection
       )
     },
 
-    serviceNames() {
+    serviceNames(): string[] {
       return this.$store.getters['services/services'].map(
         (service: Service) => service.name
       )
     },
 
-    nameRules() {
+    nameRules(): string[] {
       if (!this.name) {
         return ['Required']
       }
@@ -120,7 +91,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return []
     },
 
-    endpointRules() {
+    endpointRules(): string[] {
       if (!this.endpoint) {
         return ['Required']
       }
@@ -161,7 +132,5 @@ const options: ThisTypedComponentOptionsWithRecordProps<
         })
     },
   },
-}
-
-export default Vue.extend(options)
+})
 </script>

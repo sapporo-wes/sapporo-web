@@ -97,52 +97,14 @@ import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/mode/yaml/yaml.js'
 import { codemirror } from 'vue-codemirror'
 import { DataTableHeader } from 'vuetify/types'
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import Vue from 'vue'
+import { defineComponent } from 'vue'
 import { AttachedFile } from '@/types/WES'
 import { codeMirrorMode, formatResponse, formatTime } from '@/utils'
 import { Run } from '@/store/runs'
 import { Service } from '@/store/services'
 import { WesVersions } from '@/utils/WESRequest'
 
-type Data = {
-  logInfoHeaders: DataTableHeader[]
-  tab: number | null
-  outputs: Array<unknown>
-}
-
-type Methods = {
-  codeMirrorMode: (content: string) => ReturnType<typeof codeMirrorMode>
-  downloadOutputFile: (file: AttachedFile) => void
-  downloadRunLog: () => Promise<void>
-}
-
-type Computed = {
-  service: Service
-  wesVersion: WesVersions
-  isSapporo: boolean
-  run: Run
-  logInfoContents: {
-    key: string
-    value: string
-  }[]
-  tabItems: {
-    key: string
-    value: string
-  }[]
-}
-
-type Props = {
-  runId: string
-}
-
-const options: ThisTypedComponentOptionsWithRecordProps<
-  Vue,
-  Data,
-  Methods,
-  Computed,
-  Props
-> = {
+export default defineComponent({
   components: {
     codemirror,
   },
@@ -159,9 +121,9 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       logInfoHeaders: [
         { text: 'Key', value: 'key' },
         { text: 'Value', value: 'value' },
-      ],
-      tab: null,
-      outputs: [],
+      ] as DataTableHeader[],
+      tab: null as number | null,
+      outputs: [] as Array<unknown>,
     }
   },
 
@@ -185,7 +147,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return this.$store.getters['runs/run'](this.runId)
     },
 
-    logInfoContents() {
+    logInfoContents(): { key: string; value: string }[] {
       let startTime = this.run.runLog.run_log?.start_time
       if (
         !startTime &&
@@ -233,7 +195,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return contents
     },
 
-    tabItems() {
+    tabItems(): { key: string; value: string }[] {
       let command: unknown = this.run.runLog.run_log?.cmd
       if (
         !command &&
@@ -284,11 +246,11 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   },
 
   methods: {
-    codeMirrorMode(content) {
+    codeMirrorMode(content: string): ReturnType<typeof codeMirrorMode> {
       return codeMirrorMode(content)
     },
 
-    downloadOutputFile(file: AttachedFile) {
+    downloadOutputFile(file: AttachedFile): void {
       const link = document.createElement('a')
       link.download = file.file_name.split('/').slice(-1)[0]
       link.href = file.file_url
@@ -296,7 +258,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       link.remove()
     },
 
-    async downloadRunLog() {
+    async downloadRunLog(): Promise<void> {
       await this.$store.dispatch('runs/updateRun', this.run.id)
       const blob = new Blob([JSON.stringify(this.run.runLog, null, 2)], {
         type: 'application/json',
@@ -310,9 +272,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       window.URL.revokeObjectURL(url)
     },
   },
-}
-
-export default Vue.extend(options)
+})
 </script>
 
 <style scoped>

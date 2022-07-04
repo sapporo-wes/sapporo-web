@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <v-app>
     <app-bar />
@@ -39,35 +40,20 @@
 </template>
 
 <script lang="ts">
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import Vue from 'vue'
+import { defineComponent, PropType } from 'vue'
 import AppBar from '@/components/AppBar.vue'
 
-type Data = Record<string, unknown>
-
-type Methods = Record<string, unknown>
-
-type Computed = Record<string, unknown>
-
-type Props = {
-  error: unknown
-}
-
-const options: ThisTypedComponentOptionsWithRecordProps<
-  Vue,
-  Data,
-  Methods,
-  Computed,
-  Props
-> = {
+export default defineComponent({
   components: {
     AppBar,
   },
 
   props: {
-    error: {},
+    error: {
+      type: Object as PropType<any>,
+      default: () => ({}),
+      required: true,
+    },
   },
-}
-
-export default Vue.extend(options)
+})
 </script>

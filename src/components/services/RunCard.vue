@@ -139,46 +139,14 @@
 
 <script lang="ts">
 import { DataTableHeader } from 'vuetify/types'
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import Vue from 'vue'
+import { defineComponent } from 'vue'
 import { RunTableItem } from '@/store/runs'
 import { Service } from '@/store/services'
 import RunDeleteDialog from '@/components/services/RunDeleteDialog.vue'
 import RunImportDialog from '@/components/services/RunImportDialog.vue'
 import WorkflowIcon from '@/components/WorkflowIcon.vue'
 
-type Data = {
-  runHeaders: DataTableHeader[]
-  selectedRuns: RunTableItem[]
-  importDialogShow: boolean
-  deleteDialogShow: boolean
-  filterType: string
-  filterWfName: string
-  filterRunName: string
-}
-
-type Methods = {
-  reloadRunState: () => Promise<void>
-}
-
-type Computed = {
-  service: Service
-  runsTableItems: RunTableItem[]
-  filteredItems: RunTableItem[]
-  workflowTypes: string[]
-}
-
-type Props = {
-  serviceId: string
-}
-
-const options: ThisTypedComponentOptionsWithRecordProps<
-  Vue,
-  Data,
-  Methods,
-  Computed,
-  Props
-> = {
+export default defineComponent({
   components: {
     RunDeleteDialog,
     RunImportDialog,
@@ -228,8 +196,8 @@ const options: ThisTypedComponentOptionsWithRecordProps<
           align: 'center',
           width: '64px',
         },
-      ],
-      selectedRuns: [],
+      ] as DataTableHeader[],
+      selectedRuns: [] as RunTableItem[],
       importDialogShow: false,
       deleteDialogShow: false,
       filterType: '',
@@ -243,11 +211,11 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return this.$store.getters['services/service'](this.serviceId)
     },
 
-    runsTableItems() {
+    runsTableItems(): RunTableItem[] {
       return this.$store.getters['runs/tableItems'](this.service.runIds)
     },
 
-    filteredItems() {
+    filteredItems(): RunTableItem[] {
       return this.runsTableItems.filter((item: RunTableItem) => {
         if (this.filterType && item.workflowType !== this.filterType) {
           return false
@@ -265,7 +233,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       })
     },
 
-    workflowTypes() {
+    workflowTypes(): string[] {
       return Array.from(
         new Set(this.runsTableItems.map((item) => item.workflowType))
       )
@@ -280,9 +248,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       )
     },
   },
-}
-
-export default Vue.extend(options)
+})
 </script>
 
 <style scoped>

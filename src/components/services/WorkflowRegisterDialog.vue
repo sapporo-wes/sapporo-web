@@ -169,8 +169,7 @@ import 'codemirror/lib/codemirror.css'
 import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/mode/yaml/yaml.js'
 import { codemirror } from 'vue-codemirror'
-import { ThisTypedComponentOptionsWithRecordProps } from 'vue/types/options'
-import Vue from 'vue'
+import { defineComponent } from 'vue'
 import { codeMirrorMode, validUrl, convertGitHubUrl } from '@/utils'
 import { WorkflowLanguages, Service } from '@/store/services'
 import { Workflow } from '@/store/workflows'
@@ -178,56 +177,7 @@ import { WesVersions, parseWorkflow } from '@/utils/WESRequest'
 
 const changeQueue: NodeJS.Timeout[] = []
 
-type Data = {
-  name: string
-  type: string
-  version: string
-  locationMode: string
-  url: string
-  fetchFailed: boolean
-  wfContentFetch: string
-  attachAsFile: boolean
-  wfContentUpload: string
-  fileName: string
-  submitButton: boolean
-}
-
-type Methods = {
-  changeType: () => void
-  changeUrl: () => void
-  fetchWfContent: (url: string) => void
-  setDragFileName: (e: DragEvent) => void
-  submitWorkflow: () => void
-  codeMirrorMode: (content: string) => ReturnType<typeof codeMirrorMode>
-}
-
-type Computed = {
-  service: Service
-  wesVersion: WesVersions
-  inspected: boolean
-  wfNames: string[]
-  types: string[]
-  versions: string[]
-  registerValid: boolean
-  nameRules: string[]
-  typeRules: string[]
-  versionRules: string[]
-  urlRules: string[]
-  fileNameRules: string[]
-}
-
-type Props = {
-  dialogShow: boolean
-  serviceId: string
-}
-
-const options: ThisTypedComponentOptionsWithRecordProps<
-  Vue,
-  Data,
-  Methods,
-  Computed,
-  Props
-> = {
+export default defineComponent({
   components: {
     codemirror,
   },
@@ -261,15 +211,15 @@ const options: ThisTypedComponentOptionsWithRecordProps<
   },
 
   computed: {
-    service() {
+    service(): Service {
       return this.$store.getters['services/service'](this.serviceId)
     },
 
-    wesVersion() {
+    wesVersion(): WesVersions {
       return this.$store.getters['services/wesVersion'](this.serviceId)
     },
 
-    inspected() {
+    inspected(): boolean {
       if (this.wesVersion === 'sapporo-1.0.1') {
         if (this.wfContentFetch || this.wfContentUpload) {
           return true
@@ -280,13 +230,13 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return true
     },
 
-    wfNames() {
+    wfNames(): string[] {
       return this.$store.getters['workflows/workflowsByIds'](
         this.service.workflowIds
       ).map((workflow: Workflow) => workflow.name)
     },
 
-    types() {
+    types(): string[] {
       const languages: WorkflowLanguages = this.$store.getters[
         'services/workflowLanguages'
       ](this.serviceId)
@@ -297,7 +247,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return languages.map((language) => language.name)
     },
 
-    versions() {
+    versions(): string[] {
       const languages: WorkflowLanguages = this.$store.getters[
         'services/workflowLanguages'
       ](this.serviceId)
@@ -313,7 +263,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return []
     },
 
-    registerValid() {
+    registerValid(): boolean {
       const content =
         this.locationMode === 'fetch'
           ? !!this.wfContentFetch.length
@@ -328,7 +278,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       )
     },
 
-    nameRules() {
+    nameRules(): string[] {
       if (!this.name) {
         return ['Required']
       }
@@ -338,21 +288,21 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return []
     },
 
-    typeRules() {
+    typeRules(): string[] {
       if (!this.type) {
         return ['Required']
       }
       return []
     },
 
-    versionRules() {
+    versionRules(): string[] {
       if (!this.version) {
         return ['Required']
       }
       return []
     },
 
-    urlRules() {
+    urlRules(): string[] {
       if (this.locationMode === 'fetch') {
         if (!this.url) {
           return ['Required']
@@ -367,7 +317,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       return []
     },
 
-    fileNameRules() {
+    fileNameRules(): string[] {
       if (this.locationMode === 'upload') {
         if (!this.fileName) {
           return ['Required']
@@ -377,8 +327,38 @@ const options: ThisTypedComponentOptionsWithRecordProps<
     },
   },
 
+  watch: {
+    type() {
+      if (this.type === 'CWL') {
+        this.attachAsFile = false
+      } else {
+        this.attachAsFile = true
+      }
+    },
+
+    wfContentUpload() {
+      if (this.wesVersion === 'sapporo-1.0.1') {
+        if (this.wfContentUpload) {
+          // inspect workflow
+          parseWorkflow(this.service.endpoint, {
+            workflow_content: this.wfContentUpload,
+            types_of_parsing: ['workflow_type', 'workflow_type_version'],
+          })
+            .then((result) => {
+              this.type = result.workflow_type || ''
+              this.version = result.workflow_type_version || ''
+            })
+            .catch((_) => {
+              this.type = ''
+              this.version = ''
+            })
+        }
+      }
+    },
+  },
+
   methods: {
-    changeType() {
+    changeType(): void {
       if (this.type) {
         if (this.versions.length === 1) {
           this.version = this.versions[0]
@@ -390,7 +370,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
 
-    changeUrl() {
+    changeUrl(): void {
       while (changeQueue.length) {
         const timeoutId = changeQueue.shift()
         if (timeoutId) {
@@ -407,7 +387,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       changeQueue.push(eventId)
     },
 
-    fetchWfContent(url: string) {
+    fetchWfContent(url: string): void {
       if (validUrl(url)) {
         convertGitHubUrl(this.url).then((url) => {
           this.url = url
@@ -455,7 +435,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
 
-    setDragFileName(e: DragEvent) {
+    setDragFileName(e: DragEvent): void {
       if (e?.dataTransfer?.files?.[0]?.name) {
         this.fileName = e?.dataTransfer?.files[0].name
         // add for name auto complete
@@ -468,7 +448,7 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
 
-    submitWorkflow() {
+    submitWorkflow(): void {
       if (this.registerValid) {
         this.submitButton = false
         let url = ''
@@ -502,43 +482,11 @@ const options: ThisTypedComponentOptionsWithRecordProps<
       }
     },
 
-    codeMirrorMode(content) {
+    codeMirrorMode(content: string): ReturnType<typeof codeMirrorMode> {
       return codeMirrorMode(content)
     },
   },
-
-  watch: {
-    type() {
-      if (this.type === 'CWL') {
-        this.attachAsFile = false
-      } else {
-        this.attachAsFile = true
-      }
-    },
-
-    wfContentUpload() {
-      if (this.wesVersion === 'sapporo-1.0.1') {
-        if (this.wfContentUpload) {
-          // inspect workflow
-          parseWorkflow(this.service.endpoint, {
-            workflow_content: this.wfContentUpload,
-            types_of_parsing: ['workflow_type', 'workflow_type_version'],
-          })
-            .then((result) => {
-              this.type = result.workflow_type || ''
-              this.version = result.workflow_type_version || ''
-            })
-            .catch((_) => {
-              this.type = ''
-              this.version = ''
-            })
-        }
-      }
-    },
-  },
-}
-
-export default Vue.extend(options)
+})
 </script>
 
 <style scoped>
