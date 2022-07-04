@@ -242,6 +242,7 @@ export default defineComponent({
       ](this.serviceId)
       const types = languages.map((language) => language.name)
       if (types.length === 1) {
+        // eslint-disable-next-line vue/no-side-effects-in-computed-properties
         this.type = types[0]
       }
       return languages.map((language) => language.name)
@@ -255,6 +256,7 @@ export default defineComponent({
         if (language.name === this.type) {
           const versions = language.versions
           if (versions.length === 1) {
+            // eslint-disable-next-line vue/no-side-effects-in-computed-properties
             this.version = versions[0]
           }
           return versions

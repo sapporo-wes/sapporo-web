@@ -225,6 +225,7 @@ export default defineComponent({
         },
       ]
       if (this.wesVersion !== '1.0.0') {
+        // eslint-disable-next-line vue/no-side-effects-in-computed-properties
         this.tab = 3
         items.splice(2, 0, {
           key: 'Workflow Attachment',

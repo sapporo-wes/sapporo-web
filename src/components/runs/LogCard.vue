@@ -214,9 +214,11 @@ export default defineComponent({
       try {
         const outputsArr = JSON.parse(outputs)
         if (this.isSapporo && Array.isArray(outputsArr)) {
+          // eslint-disable-next-line vue/no-side-effects-in-computed-properties
           this.outputs = outputsArr
         }
       } catch (_) {
+        // eslint-disable-next-line vue/no-side-effects-in-computed-properties
         this.outputs = []
       }
 
