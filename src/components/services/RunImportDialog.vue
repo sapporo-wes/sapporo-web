@@ -16,7 +16,7 @@
           :persistent-hint="!runId.length"
           :rules="runIdRules"
           class="ma-0"
-          hint="Enter the Run ID included in this WES service"
+          hint="Enter the Run ID included in this WES instance"
           label="Run ID"
           placeholder="Enter the Run ID"
           @input="changeRunId"

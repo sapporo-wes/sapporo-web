@@ -8,14 +8,14 @@
     <v-card>
       <div class="d-flex align-center mx-6 pt-4">
         <v-icon color="black" left v-text="'mdi-sticker-plus-outline'" />
-        <div class="card-header" v-text="'Register WES Service'" />
+        <div class="card-header" v-text="'Register WES Instance'" />
       </div>
       <div class="mx-12 my-2">
         <v-text-field
           v-model="name"
           :persistent-hint="!name.length"
           :rules="nameRules"
-          hint="Name of the WES service (free text, e.g., 'Test service,' etc.)"
+          hint="Name of the WES instance (free text, e.g., 'Test service,' etc.)"
           label="Name"
           placeholder="Type a name"
         />
@@ -23,7 +23,7 @@
           v-model="endpoint"
           :persistent-hint="!endpoint.length"
           :rules="endpointRules"
-          hint="Endpoint of the WES service (e.g., 'http://localhost:1122' etc.)"
+          hint="Endpoint of the WES instance (e.g., 'http://localhost:1122' etc.)"
           label="Endpoint"
           placeholder="Type a endpoint"
           @input="connection = true"

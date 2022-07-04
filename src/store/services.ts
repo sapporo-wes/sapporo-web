@@ -280,9 +280,11 @@ export const actions: ActionTree<State, RootState> = {
           })
           const executableWfs =
             (await getExecutableWorkflows(service.endpoint, serviceInfo)) || []
+          console.log(executableWfs)
           const registeredWfs: Workflow[] = rootGetters[
             'workflows/workflowsByIds'
           ](service.workflowIds).filter((wf: Workflow) => wf.preRegistered)
+          console.log(registeredWfs)
           const fetchedWfNames = new Set(
             executableWfs.map((wf) => wf.workflow_name)
           )
@@ -290,6 +292,7 @@ export const actions: ActionTree<State, RootState> = {
             registeredWfs.map((wf: Workflow) => wf.name)
           )
           const allWfNames = new Set([...fetchedWfNames, ...registeredWfNames])
+          console.log(allWfNames)
           for (const wfName of allWfNames) {
             const preWf = registeredWfs.find(
               (wf: Workflow) => wf.name === wfName
@@ -299,6 +302,7 @@ export const actions: ActionTree<State, RootState> = {
             )
             if (preWf && newWf) {
               // update
+              console.log(wfName)
               await dispatch(
                 'workflows/updateWorkflow',
                 {
@@ -310,6 +314,7 @@ export const actions: ActionTree<State, RootState> = {
               )
             } else if (newWf) {
               // add
+              console.log(wfName)
               const workflowId: string = await dispatch(
                 'workflows/addWorkflow',
                 {
@@ -322,6 +327,7 @@ export const actions: ActionTree<State, RootState> = {
               dispatch('addWorkflowId', { serviceId, workflowId })
             } else if (preWf) {
               // remove
+              console.log(wfName)
               dispatch(
                 'workflows/deleteWorkflows',
                 {

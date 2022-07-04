@@ -4,7 +4,7 @@
   "description": "A web application for managing and executing WES services.",
   "author": "DDBJ(Bioinformatics and DDBJ Center)",
   "scripts": {
-    "dev": "NUXT_HOST=0.0.0.0 NODE_OPTIONS=--openssl-legacy-provider nuxt",
+    "dev": "NODE_OPTIONS=--openssl-legacy-provider nuxt",
     "build": "NODE_OPTIONS=--openssl-legacy-provider nuxt build",
     "start": "NODE_OPTIONS=--openssl-legacy-provider nuxt start",
     "generate": "NODE_OPTIONS=--openssl-legacy-provider nuxt generate",

@@ -114,7 +114,7 @@
         </template>
         <span
           v-text="
-            'This WES service operates in the mode of pre-registering workflows. Would you please ask your administrator to add workflows?'
+            'This WES instance operates in the mode of pre-registering workflows. Would you please ask your administrator to add workflows?'
           "
         />
       </v-tooltip>
@@ -135,7 +135,7 @@
         </template>
         <span
           v-text="
-            'This WES service operates in the mode of pre-registering workflows. Would you please ask your administrator to import workflows?'
+            'This WES instance operates in the mode of pre-registering workflows. Would you please ask your administrator to import workflows?'
           "
         />
       </v-tooltip>

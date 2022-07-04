@@ -59,7 +59,7 @@
               </div>
             </template>
             <span
-              v-text="'The WES service does not allow workflow attachment.'"
+              v-text="'This WES instance does not allow workflow attachment.'"
             />
           </v-tooltip>
           <v-tooltip top>
@@ -78,7 +78,7 @@
               </div>
             </template>
             <span
-              v-text="'The WES service does not allow workflow attachment.'"
+              v-text="'This WES instance does not allow workflow attachment.'"
             />
           </v-tooltip>
         </v-chip-group>

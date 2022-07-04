@@ -2,7 +2,7 @@
   <v-card max-width="1200">
     <div class="d-flex mx-6 pt-4">
       <v-icon color="black" left v-text="'mdi-dns-outline'" />
-      <div class="card-header" v-text="'WES Services'" />
+      <div class="card-header" v-text="'WES Instances'" />
     </div>
 
     <div v-if="!services.length" class="my-2">
@@ -13,12 +13,12 @@
             textDecorationLine: 'underline',
             fontSize: '1rem',
           }"
-          v-text="'Register a WES service to run workflows.'"
+          v-text="'Register a WES instance to run workflows.'"
         />
         <br />
         <div class="my-2">
           <span>
-            Use a public WES service, or run your own using the
+            Use a public WES instance, or run your own using the
             <a href="https://github.com/sapporo-wes/sapporo-service">
               sapporo-service
             </a>
@@ -54,7 +54,7 @@
                 v-text="'mdi-account-check-outline'"
               />
             </template>
-            <span v-text="'Pre-registered WES service'" />
+            <span v-text="'Pre-registered WES instance'" />
           </v-tooltip>
         </div>
       </template>

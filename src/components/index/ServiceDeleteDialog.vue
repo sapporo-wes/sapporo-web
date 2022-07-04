@@ -6,10 +6,10 @@
     @click:outside="$emit('close')"
   >
     <v-card>
-      <div class="card-header mx-6 pt-4" v-text="'Remove WES Services'" />
+      <div class="card-header mx-6 pt-4" v-text="'Remove WES Instances'" />
       <div
         class="mx-12 my-2"
-        v-text="'Following WES service will be removed:'"
+        v-text="'Following WES instances will be removed:'"
       />
       <ul :style="{ paddingLeft: '96px', paddingRight: '96px' }">
         <li v-for="(item, i) in selectedItems" :key="i" v-text="item.name" />

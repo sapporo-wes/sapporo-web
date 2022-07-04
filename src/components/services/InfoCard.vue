@@ -12,7 +12,7 @@
             v-text="'mdi-account-check-outline'"
           />
         </template>
-        <span v-text="'Pre-registered WES service'" />
+        <span v-text="'Pre-registered WES instance'" />
       </v-tooltip>
       <v-spacer />
       <v-chip
@@ -33,7 +33,7 @@
             <v-icon v-text="'mdi-reload'" />
           </v-btn>
         </template>
-        <span v-text="'Reload WES service'" />
+        <span v-text="'Reload WES instance'" />
       </v-tooltip>
     </div>
 
