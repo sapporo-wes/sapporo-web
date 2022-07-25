@@ -9,21 +9,21 @@
       <!-- Name -->
       <v-text-field
         v-model="runName"
-        :persistent-hint="!runName.length"
-        :rules="runNameRules"
         hint="Name of the run (free text, e.g., 'Test run' etc.)"
         label="Run Name"
+        :persistent-hint="!runName.length"
         placeholder="Type a name"
+        :rules="runNameRules"
       />
 
       <!-- Workflow Engine  -->
       <v-select
         v-model="wfEngine"
+        hint="Select the workflow engine"
         :items="wfEngines"
+        label="Workflow Engine (Required)"
         :persistent-hint="!wfEngine.length"
         :rules="wfEngineRules"
-        hint="Select the workflow engine"
-        label="Workflow Engine (Required)"
       />
 
       <!-- Workflow Attachment -->
@@ -32,7 +32,7 @@
           :style="{ color: `${$colors.grey.darken2}` }"
           v-text="'Workflow Attachment'"
         />
-        <v-tooltip top max-width="400">
+        <v-tooltip max-width="400" top>
           <template #activator="{ on }">
             <v-icon right small v-on="on" v-text="'mdi-help-circle-outline'" />
           </template>
@@ -47,11 +47,11 @@
             <template #activator="{ on }">
               <div v-on="!serviceWorkflowAttachment && on">
                 <v-chip
-                  :disabled="!serviceWorkflowAttachment"
-                  :value="'fetch'"
                   class="my-0 py-0"
+                  :disabled="!serviceWorkflowAttachment"
                   label
                   outlined
+                  :value="'fetch'"
                 >
                   <v-icon left v-text="'mdi-download-outline'" />
                   <span v-text="'Fetch'" />
@@ -59,18 +59,18 @@
               </div>
             </template>
             <span
-              v-text="'This WES instance does not allow workflow attachment.'"
+              v-text="'This WES endpoint does not allow workflow attachment.'"
             />
           </v-tooltip>
           <v-tooltip top>
             <template #activator="{ on }">
               <div v-on="!serviceWorkflowAttachment && on">
                 <v-chip
-                  :disabled="!serviceWorkflowAttachment"
-                  :value="'upload'"
                   class="my-0 py-0"
+                  :disabled="!serviceWorkflowAttachment"
                   label
                   outlined
+                  :value="'upload'"
                 >
                   <v-icon left v-text="'mdi-upload-outline'" />
                   <span v-text="'Upload'" />
@@ -78,15 +78,15 @@
               </div>
             </template>
             <span
-              v-text="'This WES instance does not allow workflow attachment.'"
+              v-text="'This WES endpoint does not allow workflow attachment.'"
             />
           </v-tooltip>
         </v-chip-group>
         <v-spacer />
         <v-btn
           v-if="!!attachmentMode && !!serviceWorkflowAttachment"
-          :color="$colors.grey.darken2"
           class="mr-4"
+          :color="$colors.grey.darken2"
           outlined
           small
           width="120"
@@ -115,28 +115,28 @@
         >
           <v-text-field
             v-model="wfAttachment[attachmentMode].urls[ind - 1]"
-            :disabled="!serviceWorkflowAttachment"
-            :persistent-hint="!wfAttachment[attachmentMode].urls[ind - 1]"
-            :rules="wfAttachmentRules[attachmentMode].urls[ind - 1]"
-            :style="{ maxWidth: '47%', minWidth: '47%' }"
             class="my-0 mr-auto"
             clearable
+            :disabled="!serviceWorkflowAttachment"
             hint="Network reachable location of the workflow attachment"
             label="URL"
+            :persistent-hint="!wfAttachment[attachmentMode].urls[ind - 1]"
             placeholder="Type a URL"
+            :rules="wfAttachmentRules[attachmentMode].urls[ind - 1]"
+            :style="{ maxWidth: '47%', minWidth: '47%' }"
             @input="updateWfAttachmentUrl($event, ind - 1)"
           />
           <v-text-field
             v-model="wfAttachment[attachmentMode].names[ind - 1]"
-            :disabled="!serviceWorkflowAttachment"
-            :persistent-hint="!wfAttachment[attachmentMode].names[ind - 1]"
-            :rules="wfAttachmentRules[attachmentMode].names[ind - 1]"
-            :style="{ maxWidth: '47%', minWidth: '47%' }"
             class="my-0"
             clearable
+            :disabled="!serviceWorkflowAttachment"
             hint="The name of the workflow attachment when it is placed in the execution directory"
             label="File Name"
+            :persistent-hint="!wfAttachment[attachmentMode].names[ind - 1]"
             placeholder="Type a file name"
+            :rules="wfAttachmentRules[attachmentMode].names[ind - 1]"
+            :style="{ maxWidth: '47%', minWidth: '47%' }"
             @input="updateWfAttachmentName($event, ind - 1)"
           />
         </div>
@@ -149,31 +149,31 @@
         >
           <v-file-input
             v-model="wfAttachment[attachmentMode].files[ind - 1]"
-            :disabled="!serviceWorkflowAttachment"
-            :persistent-hint="!wfAttachment[attachmentMode].files[ind - 1]"
-            :prepend-icon="null"
-            :rules="wfAttachmentRules[attachmentMode].files[ind - 1]"
-            :style="{ maxWidth: '47%', minWidth: '47%' }"
             class="my-0 mr-auto"
             clearable
+            :disabled="!serviceWorkflowAttachment"
             hint="The file to be attached"
             label="File"
+            :persistent-hint="!wfAttachment[attachmentMode].files[ind - 1]"
             placeholder="Select a file"
+            :prepend-icon="null"
             prepend-inner-icon="mdi-paperclip"
+            :rules="wfAttachmentRules[attachmentMode].files[ind - 1]"
             show-size
+            :style="{ maxWidth: '47%', minWidth: '47%' }"
             @change="updateWfAttachmentFile($event, ind - 1)"
           />
           <v-text-field
             v-model="wfAttachment[attachmentMode].names[ind - 1]"
-            :disabled="!serviceWorkflowAttachment"
-            :persistent-hint="!wfAttachment[attachmentMode].names[ind - 1]"
-            :rules="wfAttachmentRules[attachmentMode].names[ind - 1]"
-            :style="{ maxWidth: '47%', minWidth: '47%' }"
             class="my-0"
             clearable
+            :disabled="!serviceWorkflowAttachment"
             hint="The name of the workflow attachment when it is placed in the execution directory"
             label="File Name"
+            :persistent-hint="!wfAttachment[attachmentMode].names[ind - 1]"
             placeholder="Type a file name"
+            :rules="wfAttachmentRules[attachmentMode].names[ind - 1]"
+            :style="{ maxWidth: '47%', minWidth: '47%' }"
             @input="updateWfAttachmentName($event, ind - 1)"
           />
         </div>
@@ -185,7 +185,7 @@
           :style="{ color: `${$colors.grey.darken2}` }"
           v-text="'Workflow Parameters'"
         />
-        <v-tooltip top max-width="400">
+        <v-tooltip max-width="400" top>
           <template #activator="{ on }">
             <v-icon right small v-on="on" v-text="'mdi-help-circle-outline'" />
           </template>
@@ -202,16 +202,16 @@
           color="primary"
         >
           <v-chip
-            :value="'form'"
             class="my-0 py-0"
+            :disabled="!wfParamsInputs.length"
             label
             outlined
-            :disabled="!wfParamsInputs.length"
+            :value="'form'"
           >
             <v-icon left v-text="'mdi-form-select'" />
             <span v-text="'Form'" />
           </v-chip>
-          <v-chip :value="'text'" class="my-0 py-0" label outlined>
+          <v-chip class="my-0 py-0" label outlined :value="'text'">
             <v-icon left v-text="'mdi-format-text'" />
             <span v-text="'Text'" />
           </v-chip>
@@ -223,6 +223,7 @@
       <div v-if="showWfParamsText" class="d-flex flex-column ml-8 mt-4">
         <codemirror
           v-model="wfParams"
+          class="elevation-2 input-field-middle"
           :options="{
             lineNumbers: true,
             mode: codeMirrorMode(wfParams),
@@ -235,7 +236,6 @@
                 : $colors.grey.lighten1
             }`,
           }"
-          class="elevation-2 input-field-middle"
         />
         <div
           class="mt-2 v-messages theme--light"
@@ -254,7 +254,7 @@
           :style="{ color: `${$colors.grey.darken2}` }"
           v-text="'Workflow Engine Parameters'"
         />
-        <v-tooltip top max-width="400">
+        <v-tooltip max-width="400" top>
           <template #activator="{ on }">
             <v-icon right small v-on="on" v-text="'mdi-help-circle-outline'" />
           </template>
@@ -277,6 +277,7 @@
       <div v-if="wfEngineParamsExpand" class="d-flex flex-column ml-8 mt-4">
         <codemirror
           v-model="wfEngineParams"
+          class="elevation-2 input-field-small"
           :options="{
             lineNumbers: true,
             mode: codeMirrorMode(wfEngineParams),
@@ -289,7 +290,6 @@
                 : $colors.grey.lighten1
             }`,
           }"
-          class="elevation-2 input-field-small"
         />
         <div
           class="mt-2 v-messages theme--light"
@@ -305,7 +305,7 @@
       <!-- Tags -->
       <div class="d-flex align-center mt-4">
         <span :style="{ color: `${$colors.grey.darken2}` }" v-text="'Tags'" />
-        <v-tooltip top max-width="400">
+        <v-tooltip max-width="400" top>
           <template #activator="{ on }">
             <v-icon right small v-on="on" v-text="'mdi-help-circle-outline'" />
           </template>
@@ -328,6 +328,7 @@
       <div v-if="tagsExpand" class="d-flex flex-column ml-8 mt-4">
         <codemirror
           v-model="tags"
+          class="elevation-2 input-field-small"
           :options="{
             lineNumbers: true,
             mode: codeMirrorMode(tags),
@@ -340,7 +341,6 @@
                 : $colors.grey.lighten1
             }`,
           }"
-          class="elevation-2 input-field-small"
         />
         <div
           class="mt-2 v-messages theme--light"
@@ -357,11 +357,11 @@
     <div class="d-flex justify-end pb-6 mx-12 mt-4">
       <v-btn
         color="primary"
-        outlined
-        width="140"
         :disabled="
           !formValid || service.state !== 'Available' || !executeButton
         "
+        outlined
+        width="140"
         @click.stop="executeRun"
       >
         <v-icon left v-text="'mdi-rocket-launch-outline'" />

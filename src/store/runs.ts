@@ -1,4 +1,4 @@
-import dayjs, {extend as dayjsExtend} from 'dayjs'
+import dayjs, { extend as dayjsExtend } from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import Vue from 'vue'
 import colors from 'vuetify/lib/util/colors'

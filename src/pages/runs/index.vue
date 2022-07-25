@@ -6,8 +6,8 @@
       <v-container fluid>
         <breadcrumbs-header />
         <template v-if="existRunId">
-          <info-card :run-id="runId" class="mx-auto" />
-          <log-card :run-id="runId" class="mt-8 mx-auto mb-4" />
+          <info-card class="mx-auto" :run-id="runId" />
+          <log-card class="mt-8 mx-auto mb-4" :run-id="runId" />
         </template>
         <template v-else>{{ `Run id: ${runId} does not exist.` }}</template>
       </v-container>

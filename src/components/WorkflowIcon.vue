@@ -1,27 +1,27 @@
 <template>
   <img
     v-if="wfType === 'CWL'"
-    src="~/assets/icon/cwl-icon.png"
     :class="{ 'mt-2': topMargin, 'mr-2': true }"
     :height="size"
+    src="~/assets/icon/cwl-icon.png"
   />
   <img
     v-else-if="wfType === 'WDL'"
-    src="~/assets/icon/wdl-icon.png"
     :class="{ 'mt-2': topMargin, 'mr-2': true }"
     :height="size"
+    src="~/assets/icon/wdl-icon.png"
   />
   <img
     v-else-if="wfType.toLowerCase() === 'nextflow' || wfType === 'NFL'"
-    src="~/assets/icon/nextflow-icon.png"
     :class="{ 'mt-2': topMargin, 'mr-2': true }"
     :height="size"
+    src="~/assets/icon/nextflow-icon.png"
   />
   <img
     v-else-if="wfType.toLowerCase() === 'snakemake' || wfType === 'SMK'"
-    src="~/assets/icon/snakemake-icon.png"
     :class="{ 'mt-2': topMargin, 'mr-2': true }"
     :height="size"
+    src="~/assets/icon/snakemake-icon.png"
   />
   <v-icon v-else class="my-2 mr-2" v-text="'mdi-graph-outline'" />
 </template>

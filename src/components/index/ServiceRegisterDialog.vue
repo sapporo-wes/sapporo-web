@@ -1,38 +1,38 @@
 <template>
   <v-dialog
-    :value="dialogShow"
     overlay-opacity="0.8"
+    :value="dialogShow"
     width="600"
     @click:outside="$emit('close')"
   >
     <v-card>
       <div class="d-flex align-center mx-6 pt-4">
         <v-icon color="black" left v-text="'mdi-sticker-plus-outline'" />
-        <div class="card-header" v-text="'Register WES Instance'" />
+        <div class="card-header" v-text="'Register WES endpoint'" />
       </div>
       <div class="mx-12 my-2">
         <v-text-field
           v-model="name"
-          :persistent-hint="!name.length"
-          :rules="nameRules"
-          hint="Name of the WES instance (free text, e.g., 'Test service,' etc.)"
+          hint="Name of the WES endpoint (free text, e.g., 'Test service,' etc.)"
           label="Name"
+          :persistent-hint="!name.length"
           placeholder="Type a name"
+          :rules="nameRules"
         />
         <v-text-field
           v-model="endpoint"
-          :persistent-hint="!endpoint.length"
-          :rules="endpointRules"
-          hint="Endpoint of the WES instance (e.g., 'http://localhost:1122' etc.)"
+          hint="Location of WES endpoint (e.g., 'http://localhost:1122' etc.)"
           label="Endpoint"
+          :persistent-hint="!endpoint.length"
           placeholder="Type a endpoint"
+          :rules="endpointRules"
           @input="connection = true"
         />
       </div>
       <div class="d-flex justify-end mx-12 pb-6 mt-4">
         <v-btn
-          :disabled="!(registerValid && registerButton)"
           color="primary"
+          :disabled="!(registerValid && registerButton)"
           outlined
           @click.stop="submitService"
         >

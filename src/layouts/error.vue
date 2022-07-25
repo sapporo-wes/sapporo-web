@@ -4,7 +4,7 @@
     <app-bar />
     <v-main class="background">
       <v-container fluid>
-        <v-card max-width="1200" class="mx-auto">
+        <v-card class="mx-auto" max-width="1200">
           <div class="d-flex flex-column mx-6 pt-4">
             <div
               class="card-header"
@@ -26,9 +26,9 @@
           </div>
           <div class="d-flex justify-end pb-4">
             <v-btn
-              outlined
-              :color="$colors.grey.darken2"
               class="mr-12"
+              :color="$colors.grey.darken2"
+              outlined
               @click.stop="$router.push('/')"
               v-text="'Back to Home'"
             />

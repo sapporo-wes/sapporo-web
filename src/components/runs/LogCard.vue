@@ -5,9 +5,9 @@
       <div class="card-header" v-text="'Run Log'" />
       <v-spacer />
       <v-btn
+        class="mr-6"
         :color="$colors.grey.darken2"
         outlined
-        class="mr-6"
         @click.stop="downloadRunLog"
       >
         <v-icon left v-text="'mdi-download'" />
@@ -15,20 +15,20 @@
       </v-btn>
     </div>
     <v-data-table
-      :headers="logInfoHeaders"
-      :items="logInfoContents"
       calculate-widths
       class="mx-12 mt-2 info-table"
       disable-filtering
       disable-pagination
       disable-sort
+      :headers="logInfoHeaders"
       hide-default-footer
       hide-default-header
       item-key="key"
+      :items="logInfoContents"
     />
 
     <div class="ml-12 mr-11">
-      <v-tabs v-model="tab" vertical height="332">
+      <v-tabs v-model="tab" height="332" vertical>
         <v-tab
           v-for="tabItem in tabItems"
           :key="tabItem.key"
@@ -72,6 +72,7 @@
           </v-list>
           <codemirror
             v-else
+            class="ml-6 mr-1 mt-2 mb-6 elevation-2 content-viewer"
             :options="{
               lineNumbers: true,
               mode: codeMirrorMode(tabItem.value),
@@ -83,7 +84,6 @@
               outline: `solid 1px ${$colors.grey.lighten1}`,
             }"
             :value="tabItem.value"
-            class="ml-6 mr-1 mt-2 mb-6 elevation-2 content-viewer"
           />
         </v-tab-item>
       </v-tabs>

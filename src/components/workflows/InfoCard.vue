@@ -6,8 +6,8 @@
       <v-tooltip v-if="workflow.preRegistered" top>
         <template #activator="{ on }">
           <v-icon
-            :color="$colors.indigo.darken1"
             class="ml-2 mt-1"
+            :color="$colors.indigo.darken1"
             v-on="on"
             v-text="'mdi-account-check-outline'"
           />
@@ -17,16 +17,16 @@
     </div>
 
     <v-data-table
-      :headers="workflowInfoHeaders"
-      :items="workflowInfoContents"
       calculate-widths
       class="mx-12 mt-2 info-table"
       disable-filtering
       disable-pagination
       disable-sort
+      :headers="workflowInfoHeaders"
       hide-default-footer
       hide-default-header
       item-key="key"
+      :items="workflowInfoContents"
     >
       <template #[`item.value`]="{ item }">
         <a
@@ -40,6 +40,7 @@
 
     <div class="d-flex ml-12 mr-3 mt-2 pb-6">
       <codemirror
+        class="elevation-2 content-viewer flex-grow-1"
         :options="{
           lineNumbers: true,
           mode: codeMirrorMode(workflow.content),
@@ -51,15 +52,14 @@
           maxWidth: '97%',
         }"
         :value="workflow.content"
-        class="elevation-2 content-viewer flex-grow-1"
       />
       <div class="d-flex flex-column ml-3">
         <v-tooltip top>
           <template #activator="{ on }">
             <v-icon
               :color="$colors.grey.darken1"
-              @click.stop="downloadWorkflowContent"
               v-on="on"
+              @click.stop="downloadWorkflowContent"
               v-text="'mdi-download'"
             />
           </template>

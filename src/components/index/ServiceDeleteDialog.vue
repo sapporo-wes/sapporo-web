@@ -1,15 +1,15 @@
 <template>
   <v-dialog
-    :value="dialogShow"
     overlay-opacity="0.8"
+    :value="dialogShow"
     width="600"
     @click:outside="$emit('close')"
   >
     <v-card>
-      <div class="card-header mx-6 pt-4" v-text="'Remove WES Instances'" />
+      <div class="card-header mx-6 pt-4" v-text="'Remove WES endpoints'" />
       <div
         class="mx-12 my-2"
-        v-text="'Following WES instances will be removed:'"
+        v-text="'Following WES endpoints will be removed:'"
       />
       <ul :style="{ paddingLeft: '96px', paddingRight: '96px' }">
         <li v-for="(item, i) in selectedItems" :key="i" v-text="item.name" />
@@ -26,7 +26,7 @@
           <v-icon left v-text="'mdi-trash-can-outline'" />
           <span v-text="'Remove'" />
         </v-btn>
-        <v-btn color="info" class="ml-4" outlined @click.stop="$emit('close')">
+        <v-btn class="ml-4" color="info" outlined @click.stop="$emit('close')">
           <v-icon left v-text="'mdi-close'" />
           <span v-text="'Cancel'" />
         </v-btn>

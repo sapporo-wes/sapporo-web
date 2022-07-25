@@ -1,8 +1,8 @@
 <template>
-  <v-app-bar :color="$colors.indigo.darken1" app absolute dense>
+  <v-app-bar absolute app :color="$colors.indigo.darken1" dense>
     <v-toolbar-title>
       <nuxt-link class="white--text text-decoration-none" to="/">
-        <img src="~/assets/logo.svg" alt="logo" height="48" class="mt-2" />
+        <img alt="logo" class="mt-2" height="48" src="~/assets/logo.svg" />
       </nuxt-link>
     </v-toolbar-title>
     <v-spacer />
@@ -12,7 +12,7 @@
       href="https://hackmd.io/@suecharo/sapporo-web-docs"
       outlined
     >
-      <v-icon left color="white" v-text="'mdi-book-open-outline'" />
+      <v-icon color="white" left v-text="'mdi-book-open-outline'" />
       Docs
     </v-btn>
   </v-app-bar>

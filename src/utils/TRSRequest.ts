@@ -6,15 +6,8 @@ export type ServiceInfoResponse =
 export const getServiceInfo = async (
   trsEndpoint: string
 ): Promise<ServiceInfoResponse> => {
-  if (trsEndpoint === 'https://api.biocontainers.pro/ga4gh/trs/v2') {
-    return generateBiocontainersServiceInfo()
-  }
-
   const res = await fetch(`${trsEndpoint}/service-info`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   })
 
   if (!res.ok) {
@@ -24,23 +17,6 @@ export const getServiceInfo = async (
   }
 
   return await res.json()
-}
-
-export const generateBiocontainersServiceInfo = (): ServiceInfoResponse => {
-  return {
-    id: 'biocontainers',
-    name: 'biocontainers',
-    organization: {
-      name: 'biocontainers',
-      url: 'https://api.biocontainers.pro',
-    },
-    version: '1.0.0',
-    type: {
-      group: 'ga4gh',
-      artifact: 'trs',
-      version: '2.0.0',
-    },
-  }
 }
 
 export type ToolsResponse =
@@ -119,9 +95,22 @@ export const getTools = async (
 
   const res = await fetch(url.toString(), {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+  })
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch tools from ${url}`)
+  }
+
+  return await res.json()
+}
+
+// for Yevis
+export const getToolsAll = async (
+  trsEndpoint: string
+): Promise<ToolsResponse> => {
+  const url = new URL(`${trsEndpoint}/tools`)
+  const res = await fetch(url.toString(), {
+    method: 'GET',
   })
 
   if (!res.ok) {
@@ -177,9 +166,6 @@ export const getFiles = async (
     )}/versions/${encodeURIComponent(version)}/${descriptorType}/files`,
     {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     }
   )
 

@@ -2,7 +2,7 @@
   <v-card max-width="1200">
     <div class="d-flex mx-6 pt-4">
       <v-icon color="black" left v-text="'mdi-dns-outline'" />
-      <div class="card-header" v-text="'WES Instances'" />
+      <div class="card-header" v-text="'WES endpoints'" />
     </div>
 
     <div v-if="!services.length" class="my-2">
@@ -13,14 +13,14 @@
             textDecorationLine: 'underline',
             fontSize: '1rem',
           }"
-          v-text="'Register a WES instance to run workflows.'"
+          v-text="'Register a WES endpoint to run workflows.'"
         />
         <br />
         <div class="my-2">
           <span>
-            Use a public WES instance, or run your own using the
+            Use a public WES endpoint, or run your own WES using the
             <a href="https://github.com/sapporo-wes/sapporo-service">
-              sapporo-service
+              Sapporo-service
             </a>
           </span>
         </div>
@@ -30,31 +30,31 @@
     <v-data-table
       v-if="services.length"
       v-model="selectedServices"
-      :headers="serviceHeaders"
-      :items-per-page="Number(-1)"
-      :items="services"
       class="mx-12 my-2"
+      :headers="serviceHeaders"
       hide-default-footer
       item-key="id"
+      :items="services"
+      :items-per-page="Number(-1)"
     >
       <template #[`item.name`]="{ item }">
         <div class="d-flex">
           <nuxt-link
-            :to="{ path: '/services', query: { serviceId: item.id } }"
             :style="{ textDecoration: 'none' }"
+            :to="{ path: '/services', query: { serviceId: item.id } }"
             v-text="item.name"
           />
           <v-tooltip v-if="item.preRegistered" top>
             <template #activator="{ on }">
               <v-icon
-                :color="$colors.indigo.darken1"
                 class="ml-2"
+                :color="$colors.indigo.darken1"
                 small
                 v-on="on"
                 v-text="'mdi-account-check-outline'"
               />
             </template>
-            <span v-text="'Pre-registered WES instance'" />
+            <span v-text="'Pre-registered WES endpoint'" />
           </v-tooltip>
         </div>
       </template>
@@ -74,8 +74,8 @@
         <v-tooltip top>
           <template #activator="{ on }">
             <v-icon
-              :disabled="item.preRegistered"
               :color="$colors.grey.darken2"
+              :disabled="item.preRegistered"
               v-on="item.preRegistered && on"
               @click.stop="
                 selectedServices = [item]

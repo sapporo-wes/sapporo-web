@@ -7,27 +7,27 @@
       <v-select
         v-if="workflowTableItems.length"
         v-model="filterType"
-        :items="workflowTypes"
-        :prepend-inner-icon="'mdi-filter-outline'"
-        :style="{ maxWidth: '160px', minWidth: '160px' }"
         class="mt-2 mr-6"
         clearable
         dense
         hide-details
+        :items="workflowTypes"
         label="Type"
+        :prepend-inner-icon="'mdi-filter-outline'"
         single-line
+        :style="{ maxWidth: '160px', minWidth: '160px' }"
       />
       <v-text-field
         v-if="workflowTableItems.length"
         v-model="filterName"
-        :prepend-inner-icon="'mdi-magnify'"
-        :style="{ maxWidth: '200px', minWidth: '200px' }"
         class="mt-2 mr-6"
         clearable
         dense
         hide-details
         label="Name"
+        :prepend-inner-icon="'mdi-magnify'"
         single-line
+        :style="{ maxWidth: '200px', minWidth: '200px' }"
       />
     </div>
 
@@ -44,11 +44,11 @@
 
     <v-data-table
       v-if="workflowTableItems.length"
-      :headers="workflowHeaders"
-      :items-per-page="Number(10)"
-      :items="filteredItems"
       class="mx-12 my-2 workflow-table"
+      :headers="workflowHeaders"
       item-key="workflowId"
+      :items="filteredItems"
+      :items-per-page="Number(10)"
     >
       <template #[`item.workflowType`]="{ item }">
         <workflow-icon :wf-type="item.workflowType" />
@@ -56,16 +56,16 @@
       <template #[`item.workflowName`]="{ item }">
         <div class="d-flex">
           <nuxt-link
-            :to="{ path: '/workflows', query: { workflowId: item.workflowId } }"
             :style="{ textDecoration: 'none' }"
+            :to="{ path: '/workflows', query: { workflowId: item.workflowId } }"
             v-text="item.workflowName"
           />
           <v-tooltip top>
             <template #activator="{ on }">
               <v-icon
                 v-if="item.preRegistered"
-                :color="$colors.indigo.darken1"
                 class="ml-2"
+                :color="$colors.indigo.darken1"
                 small
                 v-on="on"
                 v-text="'mdi-account-check-outline'"
@@ -80,8 +80,8 @@
           <template #activator="{ on }">
             <div v-on="item.preRegistered && on">
               <v-icon
-                :disabled="item.preRegistered"
                 :color="$colors.grey.darken2"
+                :disabled="item.preRegistered"
                 @click.stop="
                   selectedWorkflows = [item]
                   deleteDialogShow = true
@@ -98,11 +98,11 @@
     </v-data-table>
 
     <div class="d-flex justify-end pb-6 mr-12 mt-2">
-      <v-tooltip top max-width="400">
+      <v-tooltip max-width="400" top>
         <template #activator="{ on }">
           <v-btn
-            :disabled="registeredOnlyMode"
             color="primary"
+            :disabled="registeredOnlyMode"
             outlined
             width="140"
             v-on="registeredOnlyMode && on"
@@ -114,17 +114,17 @@
         </template>
         <span
           v-text="
-            'This WES instance operates in the mode of pre-registering workflows. Would you please ask your administrator to add workflows?'
+            'This WES endpoint operates in the mode of pre-registering workflows. Would you please ask your administrator to add workflows?'
           "
         />
       </v-tooltip>
-      <v-tooltip top max-width="400">
+      <v-tooltip max-width="400" top>
         <template #activator="{ on }">
           <v-btn
-            :disabled="registeredOnlyMode"
-            color="primary"
-            outlined
             class="ml-4"
+            color="primary"
+            :disabled="registeredOnlyMode"
+            outlined
             width="140"
             v-on="registeredOnlyMode && on"
             @click.stop="importDialogShow = true"
@@ -135,7 +135,7 @@
         </template>
         <span
           v-text="
-            'This WES instance operates in the mode of pre-registering workflows. Would you please ask your administrator to import workflows?'
+            'This WES endpoint operates in the mode of pre-registering workflows. Would you please ask your administrator to import workflows?'
           "
         />
       </v-tooltip>

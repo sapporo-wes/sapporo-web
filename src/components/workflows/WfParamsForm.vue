@@ -17,15 +17,15 @@
               <template v-for="(val, valInd) in values(input.id)">
                 <v-text-field
                   :key="`${input.id}-textfield-${valInd}`"
+                  class="pt-1 mt-0"
                   :hint="valInd === 0 ? input.doc : ''"
+                  persistent-hint
                   :placeholder="`${input.type}`"
                   :rules="
                     input.required && !val ? ['This field is required'] : []
                   "
                   :type="formType(input.type)"
                   :value="val"
-                  class="pt-1 mt-0"
-                  persistent-hint
                   @input="updateValue($event, input.id, valInd)"
                 />
               </template>
@@ -35,14 +35,14 @@
                 >
                   <v-text-field
                     :key="`${input.id}-secondaryFiles-${fileInd}`"
-                    :value="secondaryFilesValue(input.id, fileInd)"
+                    class="pt-1 mt-0 ml-4"
                     :hint="`pattern: ${secondaryFile.pattern}`"
+                    persistent-hint
                     :placeholder="`SecondaryFiles${
                       secondaryFile.required ? ' *' : ''
                     }: ${secondaryFile.pattern}`"
                     :rules="secondaryFilesRules(input.id, fileInd)"
-                    class="pt-1 mt-0 ml-4"
-                    persistent-hint
+                    :value="secondaryFilesValue(input.id, fileInd)"
                     @input="updateSecondaryFiles($event, input.id, fileInd)"
                   />
                 </template>
@@ -51,8 +51,8 @@
 
             <div v-if="input.array" class="d-flex">
               <v-btn
-                :color="$colors.grey.darken2"
                 class="ml-6"
+                :color="$colors.grey.darken2"
                 outlined
                 small
                 width="100"
@@ -62,8 +62,8 @@
                 <span v-text="'Add'" />
               </v-btn>
               <v-btn
-                :color="$colors.grey.darken2"
                 class="ml-2"
+                :color="$colors.grey.darken2"
                 outlined
                 small
                 width="100"

@@ -1,7 +1,7 @@
 <template>
   <v-dialog
-    :value="dialogShow"
     overlay-opacity="0.8"
+    :value="dialogShow"
     width="900"
     @click:outside="$emit('close')"
   >
@@ -13,12 +13,12 @@
       <div class="mx-12 my-2">
         <v-text-field
           v-model="runId"
-          :persistent-hint="!runId.length"
-          :rules="runIdRules"
           class="ma-0"
-          hint="Enter the Run ID included in this WES instance"
+          hint="Enter the Run ID included in this WES endpoint"
           label="Run ID"
+          :persistent-hint="!runId.length"
           placeholder="Enter the Run ID"
+          :rules="runIdRules"
           @input="changeRunId"
         />
 
@@ -42,19 +42,19 @@
           <v-text-field
             v-if="!getFailed"
             v-model="workflowType"
-            :style="{ maxWidth: '48%', minWidth: '48%' }"
             class="my-0 mr-auto"
             label="Workflow Type"
             readonly
+            :style="{ maxWidth: '48%', minWidth: '48%' }"
           />
 
           <v-text-field
             v-if="!getFailed"
             v-model="workflowVersion"
-            :style="{ maxWidth: '48%', minWidth: '48%' }"
             class="ma-0"
             label="Workflow Version"
             readonly
+            :style="{ maxWidth: '48%', minWidth: '48%' }"
           />
         </div>
 
@@ -68,6 +68,7 @@
         <codemirror
           v-if="!getFailed"
           v-model="workflowContent"
+          class="elevation-2 content-viewer"
           :options="{
             lineNumbers: true,
             tabSize: 2,
@@ -77,13 +78,12 @@
           :style="{
             outline: `solid 1px ${$colors.grey.lighten1}`,
           }"
-          class="elevation-2 content-viewer"
         />
       </div>
       <div class="d-flex justify-end mx-12 pb-6 mt-4">
         <v-btn
-          :disabled="!formValid"
           color="primary"
+          :disabled="!formValid"
           outlined
           @click.stop="importRun"
         >

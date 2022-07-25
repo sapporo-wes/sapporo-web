@@ -4,7 +4,7 @@
     <app-bar />
     <v-main class="background">
       <v-container fluid>
-        <v-card max-width="1200" class="mx-auto">
+        <v-card class="mx-auto" max-width="1200">
           <div class="d-flex flex-column mx-6 py-4">
             <div class="d-flex mb-4">
               <v-btn

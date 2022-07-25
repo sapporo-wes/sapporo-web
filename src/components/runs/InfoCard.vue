@@ -5,8 +5,8 @@
       <div class="card-header" v-text="run.name" />
       <v-spacer />
       <v-chip
-        :color="$store.getters['runs/stateColor'](run.id)"
         class="mr-4"
+        :color="$store.getters['runs/stateColor'](run.id)"
         text-color="white"
         v-text="run.state"
       />
@@ -14,10 +14,10 @@
         v-if="
           ['QUEUED', 'INITIALIZING', 'RUNNING', 'PAUSED'].includes(run.state)
         "
-        outlined
-        color="error"
         class="mr-4"
+        color="error"
         :disabled="!cancelButton"
+        outlined
         @click.stop="cancelRun"
       >
         <v-icon left v-text="'mdi-close'" />
@@ -29,8 +29,8 @@
             :color="$colors.grey.darken2"
             outlined
             small
-            @click.stop="reloadRunState"
             v-on="on"
+            @click.stop="reloadRunState"
           >
             <v-icon v-text="'mdi-reload'" />
           </v-btn>
@@ -40,16 +40,16 @@
     </div>
 
     <v-data-table
-      :headers="runInfoHeaders"
-      :items="runInfoContents"
       calculate-widths
       class="mx-12 mt-2 info-table"
       disable-filtering
       disable-pagination
       disable-sort
+      :headers="runInfoHeaders"
       hide-default-footer
       hide-default-header
       item-key="key"
+      :items="runInfoContents"
     >
       <template #[`item.value`]="{ item }">
         <div v-if="item.key === 'Run ID'" class="d-flex align-center">
@@ -76,7 +76,7 @@
     </v-data-table>
 
     <div class="ml-12 mr-11">
-      <v-tabs v-model="tab" vertical height="332">
+      <v-tabs v-model="tab" height="332" vertical>
         <v-tab
           v-for="tabItem in tabItems"
           :key="tabItem.key"
@@ -91,6 +91,7 @@
         />
         <v-tab-item v-for="tabItem in tabItems" :key="tabItem.key">
           <codemirror
+            class="ml-6 mr-1 mt-2 mb-6 elevation-2 content-viewer"
             :options="{
               lineNumbers: true,
               mode: codeMirrorMode(tabItem.value),
@@ -101,7 +102,6 @@
               outline: `solid 1px ${$colors.grey.lighten1}`,
             }"
             :value="tabItem.value"
-            class="ml-6 mr-1 mt-2 mb-6 elevation-2 content-viewer"
           />
         </v-tab-item>
       </v-tabs>

@@ -1,8 +1,8 @@
 <template>
   <v-dialog
-    :value="dialogShow"
     eager
     overlay-opacity="0.8"
+    :value="dialogShow"
     width="1200"
     @click:outside="$emit('close')"
   >
@@ -15,11 +15,11 @@
         <v-form ref="form" class="flex-grow-1 mr-4">
           <v-text-field
             v-model="trsEndpoint"
-            :persistent-hint="!trsEndpoint.length"
-            :rules="trsEndpointRules"
             hint="Endpoint of the TRS (e.g., 'https://workflowhub.eu/ga4gh/trs/v2' etc.)"
             label="TRS Endpoint"
+            :persistent-hint="!trsEndpoint.length"
             placeholder="Type a TRS endpoint"
+            :rules="trsEndpointRules"
             @input="changeTrsEndpoint"
           />
         </v-form>
@@ -31,7 +31,6 @@
             'mr-2': index !== defaultEndpoints.length - 1,
           }"
           outlined
-          width="110"
           small
           @click.stop="
             trsEndpoint = item.endpoint
@@ -44,48 +43,48 @@
         <v-spacer />
         <v-select
           v-model="filterType"
-          :disabled="!tableContents.length"
-          :items="wfTypes"
-          :prepend-inner-icon="'mdi-filter-outline'"
-          :style="{ maxWidth: '160px', minWidth: '160px' }"
           class="mr-6"
           clearable
           dense
+          :disabled="!tableContents.length"
           hide-details
+          :items="wfTypes"
           label="Type"
+          :prepend-inner-icon="'mdi-filter-outline'"
           single-line
+          :style="{ maxWidth: '160px', minWidth: '160px' }"
         />
         <v-text-field
           v-model="filterWorkflowName"
-          :disabled="!tableContents.length"
-          :prepend-inner-icon="'mdi-magnify'"
-          :style="{ maxWidth: '200px', minWidth: '200px' }"
           class="mr-6"
           clearable
           dense
+          :disabled="!tableContents.length"
           hide-details
           label="Name"
+          :prepend-inner-icon="'mdi-magnify'"
           single-line
+          :style="{ maxWidth: '200px', minWidth: '200px' }"
         />
         <v-text-field
           v-model="filterOrganization"
-          :disabled="!tableContents.length"
-          :prepend-inner-icon="'mdi-magnify'"
-          :style="{ maxWidth: '200px', minWidth: '200px' }"
           clearable
           dense
+          :disabled="!tableContents.length"
           hide-details
           label="Organization"
+          :prepend-inner-icon="'mdi-magnify'"
           single-line
+          :style="{ maxWidth: '200px', minWidth: '200px' }"
         />
       </div>
       <v-data-table
-        :headers="tableHeaders"
-        :items-per-page="Number(10)"
-        :items="filteredTableContents"
-        :loading="loading"
         class="mx-12 my-2 workflow-table"
+        :headers="tableHeaders"
         item-key="idVersionType"
+        :items="filteredTableContents"
+        :items-per-page="Number(10)"
+        :loading="loading"
       >
         <template #[`item.workflowType`]="{ item }">
           <workflow-icon :wf-type="item.workflowType" />
@@ -94,11 +93,11 @@
           <span>
             {{ item.workflowName }}
             <v-chip
-              :color="$colors.indigo.lighten2"
-              text-color="white"
-              small
               class="ml-4"
-              v-text="`ver. ${item.workflowVersion}`"
+              :color="$colors.indigo.lighten2"
+              small
+              text-color="white"
+              v-text="`${item.workflowVersion}`"
             />
           </span>
         </template>
@@ -126,6 +125,7 @@ import { defineComponent } from 'vue'
 import {
   getServiceInfo,
   ServiceInfoResponse,
+  getToolsAll,
   getTools,
   ToolsResponse,
   WorkflowType,
@@ -157,16 +157,16 @@ interface DefaultEndpoint {
 
 const defaultEndpoints: DefaultEndpoint[] = [
   {
+    name: 'DDBJ Workflow Registry',
+    endpoint: 'https://ddbj.github.io/workflow-registry',
+  },
+  {
     name: 'WorkflowHub',
     endpoint: 'https://workflowhub.eu/ga4gh/trs/v2',
   },
   {
     name: 'Dockstore',
     endpoint: 'https://dockstore.org/api/ga4gh/trs/v2',
-  },
-  {
-    name: 'BioContainers',
-    endpoint: 'https://api.biocontainers.pro/ga4gh/trs/v2',
   },
 ]
 
@@ -226,7 +226,11 @@ export default defineComponent({
         return ['Failed to fetch TRS response from the endpoint']
       }
       if (this.serviceInfo) {
-        if (this.serviceInfo.type.artifact.toLowerCase() !== 'trs') {
+        if (
+          !['trs', 'yevis'].includes(
+            this.serviceInfo.type.artifact.toLowerCase()
+          )
+        ) {
           return ['Not a TRS endpoint']
         }
         if (!this.serviceInfo.type.version.startsWith('2')) {
@@ -260,7 +264,12 @@ export default defineComponent({
           sortable: false,
         },
       ]
-      if (this.trsEndpoint !== 'https://dockstore.org/api/ga4gh/trs/v2') {
+      if (
+        !(
+          this.trsEndpoint === 'https://dockstore.org/api/ga4gh/trs/v2' ||
+          this.serviceInfo?.type.artifact.toLowerCase() === 'yevis'
+        )
+      ) {
         tableHeaders.splice(3, 0, {
           text: 'Workflow URL',
           value: 'workflowUrl',
@@ -361,11 +370,49 @@ export default defineComponent({
       this.tableContents = []
       if (
         this.serviceInfo &&
-        this.serviceInfo.type.artifact.toLowerCase() === 'trs' &&
+        ['trs', 'yevis'].includes(
+          this.serviceInfo.type.artifact.toLowerCase()
+        ) &&
         this.serviceInfo.type.version.startsWith('2')
       ) {
-        for (const wfType of this.wfTypes) {
-          getTools(this.trsEndpoint, wfType)
+        if (this.serviceInfo.type.artifact.toLowerCase() === 'trs') {
+          // for dockstore, workflowhub
+          for (const wfType of this.wfTypes) {
+            getTools(this.trsEndpoint, wfType)
+              .then((res: ToolsResponse) => {
+                for (const tool of res) {
+                  for (const version of tool.versions) {
+                    if (version.descriptor_type) {
+                      for (const type of version.descriptor_type) {
+                        const tableContent: TableContent = {
+                          id: tool.id,
+                          version: version.id,
+                          idVersionType: `${tool.id}-${version.id}-${type}`,
+                          workflowType: descriptorTypeToWorkflowType(type),
+                          workflowName: tool.name
+                            ? `${tool.name}`
+                            : `${tool.id}-${type}`,
+                          workflowNameVal: tool.name
+                            ? `${tool.name}-${version.id}`
+                            : `${tool.id}-${type}-${version.id}`,
+                          workflowVersion: version.id,
+                          organization: tool.organization,
+                          workflowUrl: version.url,
+                          importButton: '',
+                        }
+                        this.tableContents.push(tableContent)
+                      }
+                    }
+                  }
+                }
+              })
+              .catch((_) => {
+                // do nothing
+              })
+          }
+        } else {
+          // for yevis workflow registry
+          getToolsAll(this.trsEndpoint)
             .then((res: ToolsResponse) => {
               for (const tool of res) {
                 for (const version of tool.versions) {

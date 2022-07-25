@@ -1,7 +1,7 @@
 <template>
   <v-dialog
-    :value="dialogShow"
     overlay-opacity="0.8"
+    :value="dialogShow"
     width="600"
     @click:outside="$emit('close')"
   >
@@ -19,7 +19,7 @@
           <v-icon left v-text="'mdi-trash-can-outline'" />
           <span v-text="'Remove'" />
         </v-btn>
-        <v-btn color="info" class="ml-4" outlined @click.stop="$emit('close')">
+        <v-btn class="ml-4" color="info" outlined @click.stop="$emit('close')">
           <v-icon left v-text="'mdi-close'" />
           <span v-text="'Cancel'" />
         </v-btn>

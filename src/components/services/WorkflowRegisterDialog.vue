@@ -1,7 +1,7 @@
 <template>
   <v-dialog
-    :value="dialogShow"
     overlay-opacity="0.8"
+    :value="dialogShow"
     width="900"
     @click:outside="$emit('close')"
   >
@@ -14,31 +14,31 @@
         <v-text-field
           v-if="inspected"
           v-model="name"
-          :persistent-hint="!name.length"
-          :rules="nameRules"
           hint="Name of the workflow (free text, e.g., 'Test workflow,' etc.)"
           label="Name"
+          :persistent-hint="!name.length"
           placeholder="Type a name"
+          :rules="nameRules"
         />
         <v-select
           v-if="inspected"
           v-model="type"
+          hint="Select the workflow language type"
           :items="types"
+          label="Type"
           :persistent-hint="!type.length"
           :rule="typeRules"
-          hint="Select the workflow language type"
-          label="Type"
           @change="changeType"
         />
         <v-select
           v-if="inspected"
           v-model="version"
           :disabled="!type"
+          hint="Select the workflow language version"
           :items="versions"
+          label="Version"
           :persistent-hint="!type.length"
           :rules="versionRules"
-          hint="Select the workflow language version"
-          label="Version"
         />
       </div>
       <div class="mx-12 mt-2">
@@ -50,14 +50,14 @@
           <v-chip-group
             v-model="locationMode"
             class="ml-6"
-            mandatory
             color="primary"
+            mandatory
           >
-            <v-chip :value="'fetch'" label outlined>
+            <v-chip label outlined :value="'fetch'">
               <v-icon left v-text="'mdi-download-outline'" />
               <span v-text="'Fetch'" />
             </v-chip>
-            <v-chip :value="'upload'" label outlined>
+            <v-chip label outlined :value="'upload'">
               <v-icon left v-text="'mdi-upload-outline'" />
               <span v-text="'Upload'" />
             </v-chip>
@@ -66,17 +66,18 @@
         <div v-if="locationMode === 'fetch'" class="ml-4 d-flex flex-column">
           <v-text-field
             v-model="url"
-            :persistent-hint="!url.length"
-            :rules="urlRules"
             class="ma-0"
             hint="Network reachable location of the workflow document"
             label="URL"
+            :persistent-hint="!url.length"
             placeholder="Type a URL"
+            :rules="urlRules"
             @input="changeUrl"
           />
           <codemirror
             v-if="wfContentFetch.length"
             v-model="wfContentFetch"
+            class="elevation-2 content-viewer"
             :options="{
               lineNumbers: true,
               tabSize: 2,
@@ -86,7 +87,6 @@
             :style="{
               outline: `solid 1px ${$colors.grey.lighten1}`,
             }"
-            class="elevation-2 content-viewer"
           />
         </div>
         <div
@@ -104,16 +104,17 @@
           <v-text-field
             v-if="wfContentUpload.length"
             v-model="fileName"
-            :persistent-hint="!fileName.length"
-            :rules="fileNameRules"
             class="ma-0"
             hint="The name of workflow document when it is placed in the execution directory and passed to the workflow engine"
             label="File Name"
+            :persistent-hint="!fileName.length"
             placeholder="Type a file name"
+            :rules="fileNameRules"
           />
           <div @drop="setDragFileName">
             <codemirror
               v-model="wfContentUpload"
+              class="elevation-2 content-viewer"
               :options="{
                 lineNumbers: true,
                 tabSize: 2,
@@ -123,7 +124,6 @@
               :style="{
                 outline: `solid 1px ${$colors.grey.lighten1}`,
               }"
-              class="elevation-2 content-viewer"
             />
           </div>
         </div>
@@ -131,16 +131,16 @@
       <div class="d-flex justify-end align-center mx-12 pb-6 mt-4">
         <v-tooltip
           v-if="locationMode === 'fetch' && wfContentFetch.length"
-          top
           max-width="400"
+          top
         >
           <template #activator="{ on }">
             <div class="mr-6" v-on="on">
               <v-checkbox
                 v-model="attachAsFile"
+                class="ma-0 pa-0"
                 hide-details
                 :label="'Attach as File'"
-                class="ma-0 pa-0"
               />
             </div>
           </template>
@@ -151,8 +151,8 @@
           />
         </v-tooltip>
         <v-btn
-          :disabled="!(registerValid && submitButton)"
           color="primary"
+          :disabled="!(registerValid && submitButton)"
           outlined
           @click.stop="submitWorkflow"
         >

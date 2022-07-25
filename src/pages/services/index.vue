@@ -6,9 +6,9 @@
       <v-container fluid>
         <breadcrumbs-header />
         <template v-if="existServiceId">
-          <info-card :service-id="serviceId" class="mx-auto" />
-          <workflow-card :service-id="serviceId" class="mt-8 mx-auto" />
-          <run-card :service-id="serviceId" class="mt-8 mx-auto mb-4" />
+          <info-card class="mx-auto" :service-id="serviceId" />
+          <workflow-card class="mt-8 mx-auto" :service-id="serviceId" />
+          <run-card class="mt-8 mx-auto mb-4" :service-id="serviceId" />
         </template>
         <template v-else>{{
           `Service id: ${serviceId} does not exist.`

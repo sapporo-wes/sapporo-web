@@ -1,5 +1,5 @@
 <template>
-  <v-breadcrumbs :items="items" large class="pt-2">
+  <v-breadcrumbs class="pt-2" :items="items" large>
     <template #divider>
       <v-icon v-text="'mdi-chevron-right'" />
     </template>

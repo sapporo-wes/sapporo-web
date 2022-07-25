@@ -6,17 +6,17 @@
       <v-container fluid>
         <breadcrumbs-header />
         <template v-if="existWorkflowId">
-          <info-card :workflow-id="workflowId" class="mx-auto" />
+          <info-card class="mx-auto" :workflow-id="workflowId" />
           <v-alert
-            max-width="1200"
             class="mx-auto mt-8"
+            max-width="1200"
             type="error"
             :value="service.state !== 'Available'"
             >{{
               `Workflow cannot be executed because the status of service ${service.name} is not available.`
             }}
           </v-alert>
-          <execute-card :workflow-id="workflowId" class="mx-auto mt-8 mb-4" />
+          <execute-card class="mx-auto mt-8 mb-4" :workflow-id="workflowId" />
         </template>
         <template v-else>{{
           `Workflow id: ${workflowId} does not exist.`

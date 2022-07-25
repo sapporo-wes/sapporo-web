@@ -6,18 +6,18 @@
       <v-tooltip v-if="service.preRegistered" top>
         <template #activator="{ on }">
           <v-icon
-            :color="$colors.indigo.darken1"
             class="ml-2 mt-1"
+            :color="$colors.indigo.darken1"
             v-on="on"
             v-text="'mdi-account-check-outline'"
           />
         </template>
-        <span v-text="'Pre-registered WES instance'" />
+        <span v-text="'Pre-registered WES endpoint'" />
       </v-tooltip>
       <v-spacer />
       <v-chip
-        :color="$store.getters['services/stateColor'](service.id)"
         class="mr-4"
+        :color="$store.getters['services/stateColor'](service.id)"
         text-color="white"
         v-text="service.state"
       />
@@ -27,34 +27,34 @@
             :color="$colors.grey.darken2"
             outlined
             small
-            @click.stop="reloadService"
             v-on="on"
+            @click.stop="reloadService"
           >
             <v-icon v-text="'mdi-reload'" />
           </v-btn>
         </template>
-        <span v-text="'Reload WES instance'" />
+        <span v-text="'Reload WES endpoint'" />
       </v-tooltip>
     </div>
 
     <v-data-table
-      :headers="serviceInfoHeaders"
-      :items="serviceInfoContents"
       calculate-widths
       class="mx-12 mt-2 info-table"
       disable-filtering
       disable-pagination
       disable-sort
+      :headers="serviceInfoHeaders"
       hide-default-footer
       hide-default-header
       item-key="key"
+      :items="serviceInfoContents"
     >
       <template #[`item.value`]="{ item }">
         <span v-text="item.value" />
       </template>
     </v-data-table>
     <div class="mx-12">
-      <v-tabs v-model="tab" vertical height="282">
+      <v-tabs v-model="tab" height="282" vertical>
         <v-tab
           v-for="tabItem in tabItems"
           :key="tabItem.key"
@@ -68,6 +68,7 @@
         <v-tab-item v-for="tabItem in tabItems" :key="tabItem.key">
           <codemirror
             ref="codeMirror"
+            class="ml-6 mr-1 mt-2 mb-6 elevation-2 content-viewer"
             :options="{
               lineNumbers: true,
               mode: codeMirrorMode(tabItem.value),
@@ -78,7 +79,6 @@
               outline: `solid 1px ${$colors.grey.lighten1}`,
             }"
             :value="tabItem.value"
-            class="ml-6 mr-1 mt-2 mb-6 elevation-2 content-viewer"
           />
         </v-tab-item>
       </v-tabs>

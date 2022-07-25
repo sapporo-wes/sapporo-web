@@ -7,39 +7,39 @@
       <v-select
         v-if="runsTableItems.length"
         v-model="filterType"
-        :items="workflowTypes"
-        :prepend-inner-icon="'mdi-filter-outline'"
-        :style="{ maxWidth: '160px', minWidth: '160px' }"
         class="mt-2 mr-6"
         clearable
         dense
         hide-details
+        :items="workflowTypes"
         label="Type"
+        :prepend-inner-icon="'mdi-filter-outline'"
         single-line
+        :style="{ maxWidth: '160px', minWidth: '160px' }"
       />
       <v-text-field
         v-if="runsTableItems.length"
         v-model="filterRunName"
-        :prepend-inner-icon="'mdi-magnify'"
-        :style="{ maxWidth: '200px', minWidth: '200px' }"
         class="mt-2 mr-6"
         clearable
         dense
         hide-details
         label="Run Name"
+        :prepend-inner-icon="'mdi-magnify'"
         single-line
+        :style="{ maxWidth: '200px', minWidth: '200px' }"
       />
       <v-text-field
         v-if="runsTableItems.length"
         v-model="filterWfName"
-        :prepend-inner-icon="'mdi-magnify'"
-        :style="{ maxWidth: '200px', minWidth: '200px' }"
         class="mt-2 mr-6"
         clearable
         dense
         hide-details
         label="Workflow Name"
+        :prepend-inner-icon="'mdi-magnify'"
         single-line
+        :style="{ maxWidth: '200px', minWidth: '200px' }"
       />
       <v-tooltip top>
         <template #activator="{ on }">
@@ -48,8 +48,8 @@
             :disabled="!runsTableItems.length"
             outlined
             small
-            @click.stop="reloadRunState"
             v-on="on"
+            @click.stop="reloadRunState"
           >
             <v-icon v-text="'mdi-reload'" />
           </v-btn>
@@ -66,26 +66,26 @@
 
     <v-data-table
       v-if="runsTableItems.length"
-      :headers="runHeaders"
-      :items-per-page="Number(10)"
-      :items="filteredItems"
       class="mx-12 my-2 run-table"
+      :headers="runHeaders"
       item-key="runId"
+      :items="filteredItems"
+      :items-per-page="Number(10)"
     >
       <template #[`item.workflowType`]="{ item }">
         <workflow-icon :wf-type="item.workflowType" />
       </template>
       <template #[`item.runName`]="{ item }">
         <nuxt-link
-          :to="{ path: '/runs', query: { runId: item.runId } }"
           :style="{ textDecoration: 'none' }"
+          :to="{ path: '/runs', query: { runId: item.runId } }"
           v-text="item.runName"
         />
       </template>
       <template #[`item.workflowName`]="{ item }">
         <nuxt-link
-          :to="{ path: '/workflows', query: { workflowId: item.workflowId } }"
           :style="{ textDecoration: 'none' }"
+          :to="{ path: '/workflows', query: { workflowId: item.workflowId } }"
           v-text="item.workflowName"
         />
       </template>
