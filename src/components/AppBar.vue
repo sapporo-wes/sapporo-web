@@ -13,7 +13,7 @@
       outlined
     >
       <v-icon color="white" left v-text="'mdi-book-open-outline'" />
-      Docs
+      Docs / FAQ
     </v-btn>
   </v-app-bar>
 </template>
