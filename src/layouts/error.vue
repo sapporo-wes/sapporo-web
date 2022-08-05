@@ -15,7 +15,7 @@
             />
             <div class="mx-6" v-text="'An unexpected error has occurred.'" />
             <div
-              class="mx-6 mt-2 mb-6 elevation-2 pa-2"
+              class="mx-6 mt-2 mb-4 elevation-2 pa-2"
               :style="{
                 whiteSpace: 'pre-wrap',
                 wordWrap: 'break-word',
@@ -29,7 +29,10 @@
               class="mr-12"
               :color="$colors.grey.darken2"
               outlined
-              @click.stop="$router.push('/')"
+              @click.stop="
+                $router.push({ path: '/', force: true })
+                $router.go()
+              "
               v-text="'Back to Home'"
             />
           </div>
