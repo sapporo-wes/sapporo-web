@@ -26,9 +26,19 @@
           :persistent-hint="!endpoint.length"
           placeholder="Type a endpoint"
           :rules="endpointRules"
-          @input="connection = true"
         />
       </div>
+      <v-alert
+        v-if="formError.length"
+        class="mx-12 mt-4"
+        dense
+        icon="mdi-fire"
+        outlined
+        text
+        type="warning"
+      >
+        {{ formError }}
+      </v-alert>
       <div class="d-flex justify-end mx-12 pb-6 mt-4">
         <v-btn
           color="primary"
@@ -63,16 +73,14 @@ export default defineComponent({
     return {
       name: '',
       endpoint: '',
-      connection: true,
       registerButton: true,
+      formError: '',
     }
   },
 
   computed: {
     registerValid(): boolean {
-      return (
-        !this.nameRules.length && !this.endpointRules.length && this.connection
-      )
+      return !this.nameRules.length && !this.endpointRules.length
     },
 
     serviceNames(): string[] {
@@ -104,9 +112,6 @@ export default defineComponent({
       if (!validUrl(this.endpoint)) {
         return ['Invalid URL']
       }
-      if (!this.connection) {
-        return ['Connection failed']
-      }
       return []
     },
   },
@@ -115,6 +120,7 @@ export default defineComponent({
     async submitService(): Promise<void> {
       await getServiceInfo(this.endpoint.replace(/\/$/, ''))
         .then(async (serviceInfo) => {
+          this.formError = ''
           this.registerButton = false
           await this.$store
             .dispatch('services/submitService', {
@@ -127,8 +133,9 @@ export default defineComponent({
               this.$router.push({ path: '/services', query: { serviceId } })
             })
         })
-        .catch((_) => {
-          this.connection = false
+        .catch((e) => {
+          this.formError = e.message
+          this.registerButton = true
         })
     },
   },

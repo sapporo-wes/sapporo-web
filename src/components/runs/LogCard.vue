@@ -260,8 +260,8 @@ export default defineComponent({
       link.remove()
     },
 
-    async downloadRunLog(): Promise<void> {
-      await this.$store.dispatch('runs/updateRun', this.run.id)
+    downloadRunLog() {
+      this.$store.dispatch('runs/updateRun', this.run.id)
       const blob = new Blob([JSON.stringify(this.run.runLog, null, 2)], {
         type: 'application/json',
       })
@@ -280,7 +280,6 @@ export default defineComponent({
 <style scoped>
 .content-viewer >>> .CodeMirror {
   height: 300px !important;
-  font-size: 0.9rem !important;
 }
 .content-viewer >>> .CodeMirror-lines {
   font-family: 'Fira Code', monospace, sans-serif !important;

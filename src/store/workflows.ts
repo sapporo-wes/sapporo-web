@@ -193,7 +193,9 @@ export const actions: ActionTree<State, RootState> = {
     }
   ): Promise<string> {
     const workflowId: string = uuidv4()
-    const content = await fetchWorkflowContent(payload.workflow)
+    const content = await fetchWorkflowContent(payload.workflow).catch((e) => {
+      throw new Error(`Failed to add workflow due to ${e}`)
+    })
     const date = dayjs().utc().format()
     const workflow: Workflow = {
       name: payload.workflow.workflow_name,
@@ -223,7 +225,9 @@ export const actions: ActionTree<State, RootState> = {
       workflow: WesWorkflow
     }
   ): Promise<void> {
-    const content = await fetchWorkflowContent(payload.workflow)
+    const content = await fetchWorkflowContent(payload.workflow).catch((e) => {
+      throw new Error(`Failed to update workflow due to ${e}`)
+    })
 
     commit('setProp', {
       key: 'type',
@@ -346,9 +350,15 @@ export const actions: ActionTree<State, RootState> = {
       headers: {
         'Content-Type': 'plain/text',
       },
+    }).catch((e) => {
+      throw new Error(
+        `Failed to import workflow due to failure to fetch workflow content from ${url} due to ${e}`
+      )
     })
     if (!res.ok) {
-      throw new Error(`Failed to fetch workflow from ${url}`)
+      throw new Error(
+        `Failed to import workflow due to failure to fetch workflow content from ${url} with status ${res.status}`
+      )
     }
     const content = await res.text()
 
@@ -375,10 +385,16 @@ export const actions: ActionTree<State, RootState> = {
       parseWorkflow(service.endpoint, {
         workflow_location: url.toString(),
         types_of_parsing: ['workflow_type_version'],
-      }).then((res) => {
-        wfVersion =
-          res.workflow_type_version || descriptorType === 'CWL' ? 'v1.0' : '1.0'
       })
+        .then((res) => {
+          wfVersion =
+            res.workflow_type_version || descriptorType === 'CWL'
+              ? 'v1.0'
+              : '1.0'
+        })
+        .catch((_) => {
+          wfVersion = descriptorType === 'CWL' ? 'v1.0' : '1.0'
+        })
     }
 
     const files = await getFiles(
@@ -386,7 +402,11 @@ export const actions: ActionTree<State, RootState> = {
       payload.trsWorkflowId,
       payload.trsWorkflowVersion,
       descriptorType
-    )
+    ).catch((e) => {
+      throw new Error(
+        `Failed to import workflow due to failure to fetch workflow files from ${url} due to ${e}`
+      )
+    })
     const attachmentFiles: AttachedFile[] = []
     for (const file of files) {
       if (file.path) {

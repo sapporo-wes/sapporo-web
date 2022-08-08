@@ -347,7 +347,6 @@ export default defineComponent({
 <style scoped>
 .content-viewer >>> .CodeMirror {
   height: 200px !important;
-  font-size: 0.9rem !important;
 }
 .content-viewer >>> .CodeMirror-lines {
   font-family: 'Fira Code', monospace, sans-serif !important;

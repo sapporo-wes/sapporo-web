@@ -354,6 +354,18 @@
       </div>
     </div>
 
+    <v-alert
+      v-if="formError.length"
+      class="mx-12 mt-4"
+      dense
+      icon="mdi-fire"
+      outlined
+      text
+      type="warning"
+    >
+      {{ formError }}
+    </v-alert>
+
     <div class="d-flex justify-end pb-6 mx-12 mt-4">
       <v-btn
         color="primary"
@@ -444,6 +456,7 @@ export default defineComponent({
       tags: '{}',
       tagsExpand: false,
       executeButton: true,
+      formError: '',
     }
   },
 
@@ -721,6 +734,7 @@ export default defineComponent({
         this.service.state === 'Available' ||
         this.executeButton
       ) {
+        this.formError = ''
         this.executeButton = false
         const wfAttachmentObj: AttachedFile[] = []
         for (let i = 0; i < this.wfAttachment.fetch.urls.length; i++) {
@@ -767,6 +781,10 @@ export default defineComponent({
           })
           .then((runId) => {
             this.$router.push({ path: '/runs', query: { runId } })
+          })
+          .catch((e) => {
+            this.formError = e.message
+            this.executeButton = true
           })
       }
     },
@@ -844,14 +862,12 @@ export default defineComponent({
 }
 .input-field-small >>> .CodeMirror {
   height: 150px !important;
-  font-size: 0.9rem !important;
 }
 .input-field-small >>> .CodeMirror-lines {
   font-family: 'Fira Code', monospace, sans-serif !important;
 }
 .input-field-middle >>> .CodeMirror {
   height: 300px !important;
-  font-size: 0.9rem !important;
 }
 .input-field-middle >>> .CodeMirror-lines {
   font-family: 'Fira Code', monospace, sans-serif !important;

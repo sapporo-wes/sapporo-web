@@ -106,6 +106,12 @@
         </v-tab-item>
       </v-tabs>
     </div>
+
+    <error-snackbar
+      :message="errorSnackbarMessage"
+      :show="errorSnackbarShow"
+      @close="errorSnackbarShow = false"
+    />
   </v-card>
 </template>
 
@@ -123,11 +129,13 @@ import { Service } from '@/store/services'
 import { WesVersions } from '@/utils/WESRequest'
 import { Workflow } from '@/store/workflows'
 import WorkflowIcon from '@/components/WorkflowIcon.vue'
+import ErrorSnackbar from '@/components/ErrorSnackbar.vue'
 
 export default defineComponent({
   components: {
     codemirror,
     WorkflowIcon,
+    ErrorSnackbar,
   },
 
   props: {
@@ -146,6 +154,8 @@ export default defineComponent({
       tab: 2 as number | null,
       tooltip: false,
       cancelButton: true,
+      errorSnackbarShow: false,
+      errorSnackbarMessage: '',
     }
   },
 
@@ -237,8 +247,8 @@ export default defineComponent({
   },
 
   methods: {
-    async reloadRunState(): Promise<void> {
-      await this.$store.dispatch('runs/updateRun', this.runId)
+    reloadRunState() {
+      this.$store.dispatch('runs/updateRun', this.runId)
     },
 
     codeMirrorMode(content: string): ReturnType<typeof codeMirrorMode> {
@@ -254,8 +264,14 @@ export default defineComponent({
         ['QUEUED', 'INITIALIZING', 'RUNNING', 'PAUSED'].includes(this.run.state)
       ) {
         this.cancelButton = false
-        await this.$store.dispatch('runs/cancelRun', this.runId)
-        await this.$store.dispatch('runs/updateRun', this.runId)
+        await this.$store.dispatch('runs/cancelRun', this.runId).catch((e) => {
+          this.errorSnackbarShow = true
+          this.errorSnackbarMessage = `Failed to cancel run: ${e}`
+          setTimeout(() => {
+            this.errorSnackbarShow = false
+          }, 5000)
+        })
+        this.$store.dispatch('runs/updateRun', this.runId)
         this.cancelButton = true
       }
     },
@@ -274,7 +290,6 @@ export default defineComponent({
 <style scoped>
 .content-viewer >>> .CodeMirror {
   height: 300px !important;
-  font-size: 0.9rem !important;
 }
 .content-viewer >>> .CodeMirror-lines {
   font-family: 'Fira Code', monospace, sans-serif !important;

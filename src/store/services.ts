@@ -8,7 +8,7 @@ import { ActionTree, GetterTree, MutationTree } from 'vuex/types'
 import { RootState } from '@/store'
 import { Run } from '@/store/runs'
 import { Workflow } from '@/store/workflows'
-import { ServiceInfo } from '@/types/WES'
+import { ExecutableWorkflows, ServiceInfo } from '@/types/WES'
 import {
   getExecutableWorkflows,
   getServiceInfo,
@@ -214,8 +214,10 @@ export const actions: ActionTree<State, RootState> = {
     const serviceId: string = uuidv4()
     const workflowIds: string[] = []
     const executableWorkflows =
-      (await getExecutableWorkflows(payload.endpoint, payload.serviceInfo)) ||
-      []
+      (await getExecutableWorkflows(
+        payload.endpoint,
+        payload.serviceInfo
+      ).catch((_) => [] as ExecutableWorkflows)) || []
     for (const workflow of executableWorkflows) {
       const workflowId: string = await dispatch(
         'workflows/addWorkflow',
@@ -279,7 +281,9 @@ export const actions: ActionTree<State, RootState> = {
             serviceId,
           })
           const executableWfs =
-            (await getExecutableWorkflows(service.endpoint, serviceInfo)) || []
+            (await getExecutableWorkflows(service.endpoint, serviceInfo).catch(
+              (_) => [] as ExecutableWorkflows
+            )) || []
           const registeredWfs: Workflow[] = rootGetters[
             'workflows/workflowsByIds'
           ](service.workflowIds).filter((wf: Workflow) => wf.preRegistered)

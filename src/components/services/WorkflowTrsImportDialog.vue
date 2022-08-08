@@ -115,6 +115,17 @@
           />
         </template>
       </v-data-table>
+      <v-alert
+        v-if="formError.length"
+        class="mx-12"
+        dense
+        icon="mdi-fire"
+        outlined
+        text
+        type="warning"
+      >
+        {{ formError }}
+      </v-alert>
     </v-card>
   </v-dialog>
 </template>
@@ -190,7 +201,7 @@ export default defineComponent({
   data() {
     return {
       trsEndpoint: defaultEndpoints.filter(
-        (item) => item.name === 'WorkflowHub'
+        (item) => item.name === 'DDBJ Workflow Registry'
       )[0].endpoint,
       defaultEndpoints,
       fetchFailed: false,
@@ -199,6 +210,7 @@ export default defineComponent({
       filterWorkflowName: '',
       filterOrganization: '',
       tableContents: [] as TableContent[],
+      formError: '',
     }
   },
 
@@ -364,10 +376,14 @@ export default defineComponent({
           this.$emit('close')
           this.$router.push({ path: '/workflows', query: { workflowId } })
         })
+        .catch((e) => {
+          this.formError = `Failed to import workflow: ${e}`
+        })
     },
 
     updateTableContents(): void {
       this.tableContents = []
+      this.formError = ''
       if (
         this.serviceInfo &&
         ['trs', 'yevis'].includes(
@@ -406,8 +422,8 @@ export default defineComponent({
                   }
                 }
               })
-              .catch((_) => {
-                // do nothing
+              .catch((e) => {
+                this.formError = e.message
               })
           }
         } else {
@@ -440,8 +456,8 @@ export default defineComponent({
                 }
               }
             })
-            .catch((_) => {
-              // do nothing
+            .catch((e) => {
+              this.formError = e.message
             })
         }
       }

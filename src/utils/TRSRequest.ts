@@ -8,15 +8,19 @@ export const getServiceInfo = async (
 ): Promise<ServiceInfoResponse> => {
   const res = await fetch(`${trsEndpoint}/service-info`, {
     method: 'GET',
+  }).catch((e) => {
+    throw new Error(
+      `Failed to get service info from ${trsEndpoint} due to ${e}`
+    )
   })
 
   if (!res.ok) {
     throw new Error(
-      `Failed to fetch service info from ${trsEndpoint}/service-info`
+      `Failed to fetch service info from ${trsEndpoint} with status ${res.status}`
     )
   }
 
-  return await res.json()
+  return res.json()
 }
 
 export type ToolsResponse =
@@ -95,13 +99,17 @@ export const getTools = async (
 
   const res = await fetch(url.toString(), {
     method: 'GET',
+  }).catch((e) => {
+    throw new Error(`Failed to get tools from ${trsEndpoint} due to ${e}`)
   })
 
   if (!res.ok) {
-    throw new Error(`Failed to fetch tools from ${url}`)
+    throw new Error(
+      `Failed to fetch tools from ${url} with status ${res.status}`
+    )
   }
 
-  return await res.json()
+  return res.json()
 }
 
 // for Yevis
@@ -111,13 +119,17 @@ export const getToolsAll = async (
   const url = new URL(`${trsEndpoint}/tools`)
   const res = await fetch(url.toString(), {
     method: 'GET',
+  }).catch((e) => {
+    throw new Error(`Failed to get tools from ${trsEndpoint} due to ${e}`)
   })
 
   if (!res.ok) {
-    throw new Error(`Failed to fetch tools from ${url}`)
+    throw new Error(
+      `Failed to fetch tools from ${url} with status ${res.status}`
+    )
   }
 
-  return await res.json()
+  return res.json()
 }
 
 export const generateWfContentUrl = (
@@ -167,11 +179,15 @@ export const getFiles = async (
     {
       method: 'GET',
     }
-  )
+  ).catch((e) => {
+    throw new Error(`Failed to get files from ${trsEndpoint} due to ${e}`)
+  })
 
   if (!res.ok) {
-    throw new Error(`Failed to fetch files from ${trsEndpoint}`)
+    throw new Error(
+      `Failed to fetch files from ${trsEndpoint} with status ${res.status}`
+    )
   }
 
-  return await res.json()
+  return res.json()
 }

@@ -22,11 +22,15 @@ export const getServiceInfo = async (
     headers: {
       'Content-Type': 'application/json',
     },
+  }).catch((e) => {
+    throw new Error(`Failed to fetch service-info from ${endpoint} due to ${e}`)
   })
   if (!res.ok) {
-    throw new Error(`Failed to fetch service-info from ${endpoint}`)
+    throw new Error(
+      `Failed to fetch service-info from ${endpoint} with status ${res.status}`
+    )
   }
-  return await res.json()
+  return res.json()
 }
 
 export type WesVersions = '1.0.0' | 'sapporo-1.0.0' | 'sapporo-1.0.1'
@@ -52,7 +56,11 @@ export const getExecutableWorkflows = async (
   serviceInfo?: ServiceInfo
 ): Promise<ExecutableWorkflows> => {
   if (!serviceInfo) {
-    serviceInfo = await getServiceInfo(endpoint)
+    serviceInfo = await getServiceInfo(endpoint).catch((e) => {
+      throw new Error(
+        `Failed to get executable workflows from ${endpoint} due to ${e}`
+      )
+    })
   }
   const wesVersion = parseWesVersion(serviceInfo?.supported_wes_versions || [])
   if (wesVersion === 'sapporo-1.0.1') {
@@ -61,11 +69,17 @@ export const getExecutableWorkflows = async (
       headers: {
         'Content-Type': 'application/json',
       },
+    }).catch((e) => {
+      throw new Error(
+        `Failed to get executable workflows from ${endpoint} due to ${e}`
+      )
     })
     if (!res.ok) {
-      throw new Error(`Failed to fetch executable workflows from ${endpoint}`)
+      throw new Error(
+        `Failed to fetch executable workflows from ${endpoint} with status ${res.status}`
+      )
     }
-    return await res.json()
+    return res.json()
   } else if (wesVersion === 'sapporo-1.0.0') {
     return (serviceInfo as SvcInfSpr100).executable_workflows || []
   }
@@ -82,11 +96,15 @@ export const fetchWorkflowContent = async (
       headers: {
         'Content-Type': 'text/plain',
       },
+    }).catch((e) => {
+      throw new Error(`Failed to fetch workflow from ${url} due to ${e}`)
     })
     if (!res.ok) {
-      throw new Error(`Failed to fetch workflow from ${url}`)
+      throw new Error(
+        `Failed to fetch workflow from ${url} with status ${res.status}`
+      )
     }
-    return await res.text()
+    return res.text()
   } else {
     const fileName = workflow.workflow_url.split('/').slice(-1)[0]
     for (const file of workflow.workflow_attachment as AttachedFile[]) {
@@ -98,11 +116,15 @@ export const fetchWorkflowContent = async (
           headers: {
             'Content-Type': 'text/plain',
           },
+        }).catch((e) => {
+          throw new Error(`Failed to fetch workflow from ${url} due to ${e}`)
         })
         if (!res.ok) {
-          throw new Error(`Failed to fetch workflow from ${url}`)
+          throw new Error(
+            `Failed to fetch workflow from ${url} with status ${res.status}`
+          )
         }
-        return await res.text()
+        return res.text()
       }
     }
   }
@@ -127,11 +149,15 @@ export const parseWorkflow = async (
   const res = await fetch(`${endpoint}/parse-workflow`, {
     method: 'POST',
     body: formData,
+  }).catch((e) => {
+    throw new Error(`Failed to parse workflow from ${endpoint} due to ${e}`)
   })
   if (!res.ok) {
-    throw new Error(`Failed to parse workflow from ${endpoint}`)
+    throw new Error(
+      `Failed to parse workflow from ${endpoint} with status ${res.status}`
+    )
   }
-  return await res.json()
+  return res.json()
 }
 
 export const getRuns = async (endpoint: string): Promise<RunListResponse> => {
@@ -140,11 +166,15 @@ export const getRuns = async (endpoint: string): Promise<RunListResponse> => {
     headers: {
       'Content-Type': 'application/json',
     },
+  }).catch((e) => {
+    throw new Error(`Failed to get runs from ${endpoint} due to ${e}`)
   })
   if (!res.ok) {
-    throw new Error(`Failed to fetch run list from ${endpoint}`)
+    throw new Error(
+      `Failed to get runs from ${endpoint} with status ${res.status}`
+    )
   }
-  return await res.json()
+  return res.json()
 }
 
 export interface Attachment {
@@ -179,11 +209,15 @@ export const postRuns = async (
   const res = await fetch(`${endpoint}/runs`, {
     method: 'POST',
     body: formData,
+  }).catch((e) => {
+    throw new Error(`Failed to post runs to ${endpoint} due to ${e}`)
   })
   if (!res.ok) {
-    throw new Error(`Failed to post run from ${endpoint}`)
+    throw new Error(
+      `Failed to post runs from ${endpoint} with status ${res.status}`
+    )
   }
-  return await res.json()
+  return res.json()
 }
 
 export const getRunsId = async (
@@ -195,11 +229,15 @@ export const getRunsId = async (
     headers: {
       'Content-Type': 'application/json',
     },
+  }).catch((e) => {
+    throw new Error(`Failed to get runs from ${endpoint} due to ${e}`)
   })
   if (!res.ok) {
-    throw new Error(`Failed to fetch runs id from ${endpoint}`)
+    throw new Error(
+      `Failed to get runs from ${endpoint} with status ${res.status}`
+    )
   }
-  return await res.json()
+  return res.json()
 }
 
 export const postRunsIdCancel = async (
@@ -211,11 +249,15 @@ export const postRunsIdCancel = async (
     headers: {
       'Content-Type': 'application/json',
     },
+  }).catch((e) => {
+    throw new Error(`Failed to cancel run from ${endpoint} due to ${e}`)
   })
   if (!res.ok) {
-    throw new Error(`Failed to cancel run from ${endpoint}`)
+    throw new Error(
+      `Failed to cancel run from ${endpoint} with status ${res.status}`
+    )
   }
-  return await res.json()
+  return res.json()
 }
 
 export const getRunsIdStatus = async (
@@ -227,9 +269,13 @@ export const getRunsIdStatus = async (
     headers: {
       'Content-Type': 'application/json',
     },
+  }).catch((e) => {
+    throw new Error(`Failed to get run status from ${endpoint} due to ${e}`)
   })
   if (!res.ok) {
-    throw new Error(`Failed to fetch run status from ${endpoint}`)
+    throw new Error(
+      `Failed to fetch run status from ${endpoint} with status ${res.status}`
+    )
   }
-  return await res.json()
+  return res.json()
 }

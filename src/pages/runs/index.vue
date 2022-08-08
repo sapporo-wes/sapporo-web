@@ -40,8 +40,8 @@ export default defineComponent({
     if (Array.isArray(runId)) {
       runId = runId[0] || ''
     }
-    ;(window as unknown as MyWindow).onNuxtReady(async () => {
-      await store.dispatch('runs/updateRun', runId)
+    ;(window as unknown as MyWindow).onNuxtReady(() => {
+      store.dispatch('runs/updateRun', runId)
     })
   },
 
@@ -65,7 +65,7 @@ export default defineComponent({
   },
 
   created() {
-    setInterval(async () => {
+    setInterval(() => {
       // eslint-disable-next-line nuxt/no-globals-in-created
       if (document.visibilityState === 'visible') {
         if (
@@ -77,7 +77,7 @@ export default defineComponent({
             'CANCELING',
           ].includes(this.$store.getters['runs/run'](this.runId))
         ) {
-          await this.$store.dispatch('runs/updateRun', this.runId)
+          this.$store.dispatch('runs/updateRun', this.runId)
         }
       }
     }, 5000)

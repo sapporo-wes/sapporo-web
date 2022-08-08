@@ -217,7 +217,9 @@ export const actions: ActionTree<State, RootState> = {
         wesVersion,
         runRequest,
         attachments
-      )
+      ).catch((e) => {
+        throw new Error(`Failed to execute run due to ${e}`)
+      })
     ).run_id as string
 
     dispatch(
@@ -247,19 +249,16 @@ export const actions: ActionTree<State, RootState> = {
     return runId
   },
 
-  async deleteRuns(
-    { commit, dispatch, getters },
-    runIds: string[]
-  ): Promise<void> {
+  deleteRuns({ commit, dispatch, getters }, runIds: string[]) {
     for (const runId of runIds) {
       const run: Run | undefined = getters.run(runId)
       if (run) {
-        await dispatch(
+        dispatch(
           'services/removeRunId',
           { serviceId: run.serviceId, runId },
           { root: true }
         )
-        await dispatch(
+        dispatch(
           'workflows/removeRunId',
           { workflowId: run.workflowId, runId },
           { root: true }
@@ -303,28 +302,39 @@ export const actions: ActionTree<State, RootState> = {
     commit('addRun', run)
   },
 
-  async updateRun(
-    { commit, rootGetters, getters },
-    runId: string
-  ): Promise<void> {
+  updateRun({ commit, rootGetters, getters }, runId: string) {
     const run: Run | undefined = getters.run(runId)
     if (run) {
       const service: Service | undefined = rootGetters['services/service'](
         run.serviceId
       )
       if (service) {
-        const runLog = await getRunsId(service.endpoint, runId)
-        commit('setProp', {
-          key: 'state',
-          value: runLog.state,
-          runId: run.id,
-        })
-        commit('setProp', { key: 'runLog', value: runLog, runId: run.id })
-        commit('setProp', {
-          key: 'updatedDate',
-          value: dayjs().utc().format(),
-          runId: run.id,
-        })
+        getRunsId(service.endpoint, runId)
+          .then((runLog) => {
+            commit('setProp', {
+              key: 'state',
+              value: runLog.state,
+              runId: run.id,
+            })
+            commit('setProp', { key: 'runLog', value: runLog, runId: run.id })
+            commit('setProp', {
+              key: 'updatedDate',
+              value: dayjs().utc().format(),
+              runId: run.id,
+            })
+          })
+          .catch((_) => {
+            commit('setProp', {
+              key: 'state',
+              value: 'UNKNOWN',
+              runId: run.id,
+            })
+            commit('setProp', {
+              key: 'updatedDate',
+              value: dayjs().utc().format(),
+              runId: run.id,
+            })
+          })
       }
     }
   },
@@ -365,7 +375,9 @@ export const actions: ActionTree<State, RootState> = {
         run.serviceId
       )
       if (service) {
-        await postRunsIdCancel(service.endpoint, runId)
+        await postRunsIdCancel(service.endpoint, runId).catch((e) => {
+          throw new Error(`Failed to cancel run due to ${e}`)
+        })
       }
     }
   },

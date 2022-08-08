@@ -48,10 +48,16 @@ export const convertGitHubUrl = async (url: string | URL): Promise<string> => {
     urlObj.host = 'api.github.com'
     urlObj.pathname = `repos/${repoName}/contents/${filePath}`
     const apiUrl = urlObj.toString()
-    const res = await fetch(apiUrl, { method: 'GET' })
-    if (res.status === 200) {
+    const res = await fetch(apiUrl, { method: 'GET' }).catch(() => {
+      return url.toString()
+    })
+    if (typeof res === 'string') {
+      return url.toString()
+    } else if (res.ok) {
       const content = await res.json()
       return content.download_url
+    } else {
+      return url.toString()
     }
   }
   return url.toString()

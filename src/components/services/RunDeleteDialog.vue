@@ -47,8 +47,8 @@ export default defineComponent({
   },
 
   methods: {
-    async deleteSelectedItems(): Promise<void> {
-      await this.$store.dispatch(
+    deleteSelectedItems() {
+      this.$store.dispatch(
         'runs/deleteRuns',
         this.selectedItems.map((run) => run.runId)
       )

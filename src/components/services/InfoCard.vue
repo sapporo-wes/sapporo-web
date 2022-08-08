@@ -83,6 +83,12 @@
         </v-tab-item>
       </v-tabs>
     </div>
+
+    <error-snackbar
+      :message="errorSnackbarMessage"
+      :show="errorSnackbarShow"
+      @close="errorSnackbarShow = false"
+    />
   </v-card>
 </template>
 
@@ -95,10 +101,12 @@ import { DataTableHeader } from 'vuetify/types'
 import { defineComponent } from 'vue'
 import { Service } from '@/store/services'
 import { codeMirrorMode, validUrl } from '@/utils'
+import ErrorSnackbar from '@/components/ErrorSnackbar.vue'
 
 export default defineComponent({
   components: {
     codemirror,
+    ErrorSnackbar,
   },
 
   props: {
@@ -115,6 +123,8 @@ export default defineComponent({
         { text: 'Value', value: 'value' },
       ] as DataTableHeader[],
       tab: 1 as number | null,
+      errorSnackbarShow: false,
+      errorSnackbarMessage: '',
     }
   },
 
@@ -184,7 +194,15 @@ export default defineComponent({
 
   methods: {
     async reloadService(): Promise<void> {
-      await this.$store.dispatch('services/updateService', this.serviceId)
+      await this.$store
+        .dispatch('services/updateService', this.serviceId)
+        .catch((e) => {
+          this.errorSnackbarShow = true
+          this.errorSnackbarMessage = `Failed to reload service: ${e}`
+          setTimeout(() => {
+            this.errorSnackbarShow = false
+          }, 5000)
+        })
     },
 
     codeMirrorMode(content: string): ReturnType<typeof codeMirrorMode> {
@@ -201,7 +219,6 @@ export default defineComponent({
 <style scoped>
 .content-viewer >>> .CodeMirror {
   height: 250px !important;
-  font-size: 0.9rem !important;
 }
 .content-viewer >>> .CodeMirror-lines {
   font-family: 'Fira Code', monospace, sans-serif !important;

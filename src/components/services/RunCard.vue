@@ -134,6 +134,12 @@
         selectedRuns = []
       "
     />
+
+    <error-snackbar
+      :message="errorSnackbarMessage"
+      :show="errorSnackbarShow"
+      @close="errorSnackbarShow = false"
+    />
   </v-card>
 </template>
 
@@ -145,12 +151,14 @@ import { Service } from '@/store/services'
 import RunDeleteDialog from '@/components/services/RunDeleteDialog.vue'
 import RunImportDialog from '@/components/services/RunImportDialog.vue'
 import WorkflowIcon from '@/components/WorkflowIcon.vue'
+import ErrorSnackbar from '@/components/ErrorSnackbar.vue'
 
 export default defineComponent({
   components: {
     RunDeleteDialog,
     RunImportDialog,
     WorkflowIcon,
+    ErrorSnackbar,
   },
 
   props: {
@@ -203,6 +211,8 @@ export default defineComponent({
       filterType: '',
       filterWfName: '',
       filterRunName: '',
+      errorSnackbarShow: false,
+      errorSnackbarMessage: '',
     }
   },
 
@@ -242,10 +252,15 @@ export default defineComponent({
 
   methods: {
     async reloadRunState(): Promise<void> {
-      await this.$store.dispatch(
-        'runs/updateAllRunsStateByService',
-        this.service.id
-      )
+      await this.$store
+        .dispatch('runs/updateAllRunsStateByService', this.service.id)
+        .catch((e) => {
+          this.errorSnackbarShow = true
+          this.errorSnackbarMessage = `Failed to reload run state: ${e}`
+          setTimeout(() => {
+            this.errorSnackbarShow = false
+          }, 5000)
+        })
     },
   },
 })
