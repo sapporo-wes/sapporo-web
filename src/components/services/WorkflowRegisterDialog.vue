@@ -342,18 +342,20 @@ export default defineComponent({
       if (this.wesVersion === 'sapporo-1.0.1') {
         if (this.wfContentUpload) {
           // inspect workflow
-          parseWorkflow(this.service.endpoint, {
-            workflow_content: this.wfContentUpload,
-            types_of_parsing: ['workflow_type', 'workflow_type_version'],
-          })
-            .then((result) => {
-              this.type = result.workflow_type || ''
-              this.version = result.workflow_type_version || ''
+          if (!this.inspected) {
+            parseWorkflow(this.service.endpoint, {
+              workflow_content: this.wfContentUpload,
+              types_of_parsing: ['workflow_type', 'workflow_type_version'],
             })
-            .catch((_) => {
-              this.type = ''
-              this.version = ''
-            })
+              .then((result) => {
+                this.type = result.workflow_type || ''
+                this.version = result.workflow_type_version || ''
+              })
+              .catch((_) => {
+                this.type = ''
+                this.version = ''
+              })
+          }
         }
       }
     },
