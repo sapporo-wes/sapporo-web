@@ -5,6 +5,7 @@
     :value="dialogShow"
     width="1200"
     @click:outside="$emit('close')"
+    @keydown.esc="$emit('close')"
   >
     <v-card class="pb-4">
       <div class="d-flex align-center mx-6 pt-4">

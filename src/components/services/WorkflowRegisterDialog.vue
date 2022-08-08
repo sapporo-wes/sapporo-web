@@ -4,6 +4,7 @@
     :value="dialogShow"
     width="900"
     @click:outside="$emit('close')"
+    @keydown.esc="$emit('close')"
   >
     <v-card>
       <div class="d-flex align-center mx-6 pt-4">
@@ -358,6 +359,10 @@ export default defineComponent({
           }
         }
       }
+    },
+
+    dialogShow() {
+      this.dialogShowModel = this.dialogShow
     },
   },
 
