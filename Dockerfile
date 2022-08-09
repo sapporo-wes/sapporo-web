@@ -1,4 +1,4 @@
-FROM node:18.4.0-buster
+FROM node:18.4.0-buster as builder
 
 WORKDIR /app
 COPY package*.json ./
