@@ -389,7 +389,7 @@ import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/mode/yaml/yaml.js'
 import { codemirror } from 'vue-codemirror'
 import Vue, { defineComponent } from 'vue'
-import { codeMirrorMode, isJson, isYaml, yamlToJson } from '@/utils'
+import { codeMirrorMode, isJson, isYaml, yamlToJson, validUrl } from '@/utils'
 import { Run } from '@/store/runs'
 import { Service, WorkflowEngine } from '@/store/services'
 import { Workflow } from '@/store/workflows'
@@ -457,6 +457,7 @@ export default defineComponent({
       tagsExpand: false,
       executeButton: true,
       formError: '',
+      attachAsFile: false,
     }
   },
 
@@ -686,6 +687,18 @@ export default defineComponent({
         }) || ''
     }
 
+    // for attachAsFile
+    this.attachAsFile = !validUrl(this.workflow.url)
+    if (this.attachAsFile) {
+      this.wfAttachment.upload.files.pop()
+      this.wfAttachment.upload.names.pop()
+      const fileObj = new File([this.workflow.content], this.workflow.url)
+      this.wfAttachment.upload.files.push(fileObj)
+      this.wfAttachment.upload.names.push(this.workflow.url)
+      this.attachmentMode = 'upload'
+    }
+
+    // for preRegisteredWorkflow
     if (this.workflow.preRegisteredWorkflowAttachment.length) {
       this.wfAttachment.fetch.urls.pop()
       this.wfAttachment.fetch.names.pop()
@@ -841,7 +854,7 @@ export default defineComponent({
         this.wfAttachment.fetch.names.pop()
       } else if (
         this.attachmentMode === 'upload' &&
-        this.wfAttachment.fetch.names.length > 1
+        this.wfAttachment.upload.names.length > 1
       ) {
         this.wfAttachment.upload.files.pop()
         this.wfAttachment.upload.names.pop()
