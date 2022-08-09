@@ -37,6 +37,18 @@
       </v-tooltip>
     </div>
 
+    <v-alert
+      v-if="newsContent.length"
+      class="mx-12 mt-4"
+      dense
+      icon="mdi-information-outline"
+      outlined
+      text
+      type="primary"
+    >
+      {{ newsContent }}
+    </v-alert>
+
     <v-data-table
       calculate-widths
       class="mx-12 mt-2 info-table"
@@ -189,6 +201,10 @@ export default defineComponent({
           value: JSON.stringify(this.service?.serviceInfo?.tags || '', null, 2),
         },
       ]
+    },
+
+    newsContent(): string {
+      return this.service.serviceInfo?.tags?.news_content || ''
     },
   },
 
