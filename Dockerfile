@@ -24,7 +24,7 @@ COPY --from=builder /app/node_modules /app/node_modules
 WORKDIR /app
 COPY . .
 
-RUN npm run build
+RUN npm run generate
 
 ENV NUXT_HOST 0.0.0.0
 ENV NUXT_PORT 1121
