@@ -253,9 +253,13 @@ export default defineComponent({
     },
 
     downloadOutputFile(file: AttachedFile): void {
+      let fileUrl = file.file_url
+      if (window.location.protocol === 'https:') {
+        fileUrl = fileUrl.replace(/^http:/, 'https:')
+      }
       const link = document.createElement('a')
       link.download = file.file_name.split('/').slice(-1)[0]
-      link.href = file.file_url
+      link.href = fileUrl
       link.click()
       link.remove()
     },
