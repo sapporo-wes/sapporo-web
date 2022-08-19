@@ -15,7 +15,6 @@ LABEL org.opencontainers.image.licenses="Apache2.0"
 
 RUN apt update && \
   apt install -y --no-install-recommends \
-  curl \
   tini && \
   apt clean && \
   rm -rf /var/lib/apt/lists/*
@@ -25,7 +24,7 @@ COPY --from=builder /app/node_modules /app/node_modules
 WORKDIR /app
 COPY . .
 
-RUN npm run generate
+RUN npm run build
 
 ENV NUXT_HOST 0.0.0.0
 ENV NUXT_PORT 1121
