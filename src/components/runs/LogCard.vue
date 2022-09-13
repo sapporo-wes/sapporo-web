@@ -254,7 +254,7 @@ export default defineComponent({
 
     downloadOutputFile(file: AttachedFile): void {
       let fileUrl = file.file_url
-      if (window.location.protocol === 'https:') {
+      if (this.service.endpoint.startsWith('https:')) {
         fileUrl = fileUrl.replace(/^http:/, 'https:')
       }
       const link = document.createElement('a')
