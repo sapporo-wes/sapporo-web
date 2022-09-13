@@ -9,7 +9,7 @@ FROM node:18.4.0-buster-slim
 LABEL org.opencontainers.image.authors="DDBJ(DNA Data Bank of Japan) <t.ohta@nig.ac.jp>"
 LABEL org.opencontainers.image.url="https://github.com/sapporo-wes/sapporo-web"
 LABEL org.opencontainers.image.source="https://github.com/sapporo-wes/sapporo-web/blob/main/Dockerfile"
-LABEL org.opencontainers.image.version="1.2.1"
+LABEL org.opencontainers.image.version="1.2.2"
 LABEL org.opencontainers.image.description="A web application for managing and executing WES services."
 LABEL org.opencontainers.image.licenses="Apache2.0"
 
